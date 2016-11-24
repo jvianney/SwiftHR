@@ -55,7 +55,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
             throw new Zend_Controller_Exception('Plugin already registered');
         }
 
-        $stackIndex = (int) $stackIndex;
+        $stackIndex = (int)$stackIndex;
 
         if ($stackIndex) {
             if (isset($this->_plugins[$stackIndex])) {
@@ -83,6 +83,26 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
         ksort($this->_plugins);
 
         return $this;
+    }
+
+    /**
+     * Get request object
+     *
+     * @return Zend_Controller_Request_Abstract $request
+     */
+    public function getRequest()
+    {
+        return $this->_request;
+    }
+
+    /**
+     * Get response object
+     *
+     * @return Zend_Controller_Response_Abstract $response
+     */
+    public function getResponse()
+    {
+        return $this->_response;
     }
 
     /**
@@ -185,16 +205,6 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
     }
 
     /**
-     * Get request object
-     *
-     * @return Zend_Controller_Request_Abstract $request
-     */
-    public function getRequest()
-    {
-        return $this->_request;
-    }
-
-    /**
      * Set response object
      *
      * @param Zend_Controller_Response_Abstract $response
@@ -211,17 +221,6 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
 
         return $this;
     }
-
-    /**
-     * Get response object
-     *
-     * @return Zend_Controller_Response_Abstract $response
-     */
-    public function getResponse()
-    {
-        return $this->_response;
-    }
-
 
     /**
      * Called before Zend_Controller_Front begins evaluating the
@@ -312,8 +311,8 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
                     throw new Zend_Controller_Exception($e->getMessage() . $e->getTraceAsString(), $e->getCode(), $e);
                 } else {
                     $this->getResponse()->setException($e);
-					// skip rendering of normal dispatch give the error handler a try
-					$this->getRequest()->setDispatched(false);
+                    // skip rendering of normal dispatch give the error handler a try
+                    $this->getRequest()->setDispatched(false);
                 }
             }
         }
@@ -350,8 +349,8 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
      */
     public function dispatchLoopShutdown()
     {
-       foreach ($this->_plugins as $plugin) {
-           try {
+        foreach ($this->_plugins as $plugin) {
+            try {
                 $plugin->dispatchLoopShutdown();
             } catch (Exception $e) {
                 if (Zend_Controller_Front::getInstance()->throwExceptions()) {
@@ -360,6 +359,6 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
                     $this->getResponse()->setException($e);
                 }
             }
-       }
+        }
     }
 }

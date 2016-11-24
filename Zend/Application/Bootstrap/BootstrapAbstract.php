@@ -33,7 +33,7 @@
  */
 abstract class Zend_Application_Bootstrap_BootstrapAbstract
     implements Zend_Application_Bootstrap_Bootstrapper,
-               Zend_Application_Bootstrap_ResourceBootstrapper
+    Zend_Application_Bootstrap_ResourceBootstrapper
 {
     /**
      * @var Zend_Application|Zend_Application_Bootstrap_Bootstrapper
@@ -105,6 +105,43 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     }
 
     /**
+     * Retrieve a single option
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function getOption($key)
+    {
+        if ($this->hasOption($key)) {
+            $options = $this->getOptions();
+            $options = array_change_key_case($options, CASE_LOWER);
+            return $options[strtolower($key)];
+        }
+        return null;
+    }
+
+    /**
+     * Is an option present?
+     *
+     * @param  string $key
+     * @return bool
+     */
+    public function hasOption($key)
+    {
+        return in_array(strtolower($key), $this->_optionKeys);
+    }
+
+    /**
+     * Get current options from bootstrap
+     *
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->_options;
+    }
+
+    /**
      * Set class state
      *
      * @param  array $options
@@ -146,43 +183,6 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     }
 
     /**
-     * Get current options from bootstrap
-     *
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->_options;
-    }
-
-    /**
-     * Is an option present?
-     *
-     * @param  string $key
-     * @return bool
-     */
-    public function hasOption($key)
-    {
-        return in_array(strtolower($key), $this->_optionKeys);
-    }
-
-    /**
-     * Retrieve a single option
-     *
-     * @param  string $key
-     * @return mixed
-     */
-    public function getOption($key)
-    {
-        if ($this->hasOption($key)) {
-            $options = $this->getOptions();
-            $options = array_change_key_case($options, CASE_LOWER);
-            return $options[strtolower($key)];
-        }
-        return null;
-    }
-
-    /**
      * Merge options recursively
      *
      * @param  array $array1
@@ -195,8 +195,8 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
             foreach ($array2 as $key => $val) {
                 if (is_array($array2[$key])) {
                     $array1[$key] = (array_key_exists($key, $array1) && is_array($array1[$key]))
-                                  ? $this->mergeOptions($array1[$key], $array2[$key])
-                                  : $array2[$key];
+                        ? $this->mergeOptions($array1[$key], $array2[$key])
+                        : $array2[$key];
                 } else {
                     $array1[$key] = $val;
                 }
@@ -206,55 +206,10 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     }
 
     /**
-     * Get class resources (as resource/method pairs)
-     *
-     * Uses get_class_methods() by default, reflection on prior to 5.2.6,
-     * as a bug prevents the usage of get_class_methods() there.
-     *
-     * @return array
-     */
-    public function getClassResources()
-    {
-        if (null === $this->_classResources) {
-            if (version_compare(PHP_VERSION, '5.2.6') === -1) {
-                $class        = new ReflectionObject($this);
-                $classMethods = $class->getMethods();
-                $methodNames  = array();
-
-                foreach ($classMethods as $method) {
-                    $methodNames[] = $method->getName();
-                }
-            } else {
-                $methodNames = get_class_methods($this);
-            }
-
-            $this->_classResources = array();
-            foreach ($methodNames as $method) {
-                if (5 < strlen($method) && '_init' === substr($method, 0, 5)) {
-                    $this->_classResources[strtolower(substr($method, 5))] = $method;
-                }
-            }
-        }
-
-        return $this->_classResources;
-    }
-
-    /**
-     * Get class resource names
-     *
-     * @return array
-     */
-    public function getClassResourceNames()
-    {
-        $resources = $this->getClassResources();
-        return array_keys($resources);
-    }
-
-    /**
      * Register a new resource plugin
      *
      * @param  string|Zend_Application_Resource_Resource $resource
-     * @param  mixed  $options
+     * @param  mixed $options
      * @return Zend_Application_Bootstrap_BootstrapAbstract
      * @throws Zend_Application_Bootstrap_Exception When invalid resource is provided
      */
@@ -304,126 +259,26 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     }
 
     /**
-     * Is the requested plugin resource registered?
+     * Retrieve application environment
      *
-     * @param  string $resource
-     * @return bool
+     * @return string
      */
-    public function hasPluginResource($resource)
+    public function getEnvironment()
     {
-        return (null !== $this->getPluginResource($resource));
-    }
-
-    /**
-     * Get a registered plugin resource
-     *
-     * @param  string $resourceName
-     * @return Zend_Application_Resource_Resource
-     */
-    public function getPluginResource($resource)
-    {
-        if (array_key_exists(strtolower($resource), $this->_pluginResources)) {
-            $resource = strtolower($resource);
-            if (!$this->_pluginResources[$resource] instanceof Zend_Application_Resource_Resource) {
-                $resourceName = $this->_loadPluginResource($resource, $this->_pluginResources[$resource]);
-                if (!$resourceName) {
-                    throw new Zend_Application_Bootstrap_Exception(sprintf('Unable to resolve plugin "%s"; no corresponding plugin with that name', $resource));
-                }
-                $resource = $resourceName;
-            }
-            return $this->_pluginResources[$resource];
+        if (null === $this->_environment) {
+            $this->_environment = $this->getApplication()->getEnvironment();
         }
-
-        foreach ($this->_pluginResources as $plugin => $spec) {
-            if ($spec instanceof Zend_Application_Resource_Resource) {
-                $pluginName = $this->_resolvePluginResourceName($spec);
-                if (0 === strcasecmp($resource, $pluginName)) {
-                    unset($this->_pluginResources[$plugin]);
-                    $this->_pluginResources[$pluginName] = $spec;
-                    return $spec;
-                }
-                continue;
-            }
-
-            if (false !== $pluginName = $this->_loadPluginResource($plugin, $spec)) {
-                if (0 === strcasecmp($resource, $pluginName)) {
-                    return $this->_pluginResources[$pluginName];
-                }
-                continue;
-            }
-
-            if (class_exists($plugin)
-            && is_subclass_of($plugin, 'Zend_Application_Resource_Resource')
-            ) { //@SEE ZF-7550
-                $spec = (array) $spec;
-                $spec['bootstrap'] = $this;
-                $instance = new $plugin($spec);
-                $pluginName = $this->_resolvePluginResourceName($instance);
-                unset($this->_pluginResources[$plugin]);
-                $this->_pluginResources[$pluginName] = $instance;
-
-                if (0 === strcasecmp($resource, $pluginName)) {
-                    return $instance;
-                }
-            }
-        }
-
-        return null;
+        return $this->_environment;
     }
 
     /**
-     * Retrieve all plugin resources
+     * Retrieve parent application instance
      *
-     * @return array
+     * @return Zend_Application|Zend_Application_Bootstrap_Bootstrapper
      */
-    public function getPluginResources()
+    public function getApplication()
     {
-        foreach (array_keys($this->_pluginResources) as $resource) {
-            $this->getPluginResource($resource);
-        }
-        return $this->_pluginResources;
-    }
-
-    /**
-     * Retrieve plugin resource names
-     *
-     * @return array
-     */
-    public function getPluginResourceNames()
-    {
-        $this->getPluginResources();
-        return array_keys($this->_pluginResources);
-    }
-
-    /**
-     * Set plugin loader for loading resources
-     *
-     * @param  Zend_Loader_PluginLoader_Interface $loader
-     * @return Zend_Application_Bootstrap_BootstrapAbstract
-     */
-    public function setPluginLoader(Zend_Loader_PluginLoader_Interface $loader)
-    {
-        $this->_pluginLoader = $loader;
-        return $this;
-    }
-
-    /**
-     * Get the plugin loader for resources
-     *
-     * @return Zend_Loader_PluginLoader_Interface
-     */
-    public function getPluginLoader()
-    {
-        if ($this->_pluginLoader === null) {
-            $options = array(
-                'Zend_Application_Resource'  => 'Zend/Application/Resource',
-                'ZendX_Application_Resource' => 'ZendX/Application/Resource'
-            );
-
-            $this->_pluginLoader = new Zend_Loader_PluginLoader($options);
-        }
-
-        return $this->_pluginLoader;
+        return $this->_application;
     }
 
     /**
@@ -448,26 +303,50 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     }
 
     /**
-     * Retrieve parent application instance
+     * Implement PHP's magic to retrieve a ressource
+     * in the bootstrap
      *
-     * @return Zend_Application|Zend_Application_Bootstrap_Bootstrapper
+     * @param string $prop
+     * @return null|mixed
      */
-    public function getApplication()
+    public function __get($prop)
     {
-        return $this->_application;
+        return $this->getResource($prop);
     }
 
     /**
-     * Retrieve application environment
+     * Retrieve a resource from the container
      *
-     * @return string
+     * During bootstrap resource initialization, you may return a value. If
+     * you do, it will be stored in the {@link setContainer() container}.
+     * You can use this method to retrieve that value.
+     *
+     * If no value was returned, this will return a null value.
+     *
+     * @param  string $name
+     * @return null|mixed
      */
-    public function getEnvironment()
+    public function getResource($name)
     {
-        if (null === $this->_environment) {
-            $this->_environment = $this->getApplication()->getEnvironment();
+        $resource = strtolower($name);
+        $container = $this->getContainer();
+        if ($this->hasResource($resource)) {
+            return $container->{$resource};
         }
-        return $this->_environment;
+        return null;
+    }
+
+    /**
+     * Retrieve resource container
+     *
+     * @return object
+     */
+    public function getContainer()
+    {
+        if (null === $this->_container) {
+            $this->setContainer(new Zend_Registry());
+        }
+        return $this->_container;
     }
 
     /**
@@ -492,19 +371,6 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     }
 
     /**
-     * Retrieve resource container
-     *
-     * @return object
-     */
-    public function getContainer()
-    {
-        if (null === $this->_container) {
-            $this->setContainer(new Zend_Registry());
-        }
-        return $this->_container;
-    }
-
-    /**
      * Determine if a resource has been stored in the container
      *
      * During bootstrap resource initialization, you may return a value. If
@@ -516,43 +382,9 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
      */
     public function hasResource($name)
     {
-        $resource  = strtolower($name);
+        $resource = strtolower($name);
         $container = $this->getContainer();
         return isset($container->{$resource});
-    }
-
-    /**
-     * Retrieve a resource from the container
-     *
-     * During bootstrap resource initialization, you may return a value. If
-     * you do, it will be stored in the {@link setContainer() container}.
-     * You can use this method to retrieve that value.
-     *
-     * If no value was returned, this will return a null value.
-     *
-     * @param  string $name
-     * @return null|mixed
-     */
-    public function getResource($name)
-    {
-        $resource  = strtolower($name);
-        $container = $this->getContainer();
-        if ($this->hasResource($resource)) {
-            return $container->{$resource};
-        }
-        return null;
-    }
-
-    /**
-     * Implement PHP's magic to retrieve a ressource
-     * in the bootstrap
-     *
-     * @param string $prop
-     * @return null|mixed
-     */
-    public function __get($prop)
-    {
-        return $this->getResource($prop);
     }
 
     /**
@@ -565,6 +397,24 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     public function __isset($prop)
     {
         return $this->hasResource($prop);
+    }
+
+    /**
+     * Overloading: intercept calls to bootstrap<resourcename>() methods
+     *
+     * @param  string $method
+     * @param  array $args
+     * @return void
+     * @throws Zend_Application_Bootstrap_Exception On invalid method name
+     */
+    public function __call($method, $args)
+    {
+        if (9 < strlen($method) && 'bootstrap' === substr($method, 0, 9)) {
+            $resource = substr($method, 9);
+            return $this->bootstrap($resource);
+        }
+
+        throw new Zend_Application_Bootstrap_Exception('Invalid method "' . $method . '"');
     }
 
     /**
@@ -585,24 +435,6 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     {
         $this->_bootstrap($resource);
         return $this;
-    }
-
-    /**
-     * Overloading: intercept calls to bootstrap<resourcename>() methods
-     *
-     * @param  string $method
-     * @param  array  $args
-     * @return void
-     * @throws Zend_Application_Bootstrap_Exception On invalid method name
-     */
-    public function __call($method, $args)
-    {
-        if (9 < strlen($method) && 'bootstrap' === substr($method, 0, 9)) {
-            $resource = substr($method, 9);
-            return $this->bootstrap($resource);
-        }
-
-        throw new Zend_Application_Bootstrap_Exception('Invalid method "' . $method . '"');
     }
 
     /**
@@ -634,6 +466,51 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
         } else {
             throw new Zend_Application_Bootstrap_Exception('Invalid argument passed to ' . __METHOD__);
         }
+    }
+
+    /**
+     * Get class resource names
+     *
+     * @return array
+     */
+    public function getClassResourceNames()
+    {
+        $resources = $this->getClassResources();
+        return array_keys($resources);
+    }
+
+    /**
+     * Get class resources (as resource/method pairs)
+     *
+     * Uses get_class_methods() by default, reflection on prior to 5.2.6,
+     * as a bug prevents the usage of get_class_methods() there.
+     *
+     * @return array
+     */
+    public function getClassResources()
+    {
+        if (null === $this->_classResources) {
+            if (version_compare(PHP_VERSION, '5.2.6') === -1) {
+                $class = new ReflectionObject($this);
+                $classMethods = $class->getMethods();
+                $methodNames = array();
+
+                foreach ($classMethods as $method) {
+                    $methodNames[] = $method->getName();
+                }
+            } else {
+                $methodNames = get_class_methods($this);
+            }
+
+            $this->_classResources = array();
+            foreach ($methodNames as $method) {
+                if (5 < strlen($method) && '_init' === substr($method, 0, 5)) {
+                    $this->_classResources[strtolower(substr($method, 5))] = $method;
+                }
+            }
+        }
+
+        return $this->_classResources;
     }
 
     /**
@@ -695,6 +572,87 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     }
 
     /**
+     * Mark a resource as having run
+     *
+     * @param  string $resource
+     * @return void
+     */
+    protected function _markRun($resource)
+    {
+        if (!in_array($resource, $this->_run)) {
+            $this->_run[] = $resource;
+        }
+    }
+
+    /**
+     * Is the requested plugin resource registered?
+     *
+     * @param  string $resource
+     * @return bool
+     */
+    public function hasPluginResource($resource)
+    {
+        return (null !== $this->getPluginResource($resource));
+    }
+
+    /**
+     * Get a registered plugin resource
+     *
+     * @param  string $resourceName
+     * @return Zend_Application_Resource_Resource
+     */
+    public function getPluginResource($resource)
+    {
+        if (array_key_exists(strtolower($resource), $this->_pluginResources)) {
+            $resource = strtolower($resource);
+            if (!$this->_pluginResources[$resource] instanceof Zend_Application_Resource_Resource) {
+                $resourceName = $this->_loadPluginResource($resource, $this->_pluginResources[$resource]);
+                if (!$resourceName) {
+                    throw new Zend_Application_Bootstrap_Exception(sprintf('Unable to resolve plugin "%s"; no corresponding plugin with that name', $resource));
+                }
+                $resource = $resourceName;
+            }
+            return $this->_pluginResources[$resource];
+        }
+
+        foreach ($this->_pluginResources as $plugin => $spec) {
+            if ($spec instanceof Zend_Application_Resource_Resource) {
+                $pluginName = $this->_resolvePluginResourceName($spec);
+                if (0 === strcasecmp($resource, $pluginName)) {
+                    unset($this->_pluginResources[$plugin]);
+                    $this->_pluginResources[$pluginName] = $spec;
+                    return $spec;
+                }
+                continue;
+            }
+
+            if (false !== $pluginName = $this->_loadPluginResource($plugin, $spec)) {
+                if (0 === strcasecmp($resource, $pluginName)) {
+                    return $this->_pluginResources[$pluginName];
+                }
+                continue;
+            }
+
+            if (class_exists($plugin)
+                && is_subclass_of($plugin, 'Zend_Application_Resource_Resource')
+            ) { //@SEE ZF-7550
+                $spec = (array)$spec;
+                $spec['bootstrap'] = $this;
+                $instance = new $plugin($spec);
+                $pluginName = $this->_resolvePluginResourceName($instance);
+                unset($this->_pluginResources[$plugin]);
+                $this->_pluginResources[$pluginName] = $instance;
+
+                if (0 === strcasecmp($resource, $pluginName)) {
+                    return $instance;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Load a plugin resource
      *
      * @param  string $resource
@@ -703,7 +661,7 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
      */
     protected function _loadPluginResource($resource, $options)
     {
-        $options   = (array) $options;
+        $options = (array)$options;
         $options['bootstrap'] = $this;
         $className = $this->getPluginLoader()->load(strtolower($resource), false);
 
@@ -725,16 +683,34 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     }
 
     /**
-     * Mark a resource as having run
+     * Get the plugin loader for resources
      *
-     * @param  string $resource
-     * @return void
+     * @return Zend_Loader_PluginLoader_Interface
      */
-    protected function _markRun($resource)
+    public function getPluginLoader()
     {
-        if (!in_array($resource, $this->_run)) {
-            $this->_run[] = $resource;
+        if ($this->_pluginLoader === null) {
+            $options = array(
+                'Zend_Application_Resource' => 'Zend/Application/Resource',
+                'ZendX_Application_Resource' => 'ZendX/Application/Resource'
+            );
+
+            $this->_pluginLoader = new Zend_Loader_PluginLoader($options);
         }
+
+        return $this->_pluginLoader;
+    }
+
+    /**
+     * Set plugin loader for loading resources
+     *
+     * @param  Zend_Loader_PluginLoader_Interface $loader
+     * @return Zend_Application_Bootstrap_BootstrapAbstract
+     */
+    public function setPluginLoader(Zend_Loader_PluginLoader_Interface $loader)
+    {
+        $this->_pluginLoader = $loader;
+        return $this;
     }
 
     /**
@@ -754,10 +730,10 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
     {
         if (isset($resource->_explicitType)) {
             $pluginName = $resource->_explicitType;
-        } else  {
-            $className  = get_class($resource);
+        } else {
+            $className = get_class($resource);
             $pluginName = $className;
-            $loader     = $this->getPluginLoader();
+            $loader = $this->getPluginLoader();
             foreach ($loader->getPaths() as $prefix => $paths) {
                 if (0 === strpos($className, $prefix)) {
                     $pluginName = substr($className, strlen($prefix));
@@ -768,5 +744,29 @@ abstract class Zend_Application_Bootstrap_BootstrapAbstract
         }
         $pluginName = strtolower($pluginName);
         return $pluginName;
+    }
+
+    /**
+     * Retrieve plugin resource names
+     *
+     * @return array
+     */
+    public function getPluginResourceNames()
+    {
+        $this->getPluginResources();
+        return array_keys($this->_pluginResources);
+    }
+
+    /**
+     * Retrieve all plugin resources
+     *
+     * @return array
+     */
+    public function getPluginResources()
+    {
+        foreach (array_keys($this->_pluginResources) as $resource) {
+            $this->getPluginResource($resource);
+        }
+        return $this->_pluginResources;
     }
 }

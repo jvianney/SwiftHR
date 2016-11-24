@@ -29,72 +29,6 @@
 class Zend_Tool_Project_Provider_Model extends Zend_Tool_Project_Provider_Abstract
 {
 
-    public static function createResource(Zend_Tool_Project_Profile $profile, $modelName, $moduleName = null)
-    {
-        if (!is_string($modelName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Model::createResource() expects \"modelName\" is the name of a model resource to create.');
-        }
-
-        if (!($modelsDirectory = self::_getModelsDirectoryResource($profile, $moduleName))) {
-            if ($moduleName) {
-                $exceptionMessage = 'A model directory for module "' . $moduleName . '" was not found.';
-            } else {
-                $exceptionMessage = 'A model directory was not found.';
-            }
-            throw new Zend_Tool_Project_Provider_Exception($exceptionMessage);
-        }
-
-        $newModel = $modelsDirectory->createResource(
-            'modelFile',
-            array('modelName' => $modelName, 'moduleName' => $moduleName)
-            );
-
-        return $newModel;
-    }
-
-    /**
-     * hasResource()
-     *
-     * @param Zend_Tool_Project_Profile $profile
-     * @param string $modelName
-     * @param string $moduleName
-     * @return Zend_Tool_Project_Profile_Resource
-     */
-    public static function hasResource(Zend_Tool_Project_Profile $profile, $modelName, $moduleName = null)
-    {
-        if (!is_string($modelName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Model::createResource() expects \"modelName\" is the name of a model resource to check for existence.');
-        }
-
-        $modelsDirectory = self::_getModelsDirectoryResource($profile, $moduleName);
-        
-        if (!$modelsDirectory instanceof Zend_Tool_Project_Profile_Resource) {
-            return false;
-        }
-        
-        return (($modelsDirectory->search(array('modelFile' => array('modelName' => $modelName)))) instanceof Zend_Tool_Project_Profile_Resource);
-    }
-
-    /**
-     * _getModelsDirectoryResource()
-     *
-     * @param Zend_Tool_Project_Profile $profile
-     * @param string $moduleName
-     * @return Zend_Tool_Project_Profile_Resource
-     */
-    protected static function _getModelsDirectoryResource(Zend_Tool_Project_Profile $profile, $moduleName = null)
-    {
-        $profileSearchParams = array();
-
-        if ($moduleName != null && is_string($moduleName)) {
-            $profileSearchParams = array('modulesDirectory', 'moduleDirectory' => array('moduleName' => $moduleName));
-        }
-
-        $profileSearchParams[] = 'modelsDirectory';
-
-        return $profile->search($profileSearchParams);
-    }
-
     /**
      * Create a new model
      *
@@ -132,10 +66,10 @@ class Zend_Tool_Project_Provider_Model extends Zend_Tool_Project_Provider_Abstra
         if ($name !== $originalName) {
             $response->appendContent(
                 'Note: The canonical model name that ' . $tense
-                    . ' used with other providers is "' . $name . '";'
-                    . ' not "' . $originalName . '" as supplied',
+                . ' used with other providers is "' . $name . '";'
+                . ' not "' . $originalName . '" as supplied',
                 array('color' => array('yellow'))
-                );
+            );
         }
 
         try {
@@ -153,7 +87,7 @@ class Zend_Tool_Project_Provider_Model extends Zend_Tool_Project_Provider_Abstra
         // do the creation
         if ($request->isPretend()) {
 
-            $response->appendContent('Would create a model at '  . $modelResource->getContext()->getPath());
+            $response->appendContent('Would create a model at ' . $modelResource->getContext()->getPath());
 
             if ($testModelResource) {
                 $response->appendContent('Would create a model test file at ' . $testModelResource->getContext()->getPath());
@@ -172,6 +106,72 @@ class Zend_Tool_Project_Provider_Model extends Zend_Tool_Project_Provider_Abstra
             $this->_storeProfile();
         }
 
+    }
+
+    /**
+     * hasResource()
+     *
+     * @param Zend_Tool_Project_Profile $profile
+     * @param string $modelName
+     * @param string $moduleName
+     * @return Zend_Tool_Project_Profile_Resource
+     */
+    public static function hasResource(Zend_Tool_Project_Profile $profile, $modelName, $moduleName = null)
+    {
+        if (!is_string($modelName)) {
+            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Model::createResource() expects \"modelName\" is the name of a model resource to check for existence.');
+        }
+
+        $modelsDirectory = self::_getModelsDirectoryResource($profile, $moduleName);
+
+        if (!$modelsDirectory instanceof Zend_Tool_Project_Profile_Resource) {
+            return false;
+        }
+
+        return (($modelsDirectory->search(array('modelFile' => array('modelName' => $modelName)))) instanceof Zend_Tool_Project_Profile_Resource);
+    }
+
+    /**
+     * _getModelsDirectoryResource()
+     *
+     * @param Zend_Tool_Project_Profile $profile
+     * @param string $moduleName
+     * @return Zend_Tool_Project_Profile_Resource
+     */
+    protected static function _getModelsDirectoryResource(Zend_Tool_Project_Profile $profile, $moduleName = null)
+    {
+        $profileSearchParams = array();
+
+        if ($moduleName != null && is_string($moduleName)) {
+            $profileSearchParams = array('modulesDirectory', 'moduleDirectory' => array('moduleName' => $moduleName));
+        }
+
+        $profileSearchParams[] = 'modelsDirectory';
+
+        return $profile->search($profileSearchParams);
+    }
+
+    public static function createResource(Zend_Tool_Project_Profile $profile, $modelName, $moduleName = null)
+    {
+        if (!is_string($modelName)) {
+            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Model::createResource() expects \"modelName\" is the name of a model resource to create.');
+        }
+
+        if (!($modelsDirectory = self::_getModelsDirectoryResource($profile, $moduleName))) {
+            if ($moduleName) {
+                $exceptionMessage = 'A model directory for module "' . $moduleName . '" was not found.';
+            } else {
+                $exceptionMessage = 'A model directory was not found.';
+            }
+            throw new Zend_Tool_Project_Provider_Exception($exceptionMessage);
+        }
+
+        $newModel = $modelsDirectory->createResource(
+            'modelFile',
+            array('modelName' => $modelName, 'moduleName' => $moduleName)
+        );
+
+        return $newModel;
     }
 
 

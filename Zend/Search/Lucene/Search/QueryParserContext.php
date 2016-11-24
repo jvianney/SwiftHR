@@ -34,6 +34,11 @@ require_once 'Zend/Search/Lucene/Search/QueryToken.php';
 class Zend_Search_Lucene_Search_QueryParserContext
 {
     /**
+     * Entries grouping mode
+     */
+    const GM_SIGNS = 0;
+    const GM_BOOLEAN = 1;
+    /**
      * Default field for the context.
      *
      * null means, that term should be searched through all fields
@@ -42,14 +47,12 @@ class Zend_Search_Lucene_Search_QueryParserContext
      * @var string|null
      */
     private $_defaultField;
-
     /**
      * Field specified for next entry
      *
      * @var string
      */
-    private $_nextEntryField = null;
-
+    private $_nextEntryField = null;  // Signs mode: '+term1 term2 -term3 +(subquery1) -(subquery2)'
     /**
      * True means, that term is required.
      * False means, that term is prohibited.
@@ -57,15 +60,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
      *
      * @var boolean
      */
-    private $_nextEntrySign = null;
-
-
-    /**
-     * Entries grouping mode
-     */
-    const GM_SIGNS   = 0;  // Signs mode: '+term1 term2 -term3 +(subquery1) -(subquery2)'
-    const GM_BOOLEAN = 1;  // Boolean operators mode: 'term1 and term2  or  (subquery1) and not (subquery2)'
-
+    private $_nextEntrySign = null;  // Boolean operators mode: 'term1 and term2  or  (subquery1) and not (subquery2)'
     /**
      * Grouping mode
      *
@@ -106,7 +101,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
      */
     public function __construct($encoding, $defaultField = null)
     {
-        $this->_encoding     = $encoding;
+        $this->_encoding = $encoding;
         $this->_defaultField = $defaultField;
     }
 
@@ -118,7 +113,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
      */
     public function getField()
     {
-        return ($this->_nextEntryField !== null)  ?  $this->_nextEntryField : $this->_defaultField;
+        return ($this->_nextEntryField !== null) ? $this->_nextEntryField : $this->_defaultField;
     }
 
     /**
@@ -172,7 +167,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
         $this->_entries[] = $entry;
 
         $this->_nextEntryField = null;
-        $this->_nextEntrySign  = null;
+        $this->_nextEntrySign = null;
     }
 
 
@@ -184,7 +179,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
     public function processFuzzyProximityModifier($parameter = null)
     {
         // Check, that modifier has came just after word or phrase
-        if ($this->_nextEntryField !== null  ||  $this->_nextEntrySign !== null) {
+        if ($this->_nextEntryField !== null || $this->_nextEntrySign !== null) {
             require_once 'Zend/Search/Lucene/Search/QueryParserException.php';
             throw new Zend_Search_Lucene_Search_QueryParserException('\'~\' modifier must follow word or phrase.');
         }
@@ -210,7 +205,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
     public function boost($boostFactor)
     {
         // Check, that modifier has came just after word or phrase
-        if ($this->_nextEntryField !== null  ||  $this->_nextEntrySign !== null) {
+        if ($this->_nextEntryField !== null || $this->_nextEntrySign !== null) {
             require_once 'Zend/Search/Lucene/Search/QueryParserException.php';
             throw new Zend_Search_Lucene_Search_QueryParserException('\'^\' modifier must follow word, phrase or subquery.');
         }
@@ -245,34 +240,19 @@ class Zend_Search_Lucene_Search_QueryParserContext
         $this->_entries[] = $operator;
     }
 
-
     /**
-     * Generate 'signs style' query from the context
-     * '+term1 term2 -term3 +(<subquery1>) ...'
+     * Generate query from current context
      *
      * @return Zend_Search_Lucene_Search_Query
      */
-    public function _signStyleExpressionQuery()
+    public function getQuery()
     {
-        require_once 'Zend/Search/Lucene/Search/Query/Boolean.php';
-        $query = new Zend_Search_Lucene_Search_Query_Boolean();
-
-        require_once 'Zend/Search/Lucene/Search/QueryParser.php';
-        if (Zend_Search_Lucene_Search_QueryParser::getDefaultOperator() == Zend_Search_Lucene_Search_QueryParser::B_AND) {
-            $defaultSign = true; // required
+        if ($this->_mode === self::GM_BOOLEAN) {
+            return $this->_booleanExpressionQuery();
         } else {
-            // Zend_Search_Lucene_Search_QueryParser::B_OR
-            $defaultSign = null; // optional
+            return $this->_signStyleExpressionQuery();
         }
-
-        foreach ($this->_entries as $entryId => $entry) {
-            $sign = ($this->_signs[$entryId] !== null) ?  $this->_signs[$entryId] : $defaultSign;
-            $query->addSubquery($entry->getQuery($this->_encoding), $sign);
-        }
-
-        return $query;
     }
-
 
     /**
      * Generate 'boolean style' query from the context
@@ -348,7 +328,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
 
 
         $subqueries = array();
-        foreach ($conjuctions as  $conjuction) {
+        foreach ($conjuctions as $conjuction) {
             // Check, if it's a one term conjuction
             if (count($conjuction) == 1) {
                 $subqueries[] = $conjuction[0][0]->getQuery($this->_encoding);
@@ -386,16 +366,29 @@ class Zend_Search_Lucene_Search_QueryParserContext
     }
 
     /**
-     * Generate query from current context
+     * Generate 'signs style' query from the context
+     * '+term1 term2 -term3 +(<subquery1>) ...'
      *
      * @return Zend_Search_Lucene_Search_Query
      */
-    public function getQuery()
+    public function _signStyleExpressionQuery()
     {
-        if ($this->_mode === self::GM_BOOLEAN) {
-            return $this->_booleanExpressionQuery();
+        require_once 'Zend/Search/Lucene/Search/Query/Boolean.php';
+        $query = new Zend_Search_Lucene_Search_Query_Boolean();
+
+        require_once 'Zend/Search/Lucene/Search/QueryParser.php';
+        if (Zend_Search_Lucene_Search_QueryParser::getDefaultOperator() == Zend_Search_Lucene_Search_QueryParser::B_AND) {
+            $defaultSign = true; // required
         } else {
-            return $this->_signStyleExpressionQuery();
+            // Zend_Search_Lucene_Search_QueryParser::B_OR
+            $defaultSign = null; // optional
         }
+
+        foreach ($this->_entries as $entryId => $entry) {
+            $sign = ($this->_signs[$entryId] !== null) ? $this->_signs[$entryId] : $defaultSign;
+            $query->addSubquery($entry->getQuery($this->_encoding), $sign);
+        }
+
+        return $query;
     }
 }

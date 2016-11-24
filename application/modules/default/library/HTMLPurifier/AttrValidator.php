@@ -18,7 +18,8 @@ class HTMLPurifier_AttrValidator
      * @param $config Instance of HTMLPurifier_Config
      * @param $context Instance of HTMLPurifier_Context
      */
-    public function validateToken(&$token, &$config, $context) {
+    public function validateToken(&$token, &$config, $context)
+    {
 
         $definition = $config->getHTMLDefinition();
         $e =& $context->get('ErrorCollector', true);
@@ -77,7 +78,7 @@ class HTMLPurifier_AttrValidator
         foreach ($attr as $attr_key => $value) {
 
             // call the definition
-            if ( isset($defs[$attr_key]) ) {
+            if (isset($defs[$attr_key])) {
                 // there is a local definition defined
                 if ($defs[$attr_key] === false) {
                     // We've explicitly been told not to allow this element.
@@ -89,15 +90,15 @@ class HTMLPurifier_AttrValidator
                 } else {
                     // validate according to the element's definition
                     $result = $defs[$attr_key]->validate(
-                                    $value, $config, $context
-                               );
+                        $value, $config, $context
+                    );
                 }
-            } elseif ( isset($d_defs[$attr_key]) ) {
+            } elseif (isset($d_defs[$attr_key])) {
                 // there is a global definition defined, validate according
                 // to the global definition
                 $result = $d_defs[$attr_key]->validate(
-                                $value, $config, $context
-                           );
+                    $value, $config, $context
+                );
             } else {
                 // system never heard of the attribute? DELETE!
                 $result = false;

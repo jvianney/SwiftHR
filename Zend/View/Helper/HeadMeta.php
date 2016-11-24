@@ -39,7 +39,7 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
      * Types of attributes
      * @var array
      */
-    protected $_typeKeys     = array('name', 'http-equiv', 'charset', 'property');
+    protected $_typeKeys = array('name', 'http-equiv', 'charset', 'property');
     protected $_requiredKeys = array('content');
     protected $_modifierKeys = array('lang', 'scheme');
 
@@ -74,7 +74,7 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
     public function headMeta($content = null, $keyValue = null, $keyType = 'name', $modifiers = array(), $placement = Zend_View_Helper_Placeholder_Container_Abstract::APPEND)
     {
         if ((null !== $content) && (null !== $keyValue)) {
-            $item   = $this->createData($keyType, $keyValue, $content, $modifiers);
+            $item = $this->createData($keyType, $keyValue, $content, $modifiers);
             $action = strtolower($placement);
             switch ($action) {
                 case 'append':
@@ -91,21 +91,74 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
         return $this;
     }
 
-    protected function _normalizeType($type)
+    /**
+     * Create data item for inserting into stack
+     *
+     * @param  string $type
+     * @param  string $typeValue
+     * @param  string $content
+     * @param  array $modifiers
+     * @return stdClass
+     */
+    public function createData($type, $typeValue, $content, array $modifiers)
     {
-        switch ($type) {
-            case 'Name':
-                return 'name';
-            case 'HttpEquiv':
-                return 'http-equiv';
-            case 'Property':
-                return 'property';
-            default:
-                require_once 'Zend/View/Exception.php';
-                $e = new Zend_View_Exception(sprintf('Invalid type "%s" passed to _normalizeType', $type));
-                $e->setView($this->view);
-                throw $e;
+        $data = new stdClass;
+        $data->type = $type;
+        $data->$type = $typeValue;
+        $data->content = $content;
+        $data->modifiers = $modifiers;
+        return $data;
+    }
+
+    /**
+     * Append
+     *
+     * @param  string $value
+     * @return void
+     * @throws Zend_View_Exception
+     */
+    public function append($value)
+    {
+        if (!$this->_isValid($value)) {
+            require_once 'Zend/View/Exception.php';
+            $e = new Zend_View_Exception('Invalid value passed to append; please use appendMeta()');
+            $e->setView($this->view);
+            throw $e;
         }
+
+        return $this->getContainer()->append($value);
+    }
+
+    /**
+     * Determine if item is valid
+     *
+     * @param  mixed $item
+     * @return boolean
+     */
+    protected function _isValid($item)
+    {
+        if ((!$item instanceof stdClass)
+            || !isset($item->type)
+            || !isset($item->modifiers)
+        ) {
+            return false;
+        }
+
+        if (!isset($item->content)
+            && (!$this->view->doctype()->isHtml5()
+                || (!$this->view->doctype()->isHtml5() && $item->type !== 'charset'))
+        ) {
+            return false;
+        }
+
+        // <meta property= ... /> is only supported with doctype RDFa
+        if (!$this->view->doctype()->isRdfa()
+            && $item->type === 'property'
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -133,9 +186,9 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
     {
         if (preg_match('/^(?P<action>set|(pre|ap)pend|offsetSet)(?P<type>Name|HttpEquiv|Property)$/', $method, $matches)) {
             $action = $matches['action'];
-            $type   = $this->_normalizeType($matches['type']);
-            $argc   = count($args);
-            $index  = null;
+            $type = $this->_normalizeType($matches['type']);
+            $argc = count($args);
+            $index = null;
 
             if ('offsetSet' == $action) {
                 if (0 < $argc) {
@@ -155,7 +208,7 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
                 $args[] = array();
             }
 
-            $item  = $this->createData($type, $args[0], $args[1], $args[2]);
+            $item = $this->createData($type, $args[0], $args[1], $args[2]);
 
             if ('offsetSet' == $action) {
                 return $this->offsetSet($index, $item);
@@ -168,72 +221,21 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
         return parent::__call($method, $args);
     }
 
-	/**
-	 * Create an HTML5-style meta charset tag. Something like <meta charset="utf-8">
-	 *
-	 * Not valid in a non-HTML5 doctype
-	 *
-	 * @param string $charset
-	 * @return Zend_View_Helper_HeadMeta Provides a fluent interface
-	 */
-    public function setCharset($charset)
+    protected function _normalizeType($type)
     {
-        $item = new stdClass;
-        $item->type = 'charset';
-        $item->charset = $charset;
-        $item->content = null;
-        $item->modifiers = array();
-        $this->set($item);
-        return $this;
-    }
-
-    /**
-     * Determine if item is valid
-     *
-     * @param  mixed $item
-     * @return boolean
-     */
-    protected function _isValid($item)
-    {
-        if ((!$item instanceof stdClass)
-            || !isset($item->type)
-            || !isset($item->modifiers))
-        {
-            return false;
+        switch ($type) {
+            case 'Name':
+                return 'name';
+            case 'HttpEquiv':
+                return 'http-equiv';
+            case 'Property':
+                return 'property';
+            default:
+                require_once 'Zend/View/Exception.php';
+                $e = new Zend_View_Exception(sprintf('Invalid type "%s" passed to _normalizeType', $type));
+                $e->setView($this->view);
+                throw $e;
         }
-
-        if (!isset($item->content)
-        && (! $this->view->doctype()->isHtml5()
-        || (! $this->view->doctype()->isHtml5() && $item->type !== 'charset'))) {
-            return false;
-        }
-
-        // <meta property= ... /> is only supported with doctype RDFa
-        if (!$this->view->doctype()->isRdfa()
-            && $item->type === 'property') {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Append
-     *
-     * @param  string $value
-     * @return void
-     * @throws Zend_View_Exception
-     */
-    public function append($value)
-    {
-        if (!$this->_isValid($value)) {
-            require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('Invalid value passed to append; please use appendMeta()');
-            $e->setView($this->view);
-            throw $e;
-        }
-
-        return $this->getContainer()->append($value);
     }
 
     /**
@@ -248,12 +250,57 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
-            $e =  new Zend_View_Exception('Invalid value passed to offsetSet; please use offsetSetName() or offsetSetHttpEquiv()');
+            $e = new Zend_View_Exception('Invalid value passed to offsetSet; please use offsetSetName() or offsetSetHttpEquiv()');
             $e->setView($this->view);
             throw $e;
         }
 
         return $this->getContainer()->offsetSet($index, $value);
+    }
+
+    /**
+     * Create an HTML5-style meta charset tag. Something like <meta charset="utf-8">
+     *
+     * Not valid in a non-HTML5 doctype
+     *
+     * @param string $charset
+     * @return Zend_View_Helper_HeadMeta Provides a fluent interface
+     */
+    public function setCharset($charset)
+    {
+        $item = new stdClass;
+        $item->type = 'charset';
+        $item->charset = $charset;
+        $item->content = null;
+        $item->modifiers = array();
+        $this->set($item);
+        return $this;
+    }
+
+    /**
+     * Set
+     *
+     * @param  string $value
+     * @return void
+     * @throws Zend_View_Exception
+     */
+    public function set($value)
+    {
+        if (!$this->_isValid($value)) {
+            require_once 'Zend/View/Exception.php';
+            $e = new Zend_View_Exception('Invalid value passed to set; please use setMeta()');
+            $e->setView($this->view);
+            throw $e;
+        }
+
+        $container = $this->getContainer();
+        foreach ($container->getArrayCopy() as $index => $item) {
+            if ($item->type == $value->type && $item->{$item->type} == $value->{$value->type}) {
+                $this->offsetUnset($index);
+            }
+        }
+
+        return $this->append($value);
     }
 
     /**
@@ -295,29 +342,28 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
     }
 
     /**
-     * Set
+     * Render placeholder as string
      *
-     * @param  string $value
-     * @return void
-     * @throws Zend_View_Exception
+     * @param  string|int $indent
+     * @return string
      */
-    public function set($value)
+    public function toString($indent = null)
     {
-        if (!$this->_isValid($value)) {
-            require_once 'Zend/View/Exception.php';
-            $e = new Zend_View_Exception('Invalid value passed to set; please use setMeta()');
-            $e->setView($this->view);
-            throw $e;
-        }
+        $indent = (null !== $indent)
+            ? $this->getWhitespace($indent)
+            : $this->getIndent();
 
-        $container = $this->getContainer();
-        foreach ($container->getArrayCopy() as $index => $item) {
-            if ($item->type == $value->type && $item->{$item->type} == $value->{$value->type}) {
-                $this->offsetUnset($index);
+        $items = array();
+        $this->getContainer()->ksort();
+        try {
+            foreach ($this as $item) {
+                $items[] = $this->itemToString($item);
             }
+        } catch (Zend_View_Exception $e) {
+            trigger_error($e->getMessage(), E_USER_WARNING);
+            return '';
         }
-
-        return $this->append($value);
+        return $indent . implode($this->_escape($this->getSeparator()) . $indent, $items);
     }
 
     /**
@@ -342,10 +388,11 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
         $modifiersString = '';
         foreach ($item->modifiers as $key => $value) {
             if ($this->view->doctype()->isHtml5()
-            && $key == 'scheme') {
+                && $key == 'scheme'
+            ) {
                 require_once 'Zend/View/Exception.php';
                 throw new Zend_View_Exception('Invalid modifier '
-                . '"scheme" provided; not supported by HTML5');
+                    . '"scheme" provided; not supported by HTML5');
             }
             if (!in_array($key, $this->_modifierKeys)) {
                 continue;
@@ -355,7 +402,8 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
 
         if ($this->view instanceof Zend_View_Abstract) {
             if ($this->view->doctype()->isHtml5()
-            && $type == 'charset') {
+                && $type == 'charset'
+            ) {
                 $tpl = ($this->view->doctype()->isXhtml())
                     ? '<meta %s="%s"/>'
                     : '<meta %s="%s">';
@@ -376,49 +424,5 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
             $modifiersString
         );
         return $meta;
-    }
-
-    /**
-     * Render placeholder as string
-     *
-     * @param  string|int $indent
-     * @return string
-     */
-    public function toString($indent = null)
-    {
-        $indent = (null !== $indent)
-                ? $this->getWhitespace($indent)
-                : $this->getIndent();
-
-        $items = array();
-        $this->getContainer()->ksort();
-        try {
-            foreach ($this as $item) {
-                $items[] = $this->itemToString($item);
-            }
-        } catch (Zend_View_Exception $e) {
-            trigger_error($e->getMessage(), E_USER_WARNING);
-            return '';
-        }
-        return $indent . implode($this->_escape($this->getSeparator()) . $indent, $items);
-    }
-
-    /**
-     * Create data item for inserting into stack
-     *
-     * @param  string $type
-     * @param  string $typeValue
-     * @param  string $content
-     * @param  array $modifiers
-     * @return stdClass
-     */
-    public function createData($type, $typeValue, $content, array $modifiers)
-    {
-        $data            = new stdClass;
-        $data->type      = $type;
-        $data->$type     = $typeValue;
-        $data->content   = $content;
-        $data->modifiers = $modifiers;
-        return $data;
     }
 }

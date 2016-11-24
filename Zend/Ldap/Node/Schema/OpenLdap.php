@@ -77,24 +77,6 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
     protected $_matchingRuleUse = null;
 
     /**
-     * Parses the schema
-     *
-     * @param  Zend_Ldap_Dn $dn
-     * @param  Zend_Ldap    $ldap
-     * @return Zend_Ldap_Node_Schema Provides a fluid interface
-     */
-    protected function _parseSchema(Zend_Ldap_Dn $dn, Zend_Ldap $ldap)
-    {
-        parent::_parseSchema($dn, $ldap);
-        $this->_loadAttributeTypes();
-        $this->_loadLdapSyntaxes();
-        $this->_loadMatchingRules();
-        $this->_loadMatchingRuleUse();
-        $this->_loadObjectClasses();
-        return $this;
-    }
-
-    /**
      * Gets the attribute Types
      *
      * @return array
@@ -145,6 +127,24 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
     }
 
     /**
+     * Parses the schema
+     *
+     * @param  Zend_Ldap_Dn $dn
+     * @param  Zend_Ldap $ldap
+     * @return Zend_Ldap_Node_Schema Provides a fluid interface
+     */
+    protected function _parseSchema(Zend_Ldap_Dn $dn, Zend_Ldap $ldap)
+    {
+        parent::_parseSchema($dn, $ldap);
+        $this->_loadAttributeTypes();
+        $this->_loadLdapSyntaxes();
+        $this->_loadMatchingRules();
+        $this->_loadMatchingRuleUse();
+        $this->_loadObjectClasses();
+        return $this;
+    }
+
+    /**
      * Loads the attribute Types
      *
      * @return void
@@ -178,22 +178,22 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
     protected function _parseAttributeType($value)
     {
         $attributeType = array(
-            'oid'                  => null,
-            'name'                 => null,
-            'desc'                 => null,
-            'obsolete'             => false,
-            'sup'                  => null,
-            'equality'             => null,
-            'ordering'             => null,
-            'substr'               => null,
-            'syntax'               => null,
-            'max-length'           => null,
-            'single-value'         => false,
-            'collective'           => false,
+            'oid' => null,
+            'name' => null,
+            'desc' => null,
+            'obsolete' => false,
+            'sup' => null,
+            'equality' => null,
+            'ordering' => null,
+            'substr' => null,
+            'syntax' => null,
+            'max-length' => null,
+            'single-value' => false,
+            'collective' => false,
             'no-user-modification' => false,
-            'usage'                => 'userApplications',
-            '_string'              => $value,
-            '_parents'             => array());
+            'usage' => 'userApplications',
+            '_string' => $value,
+            '_parents' => array());
 
         $tokens = $this->_tokenizeString($value);
         $attributeType['oid'] = array_shift($tokens); // first token is the oid
@@ -213,215 +213,31 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
     }
 
     /**
-     * Loads the object classes
+     * Tokenizes the given value into an array
      *
-     * @return void
+     * @param  string $value
+     * @return array tokens
      */
-    protected function _loadObjectClasses()
+    protected function _tokenizeString($value)
     {
-        $this->_objectClasses = array();
-        foreach ($this->getAttribute('objectClasses') as $value) {
-            $val = $this->_parseObjectClass($value);
-            $val = new Zend_Ldap_Node_Schema_ObjectClass_OpenLdap($val);
-            $this->_objectClasses[$val->getName()] = $val;
-        }
-        foreach ($this->_objectClasses as $val) {
-            if (count($val->sup) > 0) {
-                $this->_resolveInheritance($val, $this->_objectClasses);
+        $tokens = array();
+        $matches = array();
+        // this one is taken from PEAR::Net_LDAP2
+        $pattern = "/\s* (?:([()]) | ([^'\s()]+) | '((?:[^']+|'[^\s)])*)') \s*/x";
+        preg_match_all($pattern, $value, $matches);
+        $cMatches = count($matches[0]);
+        $cPattern = count($matches);
+        for ($i = 0; $i < $cMatches; $i++) {     // number of tokens (full pattern match)
+            for ($j = 1; $j < $cPattern; $j++) { // each subpattern
+                $tok = trim($matches[$j][$i]);
+                if (!empty($tok)) {              // pattern match in this subpattern
+                    $tokens[$i] = $tok;          // this is the token
+                }
             }
-            foreach ($val->aliases as $alias) {
-                $this->_objectClasses[$alias] = $val;
-            }
         }
-        ksort($this->_objectClasses, SORT_STRING);
-    }
-
-    /**
-     * Parses an objectClasses value
-     *
-     * @param string $value
-     * @return array
-     */
-    protected function _parseObjectClass($value)
-    {
-        $objectClass = array(
-            'oid'        => null,
-            'name'       => null,
-            'desc'       => null,
-            'obsolete'   => false,
-            'sup'        => array(),
-            'abstract'   => false,
-            'structural' => false,
-            'auxiliary'  => false,
-            'must'       => array(),
-            'may'        => array(),
-            '_string'    => $value,
-            '_parents'   => array());
-
-        $tokens = $this->_tokenizeString($value);
-        $objectClass['oid'] = array_shift($tokens); // first token is the oid
-        $this->_parseLdapSchemaSyntax($objectClass, $tokens);
-
-        $this->_ensureNameAttribute($objectClass);
-
-        return $objectClass;
-    }
-
-    /**
-     * Resolves inheritance in objectClasses and attributes
-     *
-     * @param Zend_Ldap_Node_Schema_Item $node
-     * @param array                      $repository
-     */
-    protected function _resolveInheritance(Zend_Ldap_Node_Schema_Item $node, array $repository)
-    {
-        $data = $node->getData();
-        $parents = $data['sup'];
-        if ($parents === null || !is_array($parents) || count($parents) < 1) return;
-        foreach ($parents as $parent) {
-            if (!array_key_exists($parent, $repository)) continue;
-            if (!array_key_exists('_parents', $data) || !is_array($data['_parents'])) {
-               $data['_parents'] = array();
-           }
-           $data['_parents'][] = $repository[$parent];
-        }
-        $node->setData($data);
-    }
-
-    /**
-     * Loads the LDAP syntaxes
-     *
-     * @return void
-     */
-    protected function _loadLdapSyntaxes()
-    {
-        $this->_ldapSyntaxes = array();
-        foreach ($this->getAttribute('ldapSyntaxes') as $value) {
-            $val = $this->_parseLdapSyntax($value);
-            $this->_ldapSyntaxes[$val['oid']] = $val;
-        }
-        ksort($this->_ldapSyntaxes, SORT_STRING);
-    }
-
-    /**
-     * Parses an ldapSyntaxes value
-     *
-     * @param  string $value
-     * @return array
-     */
-    protected function _parseLdapSyntax($value)
-    {
-        $ldapSyntax = array(
-            'oid'      => null,
-            'desc'     => null,
-            '_string' => $value);
-
-        $tokens = $this->_tokenizeString($value);
-        $ldapSyntax['oid'] = array_shift($tokens); // first token is the oid
-        $this->_parseLdapSchemaSyntax($ldapSyntax, $tokens);
-
-        return $ldapSyntax;
-    }
-
-    /**
-     * Loads the matching rules
-     *
-     * @return void
-     */
-    protected function _loadMatchingRules()
-    {
-        $this->_matchingRules = array();
-        foreach ($this->getAttribute('matchingRules') as $value) {
-            $val = $this->_parseMatchingRule($value);
-            $this->_matchingRules[$val['name']] = $val;
-        }
-        ksort($this->_matchingRules, SORT_STRING);
-    }
-
-    /**
-     * Parses an matchingRules value
-     *
-     * @param  string $value
-     * @return array
-     */
-    protected function _parseMatchingRule($value)
-    {
-        $matchingRule = array(
-            'oid'      => null,
-            'name'     => null,
-            'desc'     => null,
-            'obsolete' => false,
-            'syntax'   => null,
-            '_string'  => $value);
-
-        $tokens = $this->_tokenizeString($value);
-        $matchingRule['oid'] = array_shift($tokens); // first token is the oid
-        $this->_parseLdapSchemaSyntax($matchingRule, $tokens);
-
-        $this->_ensureNameAttribute($matchingRule);
-
-        return $matchingRule;
-    }
-
-    /**
-     * Loads the matching rule use
-     *
-     * @return void
-     */
-    protected function _loadMatchingRuleUse()
-    {
-        $this->_matchingRuleUse = array();
-        foreach ($this->getAttribute('matchingRuleUse') as $value) {
-            $val = $this->_parseMatchingRuleUse($value);
-            $this->_matchingRuleUse[$val['name']] = $val;
-        }
-        ksort($this->_matchingRuleUse, SORT_STRING);
-    }
-
-    /**
-     * Parses an matchingRuleUse value
-     *
-     * @param  string $value
-     * @return array
-     */
-    protected function _parseMatchingRuleUse($value)
-    {
-        $matchingRuleUse = array(
-            'oid'      => null,
-            'name'     => null,
-            'desc'     => null,
-            'obsolete' => false,
-            'applies'  => array(),
-            '_string'  => $value);
-
-        $tokens = $this->_tokenizeString($value);
-        $matchingRuleUse['oid'] = array_shift($tokens); // first token is the oid
-        $this->_parseLdapSchemaSyntax($matchingRuleUse, $tokens);
-
-        $this->_ensureNameAttribute($matchingRuleUse);
-
-        return $matchingRuleUse;
-    }
-
-    /**
-     * Ensures that a name element is present and that it is single-values.
-     *
-     * @param array $data
-     */
-    protected function _ensureNameAttribute(array &$data)
-    {
-        if (!array_key_exists('name', $data) || empty($data['name'])) {
-            // force a name
-            $data['name'] = $data['oid'];
-        }
-        if (is_array($data['name'])) {
-            // make one name the default and put the other ones into aliases
-            $aliases = $data['name'];
-            $data['name'] = array_shift($aliases);
-            $data['aliases'] = $aliases;
-        } else {
-            $data['aliases'] = array();
-        }
+        if ($tokens[0] == '(') array_shift($tokens);
+        if ($tokens[count($tokens) - 1] == ')') array_pop($tokens);
+        return $tokens;
     }
 
     /**
@@ -473,30 +289,214 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
     }
 
     /**
-    * Tokenizes the given value into an array
-    *
-    * @param  string $value
-    * @return array tokens
-    */
-    protected function _tokenizeString($value)
+     * Ensures that a name element is present and that it is single-values.
+     *
+     * @param array $data
+     */
+    protected function _ensureNameAttribute(array &$data)
     {
-        $tokens = array();
-        $matches = array();
-        // this one is taken from PEAR::Net_LDAP2
-        $pattern = "/\s* (?:([()]) | ([^'\s()]+) | '((?:[^']+|'[^\s)])*)') \s*/x";
-        preg_match_all($pattern, $value, $matches);
-        $cMatches = count($matches[0]);
-        $cPattern = count($matches);
-        for ($i = 0; $i < $cMatches; $i++) {     // number of tokens (full pattern match)
-            for ($j = 1; $j < $cPattern; $j++) { // each subpattern
-                $tok = trim($matches[$j][$i]);
-                if (!empty($tok)) {              // pattern match in this subpattern
-                    $tokens[$i] = $tok;          // this is the token
-                }
+        if (!array_key_exists('name', $data) || empty($data['name'])) {
+            // force a name
+            $data['name'] = $data['oid'];
+        }
+        if (is_array($data['name'])) {
+            // make one name the default and put the other ones into aliases
+            $aliases = $data['name'];
+            $data['name'] = array_shift($aliases);
+            $data['aliases'] = $aliases;
+        } else {
+            $data['aliases'] = array();
+        }
+    }
+
+    /**
+     * Resolves inheritance in objectClasses and attributes
+     *
+     * @param Zend_Ldap_Node_Schema_Item $node
+     * @param array $repository
+     */
+    protected function _resolveInheritance(Zend_Ldap_Node_Schema_Item $node, array $repository)
+    {
+        $data = $node->getData();
+        $parents = $data['sup'];
+        if ($parents === null || !is_array($parents) || count($parents) < 1) return;
+        foreach ($parents as $parent) {
+            if (!array_key_exists($parent, $repository)) continue;
+            if (!array_key_exists('_parents', $data) || !is_array($data['_parents'])) {
+                $data['_parents'] = array();
+            }
+            $data['_parents'][] = $repository[$parent];
+        }
+        $node->setData($data);
+    }
+
+    /**
+     * Loads the LDAP syntaxes
+     *
+     * @return void
+     */
+    protected function _loadLdapSyntaxes()
+    {
+        $this->_ldapSyntaxes = array();
+        foreach ($this->getAttribute('ldapSyntaxes') as $value) {
+            $val = $this->_parseLdapSyntax($value);
+            $this->_ldapSyntaxes[$val['oid']] = $val;
+        }
+        ksort($this->_ldapSyntaxes, SORT_STRING);
+    }
+
+    /**
+     * Parses an ldapSyntaxes value
+     *
+     * @param  string $value
+     * @return array
+     */
+    protected function _parseLdapSyntax($value)
+    {
+        $ldapSyntax = array(
+            'oid' => null,
+            'desc' => null,
+            '_string' => $value);
+
+        $tokens = $this->_tokenizeString($value);
+        $ldapSyntax['oid'] = array_shift($tokens); // first token is the oid
+        $this->_parseLdapSchemaSyntax($ldapSyntax, $tokens);
+
+        return $ldapSyntax;
+    }
+
+    /**
+     * Loads the matching rules
+     *
+     * @return void
+     */
+    protected function _loadMatchingRules()
+    {
+        $this->_matchingRules = array();
+        foreach ($this->getAttribute('matchingRules') as $value) {
+            $val = $this->_parseMatchingRule($value);
+            $this->_matchingRules[$val['name']] = $val;
+        }
+        ksort($this->_matchingRules, SORT_STRING);
+    }
+
+    /**
+     * Parses an matchingRules value
+     *
+     * @param  string $value
+     * @return array
+     */
+    protected function _parseMatchingRule($value)
+    {
+        $matchingRule = array(
+            'oid' => null,
+            'name' => null,
+            'desc' => null,
+            'obsolete' => false,
+            'syntax' => null,
+            '_string' => $value);
+
+        $tokens = $this->_tokenizeString($value);
+        $matchingRule['oid'] = array_shift($tokens); // first token is the oid
+        $this->_parseLdapSchemaSyntax($matchingRule, $tokens);
+
+        $this->_ensureNameAttribute($matchingRule);
+
+        return $matchingRule;
+    }
+
+    /**
+     * Loads the matching rule use
+     *
+     * @return void
+     */
+    protected function _loadMatchingRuleUse()
+    {
+        $this->_matchingRuleUse = array();
+        foreach ($this->getAttribute('matchingRuleUse') as $value) {
+            $val = $this->_parseMatchingRuleUse($value);
+            $this->_matchingRuleUse[$val['name']] = $val;
+        }
+        ksort($this->_matchingRuleUse, SORT_STRING);
+    }
+
+    /**
+     * Parses an matchingRuleUse value
+     *
+     * @param  string $value
+     * @return array
+     */
+    protected function _parseMatchingRuleUse($value)
+    {
+        $matchingRuleUse = array(
+            'oid' => null,
+            'name' => null,
+            'desc' => null,
+            'obsolete' => false,
+            'applies' => array(),
+            '_string' => $value);
+
+        $tokens = $this->_tokenizeString($value);
+        $matchingRuleUse['oid'] = array_shift($tokens); // first token is the oid
+        $this->_parseLdapSchemaSyntax($matchingRuleUse, $tokens);
+
+        $this->_ensureNameAttribute($matchingRuleUse);
+
+        return $matchingRuleUse;
+    }
+
+    /**
+     * Loads the object classes
+     *
+     * @return void
+     */
+    protected function _loadObjectClasses()
+    {
+        $this->_objectClasses = array();
+        foreach ($this->getAttribute('objectClasses') as $value) {
+            $val = $this->_parseObjectClass($value);
+            $val = new Zend_Ldap_Node_Schema_ObjectClass_OpenLdap($val);
+            $this->_objectClasses[$val->getName()] = $val;
+        }
+        foreach ($this->_objectClasses as $val) {
+            if (count($val->sup) > 0) {
+                $this->_resolveInheritance($val, $this->_objectClasses);
+            }
+            foreach ($val->aliases as $alias) {
+                $this->_objectClasses[$alias] = $val;
             }
         }
-        if ($tokens[0] == '(') array_shift($tokens);
-        if ($tokens[count($tokens) - 1] == ')') array_pop($tokens);
-        return $tokens;
+        ksort($this->_objectClasses, SORT_STRING);
+    }
+
+    /**
+     * Parses an objectClasses value
+     *
+     * @param string $value
+     * @return array
+     */
+    protected function _parseObjectClass($value)
+    {
+        $objectClass = array(
+            'oid' => null,
+            'name' => null,
+            'desc' => null,
+            'obsolete' => false,
+            'sup' => array(),
+            'abstract' => false,
+            'structural' => false,
+            'auxiliary' => false,
+            'must' => array(),
+            'may' => array(),
+            '_string' => $value,
+            '_parents' => array());
+
+        $tokens = $this->_tokenizeString($value);
+        $objectClass['oid'] = array_shift($tokens); // first token is the oid
+        $this->_parseLdapSchemaSyntax($objectClass, $tokens);
+
+        $this->_ensureNameAttribute($objectClass);
+
+        return $objectClass;
     }
 }

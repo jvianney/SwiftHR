@@ -64,50 +64,6 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     protected $_isDefaultTableAdapter = true;
 
     /**
-     * Set the adapter
-     *
-     * @param  string $adapter
-     * @return Zend_Application_Resource_Db
-     */
-    public function setAdapter($adapter)
-    {
-        $this->_adapter = $adapter;
-        return $this;
-    }
-
-    /**
-     * Adapter type to use
-     *
-     * @return string
-     */
-    public function getAdapter()
-    {
-        return $this->_adapter;
-    }
-
-    /**
-     * Set the adapter params
-     *
-     * @param  string $adapter
-     * @return Zend_Application_Resource_Db
-     */
-    public function setParams(array $params)
-    {
-        $this->_params = $params;
-        return $this;
-    }
-
-    /**
-     * Adapter parameters
-     *
-     * @return array
-     */
-    public function getParams()
-    {
-        return $this->_params;
-    }
-
-    /**
      * Set whether to use this as default table adapter
      *
      * @param  boolean $defaultTableAdapter
@@ -120,13 +76,18 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     }
 
     /**
-     * Is this adapter the default table adapter?
+     * Defined by Zend_Application_Resource_Resource
      *
-     * @return void
+     * @return Zend_Db_Adapter_Abstract|null
      */
-    public function isDefaultTableAdapter()
+    public function init()
     {
-        return $this->_isDefaultTableAdapter;
+        if (null !== ($db = $this->getDbAdapter())) {
+            if ($this->isDefaultTableAdapter()) {
+                Zend_Db_Table::setDefaultAdapter($db);
+            }
+            return $db;
+        }
     }
 
     /**
@@ -145,18 +106,57 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     }
 
     /**
-     * Defined by Zend_Application_Resource_Resource
+     * Adapter type to use
      *
-     * @return Zend_Db_Adapter_Abstract|null
+     * @return string
      */
-    public function init()
+    public function getAdapter()
     {
-        if (null !== ($db = $this->getDbAdapter())) {
-            if ($this->isDefaultTableAdapter()) {
-                Zend_Db_Table::setDefaultAdapter($db);
-            }
-            return $db;
-        }
+        return $this->_adapter;
+    }
+
+    /**
+     * Set the adapter
+     *
+     * @param  string $adapter
+     * @return Zend_Application_Resource_Db
+     */
+    public function setAdapter($adapter)
+    {
+        $this->_adapter = $adapter;
+        return $this;
+    }
+
+    /**
+     * Adapter parameters
+     *
+     * @return array
+     */
+    public function getParams()
+    {
+        return $this->_params;
+    }
+
+    /**
+     * Set the adapter params
+     *
+     * @param  string $adapter
+     * @return Zend_Application_Resource_Db
+     */
+    public function setParams(array $params)
+    {
+        $this->_params = $params;
+        return $this;
+    }
+
+    /**
+     * Is this adapter the default table adapter?
+     *
+     * @return void
+     */
+    public function isDefaultTableAdapter()
+    {
+        return $this->_isDefaultTableAdapter;
     }
 
     /**

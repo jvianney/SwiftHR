@@ -38,7 +38,6 @@ require_once 'Zend/Cache/Backend.php';
  * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-
 class Zend_Cache_Backend_TwoLevels extends Zend_Cache_Backend implements Zend_Cache_Backend_ExtendedInterface
 {
     /**
@@ -180,11 +179,11 @@ class Zend_Cache_Backend_TwoLevels extends Zend_Cache_Backend implements Zend_Ca
      * Note : $data is always "string" (serialization is done by the
      * core not by the backend)
      *
-     * @param  string $data            Datas to cache
-     * @param  string $id              Cache id
-     * @param  array $tags             Array of strings, the cache record will be tagged by each string entry
-     * @param  int   $specificLifetime If != false, set a specific lifetime for this cache record (null => infinite lifetime)
-     * @param  int   $priority         integer between 0 (very low priority) and 10 (maximum priority) used by some particular backends
+     * @param  string $data Datas to cache
+     * @param  string $id Cache id
+     * @param  array $tags Array of strings, the cache record will be tagged by each string entry
+     * @param  int $specificLifetime If != false, set a specific lifetime for this cache record (null => infinite lifetime)
+     * @param  int $priority integer between 0 (very low priority) and 10 (maximum priority) used by some particular backends
      * @return boolean true if no problem
      */
     public function save($data, $id, $tags = array(), $specificLifetime = false, $priority = 8)
@@ -212,12 +211,84 @@ class Zend_Cache_Backend_TwoLevels extends Zend_Cache_Backend implements Zend_Ca
         return ($boolFast && $boolSlow);
     }
 
+    private function _getFastFillingPercentage($mode)
+    {
+
+        if ($mode == 'saving') {
+            // mode saving
+            if ($this->_fastBackendFillingPercentage === null) {
+                $this->_fastBackendFillingPercentage = $this->_fastBackend->getFillingPercentage();
+            } else {
+                $rand = rand(1, $this->_options['stats_update_factor']);
+                if ($rand == 1) {
+                    // we force a refresh
+                    $this->_fastBackendFillingPercentage = $this->_fastBackend->getFillingPercentage();
+                }
+            }
+        } else {
+            // mode loading
+            // we compute the percentage only if it's not available in cache
+            if ($this->_fastBackendFillingPercentage === null) {
+                $this->_fastBackendFillingPercentage = $this->_fastBackend->getFillingPercentage();
+            }
+        }
+        return $this->_fastBackendFillingPercentage;
+    }
+
+    /**
+     * Prepare a serialized array to store datas and metadatas informations
+     *
+     * @param string $data data to store
+     * @param int $lifetime original lifetime
+     * @param int $priority priority
+     * @return string serialize array to store into cache
+     */
+    private function _prepareData($data, $lifetime, $priority)
+    {
+        $lt = $lifetime;
+        if ($lt === null) {
+            $lt = 9999999999;
+        }
+        return serialize(array(
+            'data' => $data,
+            'lifetime' => $lifetime,
+            'expire' => time() + $lt,
+            'priority' => $priority
+        ));
+    }
+
+    /**
+     * Compute and return the lifetime for the fast backend
+     *
+     * @param int $lifetime original lifetime
+     * @param int $priority priority
+     * @param int $maxLifetime maximum lifetime
+     * @return int lifetime for the fast backend
+     */
+    private function _getFastLifetime($lifetime, $priority, $maxLifetime = null)
+    {
+        if ($lifetime <= 0) {
+            // if no lifetime, we have an infinite lifetime
+            // we need to use arbitrary lifetimes
+            $fastLifetime = (int)(2592000 / (11 - $priority));
+        } else {
+            // prevent computed infinite lifetime (0) by ceil
+            $fastLifetime = (int)ceil($lifetime / (11 - $priority));
+        }
+
+        if ($maxLifetime >= 0 && $fastLifetime > $maxLifetime) {
+            return $maxLifetime;
+        }
+
+        return $fastLifetime;
+    }
+
     /**
      * Test if a cache is available for the given id and (if yes) return it (false else)
      *
      * Note : return value is always "string" (unserialization is done by the core not by the backend)
      *
-     * @param  string  $id                     Cache id
+     * @param  string $id Cache id
      * @param  boolean $doNotTestCacheValidity If set to true, the cache validity won't be tested
      * @return string|false cached datas
      */
@@ -251,19 +322,6 @@ class Zend_Cache_Backend_TwoLevels extends Zend_Cache_Backend implements Zend_Ca
     }
 
     /**
-     * Remove a cache record
-     *
-     * @param  string $id Cache id
-     * @return boolean True if no problem
-     */
-    public function remove($id)
-    {
-        $boolFast = $this->_fastBackend->remove($id);
-        $boolSlow = $this->_slowBackend->remove($id);
-        return $boolFast && $boolSlow;
-    }
-
-    /**
      * Clean some cache records
      *
      * Available modes are :
@@ -277,13 +335,13 @@ class Zend_Cache_Backend_TwoLevels extends Zend_Cache_Backend implements Zend_Ca
      *                                               ($tags can be an array of strings or a single string)
      *
      * @param  string $mode Clean mode
-     * @param  array  $tags Array of tags
+     * @param  array $tags Array of tags
      * @throws Zend_Cache_Exception
      * @return boolean true if no problem
      */
     public function clean($mode = Zend_Cache::CLEANING_MODE_ALL, $tags = array())
     {
-        switch($mode) {
+        switch ($mode) {
             case Zend_Cache::CLEANING_MODE_ALL:
                 $boolFast = $this->_fastBackend->clean(Zend_Cache::CLEANING_MODE_ALL);
                 $boolSlow = $this->_slowBackend->clean(Zend_Cache::CLEANING_MODE_ALL);
@@ -322,6 +380,19 @@ class Zend_Cache_Backend_TwoLevels extends Zend_Cache_Backend implements Zend_Ca
                 Zend_Cache::throwException('Invalid mode for clean() method');
                 break;
         }
+    }
+
+    /**
+     * Remove a cache record
+     *
+     * @param  string $id Cache id
+     * @return boolean True if no problem
+     */
+    public function remove($id)
+    {
+        $boolFast = $this->_fastBackend->remove($id);
+        $boolSlow = $this->_slowBackend->remove($id);
+        return $boolFast && $boolSlow;
     }
 
     /**
@@ -449,54 +520,6 @@ class Zend_Cache_Backend_TwoLevels extends Zend_Cache_Backend implements Zend_Ca
     }
 
     /**
-     * Prepare a serialized array to store datas and metadatas informations
-     *
-     * @param string $data data to store
-     * @param int $lifetime original lifetime
-     * @param int $priority priority
-     * @return string serialize array to store into cache
-     */
-    private function _prepareData($data, $lifetime, $priority)
-    {
-        $lt = $lifetime;
-        if ($lt === null) {
-            $lt = 9999999999;
-        }
-        return serialize(array(
-            'data' => $data,
-            'lifetime' => $lifetime,
-            'expire' => time() + $lt,
-            'priority' => $priority
-        ));
-    }
-
-    /**
-     * Compute and return the lifetime for the fast backend
-     *
-     * @param int $lifetime original lifetime
-     * @param int $priority priority
-     * @param int $maxLifetime maximum lifetime
-     * @return int lifetime for the fast backend
-     */
-    private function _getFastLifetime($lifetime, $priority, $maxLifetime = null)
-    {
-        if ($lifetime <= 0) {
-            // if no lifetime, we have an infinite lifetime
-            // we need to use arbitrary lifetimes
-            $fastLifetime = (int) (2592000 / (11 - $priority));
-        } else {
-            // prevent computed infinite lifetime (0) by ceil
-            $fastLifetime = (int) ceil($lifetime / (11 - $priority));
-        }
-
-        if ($maxLifetime >= 0 && $fastLifetime > $maxLifetime) {
-            return $maxLifetime;
-        }
-
-        return $fastLifetime;
-    }
-
-    /**
      * PUBLIC METHOD FOR UNIT TESTING ONLY !
      *
      * Force a cache record to expire
@@ -507,30 +530,6 @@ class Zend_Cache_Backend_TwoLevels extends Zend_Cache_Backend implements Zend_Ca
     {
         $this->_fastBackend->remove($id);
         $this->_slowBackend->___expire($id);
-    }
-
-    private function _getFastFillingPercentage($mode)
-    {
-
-        if ($mode == 'saving') {
-            // mode saving
-            if ($this->_fastBackendFillingPercentage === null) {
-                $this->_fastBackendFillingPercentage = $this->_fastBackend->getFillingPercentage();
-            } else {
-                $rand = rand(1, $this->_options['stats_update_factor']);
-                if ($rand == 1) {
-                    // we force a refresh
-                    $this->_fastBackendFillingPercentage = $this->_fastBackend->getFillingPercentage();
-                }
-            }
-        } else {
-            // mode loading
-            // we compute the percentage only if it's not available in cache
-            if ($this->_fastBackendFillingPercentage === null) {
-                $this->_fastBackendFillingPercentage = $this->_fastBackend->getFillingPercentage();
-            }
-        }
-        return $this->_fastBackendFillingPercentage;
     }
 
 }

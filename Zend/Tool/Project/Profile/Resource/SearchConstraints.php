@@ -51,6 +51,41 @@ class Zend_Tool_Project_Profile_Resource_SearchConstraints
     }
 
     /**
+     * addConstraint()
+     *
+     * @param string|array $constraint
+     * @return Zend_Tool_Project_Profile_Resource_SearchConstraints
+     */
+    public function addConstraint($constraint)
+    {
+        if (is_string($constraint)) {
+            $name = $constraint;
+            $params = array();
+        } elseif (is_array($constraint)) {
+            $name = $constraint['name'];
+            $params = $constraint['params'];
+        }
+
+        $constraint = $this->_makeConstraint($name, $params);
+
+        array_push($this->_constraints, $constraint);
+        return $this;
+    }
+
+    /**
+     * _makeConstraint
+     *
+     * @param string $name
+     * @param mixed $params
+     * @return ArrayObject
+     */
+    protected function _makeConstraint($name, $params)
+    {
+        $value = array('name' => $name, 'params' => $params);
+        return new ArrayObject($value, ArrayObject::ARRAY_AS_PROPS);
+    }
+
+    /**
      * setOptions()
      *
      * @param array $option
@@ -70,28 +105,6 @@ class Zend_Tool_Project_Profile_Resource_SearchConstraints
     }
 
     /**
-     * addConstraint()
-     *
-     * @param string|array $constraint
-     * @return Zend_Tool_Project_Profile_Resource_SearchConstraints
-     */
-    public function addConstraint($constraint)
-    {
-        if (is_string($constraint)) {
-            $name   = $constraint;
-            $params = array();
-        } elseif (is_array($constraint)) {
-            $name   = $constraint['name'];
-            $params = $constraint['params'];
-        }
-
-        $constraint = $this->_makeConstraint($name, $params);
-
-        array_push($this->_constraints, $constraint);
-        return $this;
-    }
-
-    /**
      * getConstraint()
      *
      * @return ArrayObject
@@ -99,19 +112,6 @@ class Zend_Tool_Project_Profile_Resource_SearchConstraints
     public function getConstraint()
     {
         return array_shift($this->_constraints);
-    }
-
-    /**
-     * _makeConstraint
-     *
-     * @param string $name
-     * @param mixed $params
-     * @return ArrayObject
-     */
-    protected function _makeConstraint($name, $params)
-    {
-        $value = array('name' => $name, 'params' => $params);
-        return new ArrayObject($value, ArrayObject::ARRAY_AS_PROPS);
     }
 
 }

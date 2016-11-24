@@ -46,7 +46,7 @@ class Zend_Filter_Compress_Zip extends Zend_Filter_Compress_CompressAbstract
      */
     protected $_options = array(
         'archive' => null,
-        'target'  => null,
+        'target' => null,
     );
 
     /**
@@ -64,16 +64,6 @@ class Zend_Filter_Compress_Zip extends Zend_Filter_Compress_CompressAbstract
     }
 
     /**
-     * Returns the set archive
-     *
-     * @return string
-     */
-    public function getArchive()
-    {
-        return $this->_options['archive'];
-    }
-
-    /**
      * Sets the archive to use for de-/compression
      *
      * @param string $archive Archive to use
@@ -82,19 +72,9 @@ class Zend_Filter_Compress_Zip extends Zend_Filter_Compress_CompressAbstract
     public function setArchive($archive)
     {
         $archive = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $archive);
-        $this->_options['archive'] = (string) $archive;
+        $this->_options['archive'] = (string)$archive;
 
         return $this;
-    }
-
-    /**
-     * Returns the set targetpath
-     *
-     * @return string
-     */
-    public function getTarget()
-    {
-        return $this->_options['target'];
     }
 
     /**
@@ -111,7 +91,7 @@ class Zend_Filter_Compress_Zip extends Zend_Filter_Compress_CompressAbstract
         }
 
         $target = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $target);
-        $this->_options['target'] = (string) $target;
+        $this->_options['target'] = (string)$target;
         return $this;
     }
 
@@ -132,15 +112,15 @@ class Zend_Filter_Compress_Zip extends Zend_Filter_Compress_CompressAbstract
         }
 
         if (file_exists($content)) {
-            $content  = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, realpath($content));
+            $content = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, realpath($content));
             $basename = substr($content, strrpos($content, DIRECTORY_SEPARATOR) + 1);
             if (is_dir($content)) {
-                $index    = strrpos($content, DIRECTORY_SEPARATOR) + 1;
+                $index = strrpos($content, DIRECTORY_SEPARATOR) + 1;
                 $content .= DIRECTORY_SEPARATOR;
-                $stack    = array($content);
+                $stack = array($content);
                 while (!empty($stack)) {
                     $current = array_pop($stack);
-                    $files   = array();
+                    $files = array();
 
                     $dir = dir($current);
                     while (false !== ($node = $dir->read())) {
@@ -195,70 +175,13 @@ class Zend_Filter_Compress_Zip extends Zend_Filter_Compress_CompressAbstract
     }
 
     /**
-     * Decompresses the given content
+     * Returns the set archive
      *
-     * @param  string $content
      * @return string
      */
-    public function decompress($content)
+    public function getArchive()
     {
-        $archive = $this->getArchive();
-        if (file_exists($content)) {
-            $archive = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, realpath($content));
-        } elseif (empty($archive) || !file_exists($archive)) {
-            require_once 'Zend/Filter/Exception.php';
-            throw new Zend_Filter_Exception('ZIP Archive not found');
-        }
-
-        $zip = new ZipArchive();
-        $res = $zip->open($archive);
-
-        $target = $this->getTarget();
-
-        if (!empty($target) && !is_dir($target)) {
-            $target = dirname($target);
-        }
-
-        if (!empty($target)) {
-            $target = rtrim($target, '/\\') . DIRECTORY_SEPARATOR;
-        }
-
-        if (empty($target) || !is_dir($target)) {
-            require_once 'Zend/Filter/Exception.php';
-            throw new Zend_Filter_Exception('No target for ZIP decompression set');
-        }
-
-        if ($res !== true) {
-            require_once 'Zend/Filter/Exception.php';
-            throw new Zend_Filter_Exception($this->_errorString($res));
-        }
-
-        if (version_compare(PHP_VERSION, '5.2.8', '<')) {
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $statIndex = $zip->statIndex($i);
-                $currName = $statIndex['name'];
-                if (($currName{0} == '/') ||
-                    (substr($currName, 0, 2) == '..') ||
-                    (substr($currName, 0, 4) == './..')
-                    )
-                {
-                    require_once 'Zend/Filter/Exception.php';
-                    throw new Zend_Filter_Exception('Upward directory traversal was detected inside ' . $archive
-                        . ' please use PHP 5.2.8 or greater to take advantage of path resolution features of '
-                        . 'the zip extension in this decompress() method.'
-                        );
-                }
-            }
-        }
-
-        $res = @$zip->extractTo($target);
-        if ($res !== true) {
-            require_once 'Zend/Filter/Exception.php';
-            throw new Zend_Filter_Exception($this->_errorString($res));
-        }
-
-        $zip->close();
-        return $target;
+        return $this->_options['archive'];
     }
 
     /**
@@ -268,7 +191,7 @@ class Zend_Filter_Compress_Zip extends Zend_Filter_Compress_CompressAbstract
      */
     protected function _errorString($error)
     {
-        switch($error) {
+        switch ($error) {
             case ZipArchive::ER_MULTIDISK :
                 return 'Multidisk ZIP Archives not supported';
 
@@ -341,6 +264,82 @@ class Zend_Filter_Compress_Zip extends Zend_Filter_Compress_CompressAbstract
             default :
                 return 'Unknown error within ZIP Archive';
         }
+    }
+
+    /**
+     * Returns the set targetpath
+     *
+     * @return string
+     */
+    public function getTarget()
+    {
+        return $this->_options['target'];
+    }
+
+    /**
+     * Decompresses the given content
+     *
+     * @param  string $content
+     * @return string
+     */
+    public function decompress($content)
+    {
+        $archive = $this->getArchive();
+        if (file_exists($content)) {
+            $archive = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, realpath($content));
+        } elseif (empty($archive) || !file_exists($archive)) {
+            require_once 'Zend/Filter/Exception.php';
+            throw new Zend_Filter_Exception('ZIP Archive not found');
+        }
+
+        $zip = new ZipArchive();
+        $res = $zip->open($archive);
+
+        $target = $this->getTarget();
+
+        if (!empty($target) && !is_dir($target)) {
+            $target = dirname($target);
+        }
+
+        if (!empty($target)) {
+            $target = rtrim($target, '/\\') . DIRECTORY_SEPARATOR;
+        }
+
+        if (empty($target) || !is_dir($target)) {
+            require_once 'Zend/Filter/Exception.php';
+            throw new Zend_Filter_Exception('No target for ZIP decompression set');
+        }
+
+        if ($res !== true) {
+            require_once 'Zend/Filter/Exception.php';
+            throw new Zend_Filter_Exception($this->_errorString($res));
+        }
+
+        if (version_compare(PHP_VERSION, '5.2.8', '<')) {
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $statIndex = $zip->statIndex($i);
+                $currName = $statIndex['name'];
+                if (($currName{0} == '/') ||
+                    (substr($currName, 0, 2) == '..') ||
+                    (substr($currName, 0, 4) == './..')
+                ) {
+                    require_once 'Zend/Filter/Exception.php';
+                    throw new Zend_Filter_Exception('Upward directory traversal was detected inside ' . $archive
+                        . ' please use PHP 5.2.8 or greater to take advantage of path resolution features of '
+                        . 'the zip extension in this decompress() method.'
+                    );
+                }
+            }
+        }
+
+        $res = @$zip->extractTo($target);
+        if ($res !== true) {
+            require_once 'Zend/Filter/Exception.php';
+            throw new Zend_Filter_Exception($this->_errorString($res));
+        }
+
+        $zip->close();
+        return $target;
     }
 
     /**

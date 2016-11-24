@@ -38,20 +38,19 @@ class Zend_Search_Lucene_Document
 {
 
     /**
-     * Associative array Zend_Search_Lucene_Field objects where the keys to the
-     * array are the names of the fields.
-     *
-     * @var array
-     */
-    protected $_fields = array();
-
-    /**
      * Field boost factor
      * It's not stored directly in the index, but affects on normalization factor
      *
      * @var float
      */
     public $boost = 1.0;
+    /**
+     * Associative array Zend_Search_Lucene_Field objects where the keys to the
+     * array are the names of the fields.
+     *
+     * @var array
+     */
+    protected $_fields = array();
 
     /**
      * Proxy method for getFieldValue(), provides more convenient access to
@@ -65,31 +64,16 @@ class Zend_Search_Lucene_Document
         return $this->getFieldValue($offset);
     }
 
-
     /**
-     * Add a field object to this document.
+     * Returns the string value of a named field in this document.
      *
-     * @param Zend_Search_Lucene_Field $field
-     * @return Zend_Search_Lucene_Document
+     * @see __get()
+     * @return string
      */
-    public function addField(Zend_Search_Lucene_Field $field)
+    public function getFieldValue($fieldName)
     {
-        $this->_fields[$field->name] = $field;
-
-        return $this;
+        return $this->getField($fieldName)->value;
     }
-
-
-    /**
-     * Return an array with the names of the fields in this document.
-     *
-     * @return array
-     */
-    public function getFieldNames()
-    {
-        return array_keys($this->_fields);
-    }
-
 
     /**
      * Returns Zend_Search_Lucene_Field object for a named field in this document.
@@ -106,16 +90,27 @@ class Zend_Search_Lucene_Document
         return $this->_fields[$fieldName];
     }
 
+    /**
+     * Add a field object to this document.
+     *
+     * @param Zend_Search_Lucene_Field $field
+     * @return Zend_Search_Lucene_Document
+     */
+    public function addField(Zend_Search_Lucene_Field $field)
+    {
+        $this->_fields[$field->name] = $field;
+
+        return $this;
+    }
 
     /**
-     * Returns the string value of a named field in this document.
+     * Return an array with the names of the fields in this document.
      *
-     * @see __get()
-     * @return string
+     * @return array
      */
-    public function getFieldValue($fieldName)
+    public function getFieldNames()
     {
-        return $this->getField($fieldName)->value;
+        return array_keys($this->_fields);
     }
 
     /**

@@ -55,7 +55,7 @@ class Zend_InfoCard_Xml_KeyInfo
     static public function getInstance($xmlData)
     {
 
-        if($xmlData instanceof Zend_InfoCard_Xml_Element) {
+        if ($xmlData instanceof Zend_InfoCard_Xml_Element) {
             $strXmlData = $xmlData->asXML();
         } else if (is_string($xmlData)) {
             $strXmlData = $xmlData;
@@ -67,9 +67,9 @@ class Zend_InfoCard_Xml_KeyInfo
 
         $namespaces = $sxe->getDocNameSpaces();
 
-        if(!empty($namespaces)) {
-            foreach($sxe->getDocNameSpaces() as $namespace) {
-                switch($namespace) {
+        if (!empty($namespaces)) {
+            foreach ($sxe->getDocNameSpaces() as $namespace) {
+                switch ($namespace) {
                     case 'http://www.w3.org/2000/09/xmldsig#':
                         include_once 'Zend/InfoCard/Xml/KeyInfo/XmlDSig.php';
                         return simplexml_load_string($strXmlData, 'Zend_InfoCard_Xml_KeyInfo_XmlDSig');

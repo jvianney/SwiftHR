@@ -149,6 +149,15 @@ class Zend_Mail_Transport_Smtp extends Zend_Mail_Transport_Abstract
         }
     }
 
+    /**
+     * Gets the connection protocol instance
+     *
+     * @return Zend_Mail_Protocol|null
+     */
+    public function getConnection()
+    {
+        return $this->_connection;
+    }
 
     /**
      * Sets the connection protocol instance
@@ -160,17 +169,6 @@ class Zend_Mail_Transport_Smtp extends Zend_Mail_Transport_Abstract
     public function setConnection(Zend_Mail_Protocol_Abstract $connection)
     {
         $this->_connection = $connection;
-    }
-
-
-    /**
-     * Gets the connection protocol instance
-     *
-     * @return Zend_Mail_Protocol|null
-     */
-    public function getConnection()
-    {
-        return $this->_connection;
     }
 
     /**

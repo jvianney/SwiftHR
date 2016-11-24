@@ -134,19 +134,22 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
         $this->_element = $doc;
     }
 
+    /**
+     * Generate the header of the feed when working in write mode
+     *
+     * @param  array $array the data to use
+     * @return DOMElement root node
+     */
+    abstract protected function _mapFeedHeaders($array);
 
     /**
-     * Prepare for serialiation
+     * Generate the entries of the feed when working in write mode
      *
-     * @return array
+     * @param  DOMElement $root the root node to use
+     * @param  array $array the data to use
+     * @return DOMElement root node
      */
-    public function __sleep()
-    {
-        $this->_element = $this->saveXML();
-
-        return array('_element');
-    }
-
+    abstract protected function _mapFeedEntries(DOMElement $root, $array);
 
     /**
      * Cache the individual feed elements so they don't need to be
@@ -164,17 +167,17 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
         }
     }
 
-
     /**
-     * Get the number of entries in this feed object.
+     * Prepare for serialiation
      *
-     * @return integer Entry count.
+     * @return array
      */
-    public function count()
+    public function __sleep()
     {
-        return count($this->_entries);
-    }
+        $this->_element = $this->saveXML();
 
+        return array('_element');
+    }
 
     /**
      * Required by the Iterator interface.
@@ -185,7 +188,6 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
     {
         $this->_entryIndex = 0;
     }
-
 
     /**
      * Required by the Iterator interface.
@@ -199,7 +201,6 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
             $this->_entries[$this->_entryIndex]);
     }
 
-
     /**
      * Required by the Iterator interface.
      *
@@ -210,7 +211,6 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
         return $this->_entryIndex;
     }
 
-
     /**
      * Required by the Iterator interface.
      *
@@ -220,7 +220,6 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
     {
         ++$this->_entryIndex;
     }
-
 
     /**
      * Required by the Iterator interface.
@@ -233,21 +232,14 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
     }
 
     /**
-     * Generate the header of the feed when working in write mode
+     * Get the number of entries in this feed object.
      *
-     * @param  array $array the data to use
-     * @return DOMElement root node
+     * @return integer Entry count.
      */
-    abstract protected function _mapFeedHeaders($array);
-
-    /**
-     * Generate the entries of the feed when working in write mode
-     *
-     * @param  DOMElement $root the root node to use
-     * @param  array $array the data to use
-     * @return DOMElement root node
-     */
-    abstract protected function _mapFeedEntries(DOMElement $root, $array);
+    public function count()
+    {
+        return count($this->_entries);
+    }
 
     /**
      * Send feed to a http client with the correct header

@@ -40,42 +40,42 @@ class Zend_Reflection_File implements Reflector
     /**
      * @var string
      */
-    protected $_filepath        = null;
+    protected $_filepath = null;
 
     /**
      * @var string
      */
-    protected $_docComment      = null;
+    protected $_docComment = null;
 
     /**
      * @var int
      */
-    protected $_startLine       = 1;
+    protected $_startLine = 1;
 
     /**
      * @var int
      */
-    protected $_endLine         = null;
+    protected $_endLine = null;
 
     /**
      * @var string[]
      */
-    protected $_requiredFiles   = array();
+    protected $_requiredFiles = array();
 
     /**
      * @var Zend_Reflection_Class[]
      */
-    protected $_classes         = array();
+    protected $_classes = array();
 
     /**
      * @var Zend_Reflection_Function[]
      */
-    protected $_functions       = array();
+    protected $_functions = array();
 
     /**
      * @var string
      */
-    protected $_contents        = null;
+    protected $_contents = null;
 
     /**
      * Constructor
@@ -114,12 +114,135 @@ class Zend_Reflection_File implements Reflector
         while (count($includePaths) > 0) {
             $filePath = array_shift($includePaths) . DIRECTORY_SEPARATOR . $fileName;
 
-            if ( ($foundRealpath = realpath($filePath)) !== false) {
+            if (($foundRealpath = realpath($filePath)) !== false) {
                 break;
             }
         }
 
         return $foundRealpath;
+    }
+
+    /**
+     * This method does the work of "reflecting" the file
+     *
+     * Uses PHP's tokenizer to perform file reflection.
+     *
+     * @return void
+     */
+    protected function _reflect()
+    {
+        $contents = $this->_contents;
+        $tokens = token_get_all($contents);
+
+        $functionTrapped = false;
+        $classTrapped = false;
+        $requireTrapped = false;
+        $openBraces = 0;
+
+        $this->_checkFileDocBlock($tokens);
+
+        foreach ($tokens as $token) {
+            /*
+             * Tokens are characters representing symbols or arrays
+             * representing strings. The keys/values in the arrays are
+             *
+             * - 0 => token id,
+             * - 1 => string,
+             * - 2 => line number
+             *
+             * Token ID's are explained here:
+             * http://www.php.net/manual/en/tokens.php.
+             */
+
+            if (is_array($token)) {
+                $type = $token[0];
+                $value = $token[1];
+                $lineNum = $token[2];
+            } else {
+                // It's a symbol
+                // Maintain the count of open braces
+                if ($token == '{') {
+                    $openBraces++;
+                } else if ($token == '}') {
+                    $openBraces--;
+                }
+
+                continue;
+            }
+
+            switch ($type) {
+                // Name of something
+                case T_STRING:
+                    if ($functionTrapped) {
+                        $this->_functions[] = $value;
+                        $functionTrapped = false;
+                    } elseif ($classTrapped) {
+                        $this->_classes[] = $value;
+                        $classTrapped = false;
+                    }
+                    continue;
+
+                // Required file names are T_CONSTANT_ENCAPSED_STRING
+                case T_CONSTANT_ENCAPSED_STRING:
+                    if ($requireTrapped) {
+                        $this->_requiredFiles[] = $value . "\n";
+                        $requireTrapped = false;
+                    }
+                    continue;
+
+                // Functions
+                case T_FUNCTION:
+                    if ($openBraces == 0) {
+                        $functionTrapped = true;
+                    }
+                    break;
+
+                // Classes
+                case T_CLASS:
+                case T_INTERFACE:
+                    $classTrapped = true;
+                    break;
+
+                // All types of requires
+                case T_REQUIRE:
+                case T_REQUIRE_ONCE:
+                case T_INCLUDE:
+                case T_INCLUDE_ONCE:
+                    $requireTrapped = true;
+                    break;
+
+                // Default case: do nothing
+                default:
+                    break;
+            }
+        }
+
+        $this->_endLine = count(explode("\n", $this->_contents));
+    }
+
+    /**
+     * Validate / check a file level docblock
+     *
+     * @param  array $tokens Array of tokenizer tokens
+     * @return void
+     */
+    protected function _checkFileDocBlock($tokens)
+    {
+        foreach ($tokens as $token) {
+            $type = $token[0];
+            $value = $token[1];
+            $lineNum = $token[2];
+            if (($type == T_OPEN_TAG) || ($type == T_WHITESPACE)) {
+                continue;
+            } elseif ($type == T_DOC_COMMENT) {
+                $this->_docComment = $value;
+                $this->_startLine = $lineNum + substr_count($value, "\n") + 1;
+                return;
+            } else {
+                // Only whitespace is allowed before file docblocks
+                return;
+            }
+        }
     }
 
     /**
@@ -286,127 +409,5 @@ class Zend_Reflection_File implements Reflector
     public function __toString()
     {
         return '';
-    }
-
-    /**
-     * This method does the work of "reflecting" the file
-     *
-     * Uses PHP's tokenizer to perform file reflection.
-     *
-     * @return void
-     */
-    protected function _reflect()
-    {
-        $contents = $this->_contents;
-        $tokens   = token_get_all($contents);
-
-        $functionTrapped = false;
-        $classTrapped    = false;
-        $requireTrapped  = false;
-        $openBraces      = 0;
-
-        $this->_checkFileDocBlock($tokens);
-
-        foreach ($tokens as $token) {
-            /*
-             * Tokens are characters representing symbols or arrays
-             * representing strings. The keys/values in the arrays are
-             *
-             * - 0 => token id,
-             * - 1 => string,
-             * - 2 => line number
-             *
-             * Token ID's are explained here:
-             * http://www.php.net/manual/en/tokens.php.
-             */
-
-            if (is_array($token)) {
-                $type    = $token[0];
-                $value   = $token[1];
-                $lineNum = $token[2];
-            } else {
-                // It's a symbol
-                // Maintain the count of open braces
-                if ($token == '{') {
-                    $openBraces++;
-                } else if ($token == '}') {
-                    $openBraces--;
-                }
-
-                continue;
-            }
-
-            switch ($type) {
-                // Name of something
-                case T_STRING:
-                    if ($functionTrapped) {
-                        $this->_functions[] = $value;
-                        $functionTrapped = false;
-                    } elseif ($classTrapped) {
-                        $this->_classes[] = $value;
-                        $classTrapped = false;
-                    }
-                    continue;
-
-                // Required file names are T_CONSTANT_ENCAPSED_STRING
-                case T_CONSTANT_ENCAPSED_STRING:
-                    if ($requireTrapped) {
-                        $this->_requiredFiles[] = $value ."\n";
-                        $requireTrapped = false;
-                    }
-                    continue;
-
-                // Functions
-                case T_FUNCTION:
-                    if ($openBraces == 0) {
-                        $functionTrapped = true;
-                    }
-                    break;
-
-                // Classes
-                case T_CLASS:
-                case T_INTERFACE:
-                    $classTrapped = true;
-                    break;
-
-                // All types of requires
-                case T_REQUIRE:
-                case T_REQUIRE_ONCE:
-                case T_INCLUDE:
-                case T_INCLUDE_ONCE:
-                    $requireTrapped = true;
-                    break;
-
-                // Default case: do nothing
-                default:
-                    break;
-            }
-        }
-
-        $this->_endLine = count(explode("\n", $this->_contents));
-    }
-
-    /**
-     * Validate / check a file level docblock
-     *
-     * @param  array $tokens Array of tokenizer tokens
-     * @return void
-     */
-    protected function _checkFileDocBlock($tokens) {
-        foreach ($tokens as $token) {
-            $type    = $token[0];
-            $value   = $token[1];
-            $lineNum = $token[2];
-            if(($type == T_OPEN_TAG) || ($type == T_WHITESPACE)) {
-                continue;
-            } elseif ($type == T_DOC_COMMENT) {
-                $this->_docComment = $value;
-                $this->_startLine  = $lineNum + substr_count($value, "\n") + 1;
-                return;
-            } else {
-                // Only whitespace is allowed before file docblocks
-                return;
-            }
-        }
     }
 }

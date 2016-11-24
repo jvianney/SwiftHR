@@ -44,9 +44,9 @@ class Zend_Filter_Compress_Tar extends Zend_Filter_Compress_CompressAbstract
      * @var array
      */
     protected $_options = array(
-        'archive'  => null,
-        'target'   => '.',
-        'mode'     => null,
+        'archive' => null,
+        'target' => '.',
+        'mode' => null,
     );
 
     /**
@@ -70,16 +70,6 @@ class Zend_Filter_Compress_Tar extends Zend_Filter_Compress_CompressAbstract
     }
 
     /**
-     * Returns the set archive
-     *
-     * @return string
-     */
-    public function getArchive()
-    {
-        return $this->_options['archive'];
-    }
-
-    /**
      * Sets the archive to use for de-/compression
      *
      * @param string $archive Archive to use
@@ -88,19 +78,9 @@ class Zend_Filter_Compress_Tar extends Zend_Filter_Compress_CompressAbstract
     public function setArchive($archive)
     {
         $archive = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $archive);
-        $this->_options['archive'] = (string) $archive;
+        $this->_options['archive'] = (string)$archive;
 
         return $this;
-    }
-
-    /**
-     * Returns the set targetpath
-     *
-     * @return string
-     */
-    public function getTarget()
-    {
-        return $this->_options['target'];
     }
 
     /**
@@ -117,16 +97,8 @@ class Zend_Filter_Compress_Tar extends Zend_Filter_Compress_CompressAbstract
         }
 
         $target = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $target);
-        $this->_options['target'] = (string) $target;
+        $this->_options['target'] = (string)$target;
         return $this;
-    }
-
-    /**
-     * Returns the set compression mode
-     */
-    public function getMode()
-    {
-        return $this->_options['mode'];
     }
 
     /**
@@ -181,9 +153,9 @@ class Zend_Filter_Compress_Tar extends Zend_Filter_Compress_CompressAbstract
         if (is_dir($content)) {
             // collect all file infos
             foreach (new RecursiveIteratorIterator(
-                        new RecursiveDirectoryIterator($content, RecursiveDirectoryIterator::KEY_AS_PATHNAME),
-                        RecursiveIteratorIterator::SELF_FIRST
-                    ) as $directory => $info
+                         new RecursiveDirectoryIterator($content, RecursiveDirectoryIterator::KEY_AS_PATHNAME),
+                         RecursiveIteratorIterator::SELF_FIRST
+                     ) as $directory => $info
             ) {
                 if ($info->isFile()) {
                     $file[] = $directory;
@@ -193,13 +165,41 @@ class Zend_Filter_Compress_Tar extends Zend_Filter_Compress_CompressAbstract
             $content = $file;
         }
 
-        $result  = $archive->create($content);
+        $result = $archive->create($content);
         if ($result === false) {
             require_once 'Zend/Filter/Exception.php';
             throw new Zend_Filter_Exception('Error creating the Tar archive');
         }
 
         return $this->getArchive();
+    }
+
+    /**
+     * Returns the set archive
+     *
+     * @return string
+     */
+    public function getArchive()
+    {
+        return $this->_options['archive'];
+    }
+
+    /**
+     * Returns the set compression mode
+     */
+    public function getMode()
+    {
+        return $this->_options['mode'];
+    }
+
+    /**
+     * Returns the set targetpath
+     *
+     * @return string
+     */
+    public function getTarget()
+    {
+        return $this->_options['target'];
     }
 
     /**
@@ -219,7 +219,7 @@ class Zend_Filter_Compress_Tar extends Zend_Filter_Compress_CompressAbstract
         }
 
         $archive = new Archive_Tar($archive, $this->getMode());
-        $target  = $this->getTarget();
+        $target = $this->getTarget();
         if (!is_dir($target)) {
             $target = dirname($target);
         }

@@ -20,21 +20,25 @@
  *  Sentrifugo Support <support@sentrifugo.com>
  * ****************************************************************************** */
 
-class Default_DisciplinaryteamincidentsController extends Zend_Controller_Action {
+class Default_DisciplinaryteamincidentsController extends Zend_Controller_Action
+{
 
     private $options;
 
-    public function preDispatch() {
-        
+    public function preDispatch()
+    {
+
     }
 
-    public function init() {
+    public function init()
+    {
         $this->_options = $this->getInvokeArg('bootstrap')->getOptions();
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('save', 'json')->initContext();
     }
 
-    public function indexAction() {
+    public function indexAction()
+    {
         $disciplinaryIncidentModel = new Default_Model_Disciplinaryincident();
         $call = $this->_getParam('call');
         if ($call == 'ajaxcall')
@@ -59,8 +63,7 @@ class Default_DisciplinaryteamincidentsController extends Zend_Controller_Action
             $searchData = '';
             $searchQuery = '';
             $searchArray = '';
-        }
-        else {
+        } else {
             $sort = ($this->_getParam('sort') != '') ? $this->_getParam('sort') : 'DESC';
             $by = ($this->_getParam('by') != '') ? $this->_getParam('by') : 'i.modifieddate';
             if ($dashboardcall == 'Yes')
@@ -73,8 +76,8 @@ class Default_DisciplinaryteamincidentsController extends Zend_Controller_Action
             $searchData = rtrim($searchData, ',');
             /** search from grid - END * */
         }
-        $flag='teamincident';
-        $dataTmp = $disciplinaryIncidentModel->getGrid($sort, $by, $perPage, $pageNo, $searchData, $call, $dashboardcall,$flag);
+        $flag = 'teamincident';
+        $dataTmp = $disciplinaryIncidentModel->getGrid($sort, $by, $perPage, $pageNo, $searchData, $call, $dashboardcall, $flag);
 
         array_push($data, $dataTmp);
         $this->view->dataArray = $data;
@@ -83,7 +86,8 @@ class Default_DisciplinaryteamincidentsController extends Zend_Controller_Action
         $this->render('disciplinarymyincidents/index', null, true);
     }
 
-    public function viewAction() {
+    public function viewAction()
+    {
         $auth = Zend_Auth::getInstance();
         if ($auth->hasIdentity()) {
             $loginUserId = $auth->getStorage()->read()->id;
@@ -94,18 +98,17 @@ class Default_DisciplinaryteamincidentsController extends Zend_Controller_Action
             if ($id != '') {
                 if (is_numeric($id) && $id > 0) {
                     $data = $disciplinaryIncidentModel->getIncidentData($id);
-                    if(!empty($data) && $data[0]['employee_rep_mang_id']==$loginUserId) {
-                    	$this->view->data = $data[0];
-                    	$this->view->controllername = 'disciplinaryteamincidents';
-                    	$this->view->loginUserId = $loginUserId;
-                    	if(!defined('sentrifugo_gilbert')) {
-	                    	$disciplineHistoryModel = new Default_Model_Disciplineincidenthistory();
-	                    	$incident_history = $disciplineHistoryModel->getDisciplineIncidentHistory($id);
-						  	$this->view->incident_history = $incident_history;
-	                    }
-                    }	
-                    else
-                    	$this->view->rowexist = "norows";	
+                    if (!empty($data) && $data[0]['employee_rep_mang_id'] == $loginUserId) {
+                        $this->view->data = $data[0];
+                        $this->view->controllername = 'disciplinaryteamincidents';
+                        $this->view->loginUserId = $loginUserId;
+                        if (!defined('sentrifugo_gilbert')) {
+                            $disciplineHistoryModel = new Default_Model_Disciplineincidenthistory();
+                            $incident_history = $disciplineHistoryModel->getDisciplineIncidentHistory($id);
+                            $this->view->incident_history = $incident_history;
+                        }
+                    } else
+                        $this->view->rowexist = "norows";
                 } else {
                     $this->view->rowexist = "norows";
                 }

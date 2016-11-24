@@ -47,6 +47,20 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
     protected $_registerInArrayValidator = false;
 
     /**
+     * Set datastore identifier
+     *
+     * @param  string $identifier
+     * @return Zend_Dojo_Form_Element_ComboBox
+     */
+    public function setStoreId($identifier)
+    {
+        $store = $this->getStoreInfo();
+        $store['store'] = (string)$identifier;
+        $this->setDijitParam('store', $store);
+        return $this;
+    }
+
+    /**
      * Get datastore information
      *
      * @return array
@@ -57,20 +71,6 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
             $this->dijitParams['store'] = array();
         }
         return $this->dijitParams['store'];
-    }
-
-    /**
-     * Set datastore identifier
-     *
-     * @param  string $identifier
-     * @return Zend_Dojo_Form_Element_ComboBox
-     */
-    public function setStoreId($identifier)
-    {
-        $store = $this->getStoreInfo();
-        $store['store'] = (string) $identifier;
-        $this->setDijitParam('store', $store);
-        return $this;
     }
 
     /**
@@ -96,7 +96,7 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
     public function setStoreType($dojoType)
     {
         $store = $this->getStoreInfo();
-        $store['type'] = (string) $dojoType;
+        $store['type'] = (string)$dojoType;
         $this->setDijitParam('store', $store);
         return $this;
     }
@@ -151,7 +151,7 @@ class Zend_Dojo_Form_Element_ComboBox extends Zend_Dojo_Form_Element_DijitMulti
      */
     public function setAutocomplete($flag)
     {
-        $this->setDijitParam('autocomplete', (bool) $flag);
+        $this->setDijitParam('autocomplete', (bool)$flag);
         return $this;
     }
 

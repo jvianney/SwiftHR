@@ -60,90 +60,20 @@ class Zend_Server_Method_Prototype
     }
 
     /**
-     * Set return value
+     * Set object state from array
      *
-     * @param  string $returnType
+     * @param  array $options
      * @return Zend_Server_Method_Prototype
      */
-    public function setReturnType($returnType)
+    public function setOptions(array $options)
     {
-        $this->_returnType = $returnType;
-        return $this;
-    }
-
-    /**
-     * Retrieve return type
-     *
-     * @return string
-     */
-    public function getReturnType()
-    {
-        return $this->_returnType;
-    }
-
-    /**
-     * Add a parameter
-     *
-     * @param  string $parameter
-     * @return Zend_Server_Method_Prototype
-     */
-    public function addParameter($parameter)
-    {
-        if ($parameter instanceof Zend_Server_Method_Parameter) {
-            $this->_parameters[] = $parameter;
-            if (null !== ($name = $parameter->getName())) {
-                $this->_parameterNameMap[$name] = count($this->_parameters) - 1;
+        foreach ($options as $key => $value) {
+            $method = 'set' . ucfirst($key);
+            if (method_exists($this, $method)) {
+                $this->$method($value);
             }
-        } else {
-            require_once 'Zend/Server/Method/Parameter.php';
-            $parameter = new Zend_Server_Method_Parameter(array(
-                'type' => (string) $parameter,
-            ));
-            $this->_parameters[] = $parameter;
         }
         return $this;
-    }
-
-    /**
-     * Add parameters
-     *
-     * @param  array $parameter
-     * @return Zend_Server_Method_Prototype
-     */
-    public function addParameters(array $parameters)
-    {
-        foreach ($parameters as $parameter) {
-            $this->addParameter($parameter);
-        }
-        return $this;
-    }
-
-    /**
-     * Set parameters
-     *
-     * @param  array $parameters
-     * @return Zend_Server_Method_Prototype
-     */
-    public function setParameters(array $parameters)
-    {
-        $this->_parameters       = array();
-        $this->_parameterNameMap = array();
-        $this->addParameters($parameters);
-        return $this;
-    }
-
-    /**
-     * Retrieve parameters as list of types
-     *
-     * @return array
-     */
-    public function getParameters()
-    {
-        $types = array();
-        foreach ($this->_parameters as $parameter) {
-            $types[] = $parameter->getType();
-        }
-        return $types;
     }
 
     /**
@@ -177,23 +107,6 @@ class Zend_Server_Method_Prototype
     }
 
     /**
-     * Set object state from array
-     *
-     * @param  array $options
-     * @return Zend_Server_Method_Prototype
-     */
-    public function setOptions(array $options)
-    {
-        foreach ($options as $key => $value) {
-            $method = 'set' . ucfirst($key);
-            if (method_exists($this, $method)) {
-                $this->$method($value);
-            }
-        }
-        return $this;
-    }
-
-    /**
      * Serialize to array
      *
      * @return array
@@ -204,5 +117,92 @@ class Zend_Server_Method_Prototype
             'returnType' => $this->getReturnType(),
             'parameters' => $this->getParameters(),
         );
+    }
+
+    /**
+     * Retrieve return type
+     *
+     * @return string
+     */
+    public function getReturnType()
+    {
+        return $this->_returnType;
+    }
+
+    /**
+     * Set return value
+     *
+     * @param  string $returnType
+     * @return Zend_Server_Method_Prototype
+     */
+    public function setReturnType($returnType)
+    {
+        $this->_returnType = $returnType;
+        return $this;
+    }
+
+    /**
+     * Retrieve parameters as list of types
+     *
+     * @return array
+     */
+    public function getParameters()
+    {
+        $types = array();
+        foreach ($this->_parameters as $parameter) {
+            $types[] = $parameter->getType();
+        }
+        return $types;
+    }
+
+    /**
+     * Set parameters
+     *
+     * @param  array $parameters
+     * @return Zend_Server_Method_Prototype
+     */
+    public function setParameters(array $parameters)
+    {
+        $this->_parameters = array();
+        $this->_parameterNameMap = array();
+        $this->addParameters($parameters);
+        return $this;
+    }
+
+    /**
+     * Add parameters
+     *
+     * @param  array $parameter
+     * @return Zend_Server_Method_Prototype
+     */
+    public function addParameters(array $parameters)
+    {
+        foreach ($parameters as $parameter) {
+            $this->addParameter($parameter);
+        }
+        return $this;
+    }
+
+    /**
+     * Add a parameter
+     *
+     * @param  string $parameter
+     * @return Zend_Server_Method_Prototype
+     */
+    public function addParameter($parameter)
+    {
+        if ($parameter instanceof Zend_Server_Method_Parameter) {
+            $this->_parameters[] = $parameter;
+            if (null !== ($name = $parameter->getName())) {
+                $this->_parameterNameMap[$name] = count($this->_parameters) - 1;
+            }
+        } else {
+            require_once 'Zend/Server/Method/Parameter.php';
+            $parameter = new Zend_Server_Method_Parameter(array(
+                'type' => (string)$parameter,
+            ));
+            $this->_parameters[] = $parameter;
+        }
+        return $this;
     }
 }

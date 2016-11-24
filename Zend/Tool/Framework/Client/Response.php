@@ -70,40 +70,6 @@ class Zend_Tool_Framework_Client_Response
     }
 
     /**
-     * setContent()
-     *
-     * @param string $content
-     * @return Zend_Tool_Framework_Client_Response
-     */
-    public function setContent($content, Array $decoratorOptions = array())
-    {
-        $this->_applyDecorators($content, $decoratorOptions);
-
-        $this->_content = array();
-        $this->appendContent($content);
-        return $this;
-    }
-
-    /**
-     * appendCallback
-     *
-     * @param string $content
-     * @return Zend_Tool_Framework_Client_Response
-     */
-    public function appendContent($content, Array $decoratorOptions = array())
-    {
-        $content = $this->_applyDecorators($content, $decoratorOptions);
-
-        if ($this->_callback !== null) {
-            call_user_func($this->_callback, $content);
-        }
-
-        $this->_content[] = $content;
-
-        return $this;
-    }
-
-    /**
      * setDefaultDecoratorOptions()
      *
      * @param array $decoratorOptions
@@ -131,6 +97,65 @@ class Zend_Tool_Framework_Client_Response
     }
 
     /**
+     * setContent()
+     *
+     * @param string $content
+     * @return Zend_Tool_Framework_Client_Response
+     */
+    public function setContent($content, Array $decoratorOptions = array())
+    {
+        $this->_applyDecorators($content, $decoratorOptions);
+
+        $this->_content = array();
+        $this->appendContent($content);
+        return $this;
+    }
+
+    /**
+     * _applyDecorators() apply a group of decorators
+     *
+     * @param string $content
+     * @param array $decoratorOptions
+     * @return string
+     */
+    protected function _applyDecorators($content, Array $decoratorOptions)
+    {
+        $options = array_merge($this->_defaultDecoratorOptions, $decoratorOptions);
+
+        $options = array_change_key_case($options, CASE_LOWER);
+
+        if ($options) {
+            foreach ($this->_decorators as $decoratorName => $decorator) {
+                if (array_key_exists($decoratorName, $options)) {
+                    $content = $decorator->decorate($content, $options[$decoratorName]);
+                }
+            }
+        }
+
+        return $content;
+
+    }
+
+    /**
+     * appendCallback
+     *
+     * @param string $content
+     * @return Zend_Tool_Framework_Client_Response
+     */
+    public function appendContent($content, Array $decoratorOptions = array())
+    {
+        $content = $this->_applyDecorators($content, $decoratorOptions);
+
+        if ($this->_callback !== null) {
+            call_user_func($this->_callback, $content);
+        }
+
+        $this->_content[] = $content;
+
+        return $this;
+    }
+
+    /**
      * isException()
      *
      * @return bool
@@ -138,6 +163,16 @@ class Zend_Tool_Framework_Client_Response
     public function isException()
     {
         return isset($this->_exception);
+    }
+
+    /**
+     * getException()
+     *
+     * @return Exception
+     */
+    public function getException()
+    {
+        return $this->_exception;
     }
 
     /**
@@ -150,16 +185,6 @@ class Zend_Tool_Framework_Client_Response
     {
         $this->_exception = $exception;
         return $this;
-    }
-
-    /**
-     * getException()
-     *
-     * @return Exception
-     */
-    public function getException()
-    {
-        return $this->_exception;
     }
 
     /**
@@ -192,32 +217,7 @@ class Zend_Tool_Framework_Client_Response
      */
     public function __toString()
     {
-        return (string) implode('', $this->_content);
-    }
-
-    /**
-     * _applyDecorators() apply a group of decorators
-     *
-     * @param string $content
-     * @param array $decoratorOptions
-     * @return string
-     */
-    protected function _applyDecorators($content, Array $decoratorOptions)
-    {
-        $options = array_merge($this->_defaultDecoratorOptions, $decoratorOptions);
-
-        $options = array_change_key_case($options, CASE_LOWER);
-
-        if ($options) {
-            foreach ($this->_decorators as $decoratorName => $decorator) {
-                if (array_key_exists($decoratorName, $options)) {
-                    $content = $decorator->decorate($content, $options[$decoratorName]);
-                }
-            }
-        }
-
-        return $content;
-
+        return (string)implode('', $this->_content);
     }
 
 }

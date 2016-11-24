@@ -1,8 +1,9 @@
 <?php
-/********************************************************************************* 
+
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2015 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,32 +19,32 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
 class Default_GeneratereportsController extends Zend_Controller_Action
 {
 
-	private $options;
-	private $userlog_model;
-	public function preDispatch()
-	{
-		$ajaxContext = $this->_helper->getHelper('AjaxContext');
-		$ajaxContext->addActionContext('empauto', 'json')->initContext();
-		
-	}
+    private $options;
+    private $userlog_model;
 
-	/**
-	 * Init
-	 *
-	 * @see Zend_Controller_Action::init()
-	 */
-	public function init()
-	{
-            $this->_options= $this->getInvokeArg('bootstrap')->getOptions();
-            $this->userlog_model = new Default_Model_Userloginlog();
-	}
-   
-	public function agencyAction()
-	{
-		
-	}
+    public function preDispatch()
+    {
+        $ajaxContext = $this->_helper->getHelper('AjaxContext');
+        $ajaxContext->addActionContext('empauto', 'json')->initContext();
+
+    }
+
+    /**
+     * Init
+     *
+     * @see Zend_Controller_Action::init()
+     */
+    public function init()
+    {
+        $this->_options = $this->getInvokeArg('bootstrap')->getOptions();
+        $this->userlog_model = new Default_Model_Userloginlog();
+    }
+
+    public function agencyAction()
+    {
+
+    }
 }

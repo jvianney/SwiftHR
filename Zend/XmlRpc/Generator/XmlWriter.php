@@ -37,6 +37,12 @@ class Zend_XmlRpc_Generator_XmlWriter extends Zend_XmlRpc_Generator_GeneratorAbs
      */
     protected $_xmlWriter;
 
+    public function saveXml()
+    {
+        $xml = $this->_xmlWriter->flush(false);
+        return $xml;
+    }
+
     /**
      * Initialized XMLWriter instance
      *
@@ -48,7 +54,6 @@ class Zend_XmlRpc_Generator_XmlWriter extends Zend_XmlRpc_Generator_GeneratorAbs
         $this->_xmlWriter->openMemory();
         $this->_xmlWriter->startDocument('1.0', $this->_encoding);
     }
-
 
     /**
      * Open a new XML element
@@ -83,11 +88,5 @@ class Zend_XmlRpc_Generator_XmlWriter extends Zend_XmlRpc_Generator_GeneratorAbs
         $this->_xmlWriter->endElement();
 
         return $this;
-    }
-
-    public function saveXml()
-    {
-        $xml = $this->_xmlWriter->flush(false);
-        return $xml;
     }
 }

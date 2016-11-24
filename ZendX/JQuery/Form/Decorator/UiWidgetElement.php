@@ -43,44 +43,23 @@ class ZendX_JQuery_Form_Decorator_UiWidgetElement
     implements ZendX_JQuery_Form_Decorator_UiWidgetElementMarker
 {
     /**
-     * Element attributes
-     *
-     * @var array
-     */
-    protected $_attribs;
-
-    /**
      * jQuery UI View Helper
      *
      * @var ZendX_JQuery_View_Helper_UiWidget
      */
     public $helper;
-
+    /**
+     * Element attributes
+     *
+     * @var array
+     */
+    protected $_attribs;
     /**
      * jQuery related attributes/options
      *
      * @var array
      */
     protected $_jQueryParams = array();
-
-    /**
-     * Get element attributes
-     *
-     * @return array
-     */
-    public function getElementAttribs()
-    {
-        if (null === $this->_attribs) {
-            if($this->_attribs = parent::getElementAttribs()) {
-                if (array_key_exists('jQueryParams', $this->_attribs)) {
-                    $this->setJQueryParams($this->_attribs['jQueryParams']);
-                    unset($this->_attribs['jQueryParams']);
-                }
-            }
-        }
-
-        return $this->_attribs;
-    }
 
     /**
      * Set a single jQuery option parameter
@@ -91,19 +70,7 @@ class ZendX_JQuery_Form_Decorator_UiWidgetElement
      */
     public function setJQueryParam($key, $value)
     {
-        $this->_jQueryParams[(string) $key] = $value;
-        return $this;
-    }
-
-    /**
-     * Set jQuery option parameters
-     *
-     * @param  array $params
-     * @return ZendX_JQuery_Form_Decorator_UiWidgetElement
-     */
-    public function setJQueryParams(array $params)
-    {
-        $this->_jQueryParams = array_merge($this->_jQueryParams, $params);
+        $this->_jQueryParams[(string)$key] = $value;
         return $this;
     }
 
@@ -116,7 +83,7 @@ class ZendX_JQuery_Form_Decorator_UiWidgetElement
     public function getJQueryParam($key)
     {
         $this->getElementAttribs();
-        $key = (string) $key;
+        $key = (string)$key;
         if (array_key_exists($key, $this->_jQueryParams)) {
             return $this->_jQueryParams[$key];
         }
@@ -125,14 +92,22 @@ class ZendX_JQuery_Form_Decorator_UiWidgetElement
     }
 
     /**
-     * Get jQuery option parameters
+     * Get element attributes
      *
      * @return array
      */
-    public function getJQueryParams()
+    public function getElementAttribs()
     {
-        $this->getElementAttribs();
-        return $this->_jQueryParams;
+        if (null === $this->_attribs) {
+            if ($this->_attribs = parent::getElementAttribs()) {
+                if (array_key_exists('jQueryParams', $this->_attribs)) {
+                    $this->setJQueryParams($this->_attribs['jQueryParams']);
+                    unset($this->_attribs['jQueryParams']);
+                }
+            }
+        }
+
+        return $this->_attribs;
     }
 
     /**
@@ -151,16 +126,16 @@ class ZendX_JQuery_Form_Decorator_UiWidgetElement
             throw new Zend_Form_Decorator_Exception('UiWidgetElement decorator cannot render without a registered view object');
         }
 
-        if(method_exists($element, 'getJQueryParams')) {
+        if (method_exists($element, 'getJQueryParams')) {
             $this->setJQueryParams($element->getJQueryParams());
         }
         $jQueryParams = $this->getJQueryParams();
 
-        $helper    = $this->getHelper();
+        $helper = $this->getHelper();
         $separator = $this->getSeparator();
-        $value     = $this->getValue($element);
-        $attribs   = $this->getElementAttribs();
-        $name      = $element->getFullyQualifiedName();
+        $value = $this->getValue($element);
+        $attribs = $this->getElementAttribs();
+        $name = $element->getFullyQualifiedName();
 
         $id = $element->getId();
         $attribs['id'] = $id;
@@ -174,5 +149,28 @@ class ZendX_JQuery_Form_Decorator_UiWidgetElement
             default:
                 return $elementContent;
         }
+    }
+
+    /**
+     * Get jQuery option parameters
+     *
+     * @return array
+     */
+    public function getJQueryParams()
+    {
+        $this->getElementAttribs();
+        return $this->_jQueryParams;
+    }
+
+    /**
+     * Set jQuery option parameters
+     *
+     * @param  array $params
+     * @return ZendX_JQuery_Form_Decorator_UiWidgetElement
+     */
+    public function setJQueryParams(array $params)
+    {
+        $this->_jQueryParams = array_merge($this->_jQueryParams, $params);
+        return $this;
     }
 }

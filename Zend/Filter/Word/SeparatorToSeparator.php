@@ -39,26 +39,14 @@ class Zend_Filter_Word_SeparatorToSeparator extends Zend_Filter_PregReplace
     /**
      * Constructor
      *
-     * @param  string  $searchSeparator      Seperator to search for
-     * @param  string  $replacementSeperator Seperator to replace with
+     * @param  string $searchSeparator Seperator to search for
+     * @param  string $replacementSeperator Seperator to replace with
      * @return void
      */
     public function __construct($searchSeparator = ' ', $replacementSeparator = '-')
     {
         $this->setSearchSeparator($searchSeparator);
         $this->setReplacementSeparator($replacementSeparator);
-    }
-
-    /**
-     * Sets a new seperator to search for
-     *
-     * @param  string  $separator  Seperator to search for
-     * @return $this
-     */
-    public function setSearchSeparator($separator)
-    {
-        $this->_searchSeparator = $separator;
-        return $this;
     }
 
     /**
@@ -72,14 +60,14 @@ class Zend_Filter_Word_SeparatorToSeparator extends Zend_Filter_PregReplace
     }
 
     /**
-     * Sets a new seperator which replaces the searched one
+     * Sets a new seperator to search for
      *
-     * @param  string  $separator  Seperator which replaces the searched one
+     * @param  string $separator Seperator to search for
      * @return $this
      */
-    public function setReplacementSeparator($separator)
+    public function setSearchSeparator($separator)
     {
-        $this->_replacementSeparator = $separator;
+        $this->_searchSeparator = $separator;
         return $this;
     }
 
@@ -91,6 +79,18 @@ class Zend_Filter_Word_SeparatorToSeparator extends Zend_Filter_PregReplace
     public function getReplacementSeparator()
     {
         return $this->_replacementSeparator;
+    }
+
+    /**
+     * Sets a new seperator which replaces the searched one
+     *
+     * @param  string $separator Seperator which replaces the searched one
+     * @return $this
+     */
+    public function setReplacementSeparator($separator)
+    {
+        $this->_replacementSeparator = $separator;
+        return $this;
     }
 
     /**

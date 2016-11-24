@@ -28,7 +28,7 @@ require_once "ZendX/JQuery/View/Helper/UiWidget.php";
 /**
  * jQuery Autocomplete View Helper
  *
- * @uses 	   Zend_Json, Zend_View_Helper_FormText
+ * @uses       Zend_Json, Zend_View_Helper_FormText
  * @package    ZendX_JQuery
  * @subpackage View
  * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
@@ -68,7 +68,7 @@ class ZendX_JQuery_View_Helper_AutoComplete extends ZendX_JQuery_View_Helper_UiW
             } else {
                 require_once "ZendX/JQuery/Exception.php";
                 throw new ZendX_JQuery_Exception(
-                    "Cannot construct AutoComplete field without specifying 'source' field, ".
+                    "Cannot construct AutoComplete field without specifying 'source' field, " .
                     "either an url or an array of elements."
                 );
             }
@@ -77,9 +77,9 @@ class ZendX_JQuery_View_Helper_AutoComplete extends ZendX_JQuery_View_Helper_UiW
         $params = ZendX_JQuery::encodeJson($params);
 
         $js = sprintf('%s("#%s").autocomplete(%s);',
-                ZendX_JQuery_View_Helper_JQuery::getJQueryHandler(),
-                $attribs['id'],
-                $params
+            ZendX_JQuery_View_Helper_JQuery::getJQueryHandler(),
+            $attribs['id'],
+            $params
         );
 
         $this->jquery->addOnLoad($js);

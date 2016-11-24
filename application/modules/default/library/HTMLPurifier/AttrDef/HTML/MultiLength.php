@@ -9,7 +9,8 @@
 class HTMLPurifier_AttrDef_HTML_MultiLength extends HTMLPurifier_AttrDef_HTML_Length
 {
 
-    public function validate($string, $config, $context) {
+    public function validate($string, $config, $context)
+    {
 
         $string = trim($string);
         if ($string === '') return false;
@@ -27,12 +28,12 @@ class HTMLPurifier_AttrDef_HTML_MultiLength extends HTMLPurifier_AttrDef_HTML_Le
         if ($int == '') return '*';
         if (!is_numeric($int)) return false;
 
-        $int = (int) $int;
+        $int = (int)$int;
 
         if ($int < 0) return false;
         if ($int == 0) return '0';
         if ($int == 1) return '*';
-        return ((string) $int) . '*';
+        return ((string)$int) . '*';
 
     }
 

@@ -47,12 +47,14 @@ class HTMLPurifier_AttrDef_CSS_BackgroundPosition extends HTMLPurifier_AttrDef
     protected $length;
     protected $percentage;
 
-    public function __construct() {
-        $this->length     = new HTMLPurifier_AttrDef_CSS_Length();
+    public function __construct()
+    {
+        $this->length = new HTMLPurifier_AttrDef_CSS_Length();
         $this->percentage = new HTMLPurifier_AttrDef_CSS_Percentage();
     }
 
-    public function validate($string, $config, $context) {
+    public function validate($string, $config, $context)
+    {
         $string = $this->parseCDATA($string);
         $bits = explode(' ', $string);
 
@@ -112,16 +114,15 @@ class HTMLPurifier_AttrDef_CSS_BackgroundPosition extends HTMLPurifier_AttrDef
         $ret = array();
 
         // first keyword
-        if     ($keywords['h'])     $ret[] = $keywords['h'];
+        if ($keywords['h']) $ret[] = $keywords['h'];
         elseif ($keywords['ch']) {
             $ret[] = $keywords['ch'];
             $keywords['cv'] = false; // prevent re-use: center = center center
-        }
-        elseif (count($measures))   $ret[] = array_shift($measures);
+        } elseif (count($measures)) $ret[] = array_shift($measures);
 
-        if     ($keywords['v'])     $ret[] = $keywords['v'];
-        elseif ($keywords['cv'])    $ret[] = $keywords['cv'];
-        elseif (count($measures))   $ret[] = array_shift($measures);
+        if ($keywords['v']) $ret[] = $keywords['v'];
+        elseif ($keywords['cv']) $ret[] = $keywords['cv'];
+        elseif (count($measures)) $ret[] = array_shift($measures);
 
         if (empty($ret)) return false;
         return implode(' ', $ret);

@@ -79,6 +79,18 @@ class Zend_Ldap_Node_Schema_AttributeType_OpenLdap extends Zend_Ldap_Node_Schema
     }
 
     /**
+     * Returns the parent attribute type in the inhertitance tree if one exists
+     *
+     * @return Zend_Ldap_Node_Schema_AttributeType_OpenLdap|null
+     */
+    public function getParent()
+    {
+        if (count($this->_parents) === 1) {
+            return $this->_parents[0];
+        }
+    }
+
+    /**
      * Gets the attribute maximum length
      *
      * @return int|null
@@ -113,17 +125,5 @@ class Zend_Ldap_Node_Schema_AttributeType_OpenLdap extends Zend_Ldap_Node_Schema
     public function getDescription()
     {
         return $this->desc;
-    }
-
-    /**
-     * Returns the parent attribute type in the inhertitance tree if one exists
-     *
-     * @return Zend_Ldap_Node_Schema_AttributeType_OpenLdap|null
-     */
-    public function getParent()
-    {
-        if (count($this->_parents) === 1) {
-            return $this->_parents[0];
-        }
     }
 }

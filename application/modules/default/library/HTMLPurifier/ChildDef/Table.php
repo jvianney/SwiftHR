@@ -9,8 +9,13 @@ class HTMLPurifier_ChildDef_Table extends HTMLPurifier_ChildDef
     public $type = 'table';
     public $elements = array('tr' => true, 'tbody' => true, 'thead' => true,
         'tfoot' => true, 'caption' => true, 'colgroup' => true, 'col' => true);
-    public function __construct() {}
-    public function validateChildren($tokens_of_children, $config, $context) {
+
+    public function __construct()
+    {
+    }
+
+    public function validateChildren($tokens_of_children, $config, $context)
+    {
         if (empty($tokens_of_children)) return false;
 
         // this ensures that the loop gets run one last time before closing
@@ -20,19 +25,19 @@ class HTMLPurifier_ChildDef_Table extends HTMLPurifier_ChildDef
 
         // only one of these elements is allowed in a table
         $caption = false;
-        $thead   = false;
-        $tfoot   = false;
+        $thead = false;
+        $tfoot = false;
 
         // as many of these as you want
-        $cols    = array();
+        $cols = array();
         $content = array();
 
         $nesting = 0; // current depth so we can determine nodes
         $is_collecting = false; // are we globbing together tokens to package
-                                // into one of the collectors?
+        // into one of the collectors?
         $collection = array(); // collected nodes
         $tag_index = 0; // the first node might be whitespace,
-                            // so this tells us where the start tag is
+        // so this tells us where the start tag is
 
         foreach ($tokens_of_children as $token) {
             $is_child = ($nesting == 0);
@@ -69,11 +74,11 @@ class HTMLPurifier_ChildDef_Table extends HTMLPurifier_ChildDef
                                 // transmutate the first and less entries into
                                 // tbody tags, and then put into content
                                 $collection[$tag_index]->name = 'tbody';
-                                $collection[count($collection)-1]->name = 'tbody';
+                                $collection[count($collection) - 1]->name = 'tbody';
                                 $content[] = $collection;
                             }
                             break;
-                         case 'colgroup':
+                        case 'colgroup':
                             $cols[] = $collection;
                             break;
                     }
@@ -99,7 +104,7 @@ class HTMLPurifier_ChildDef_Table extends HTMLPurifier_ChildDef
                     $tag_index = 0;
                     continue;
                 }
-                switch($token->name) {
+                switch ($token->name) {
                     case 'caption':
                     case 'colgroup':
                     case 'thead':
@@ -123,11 +128,11 @@ class HTMLPurifier_ChildDef_Table extends HTMLPurifier_ChildDef
 
         $ret = array();
         if ($caption !== false) $ret = array_merge($ret, $caption);
-        if ($cols !== false)    foreach ($cols as $token_array) $ret = array_merge($ret, $token_array);
-        if ($thead !== false)   $ret = array_merge($ret, $thead);
-        if ($tfoot !== false)   $ret = array_merge($ret, $tfoot);
+        if ($cols !== false) foreach ($cols as $token_array) $ret = array_merge($ret, $token_array);
+        if ($thead !== false) $ret = array_merge($ret, $thead);
+        if ($tfoot !== false) $ret = array_merge($ret, $tfoot);
         foreach ($content as $token_array) $ret = array_merge($ret, $token_array);
-        if (!empty($collection) && $is_collecting == false){
+        if (!empty($collection) && $is_collecting == false) {
             // grab the trailing space
             $ret = array_merge($ret, $collection);
         }

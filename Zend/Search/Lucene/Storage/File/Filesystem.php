@@ -46,11 +46,11 @@ class Zend_Search_Lucene_Storage_File_Filesystem extends Zend_Search_Lucene_Stor
      * @param string $filename
      * @param string $mode
      */
-    public function __construct($filename, $mode='r+b')
+    public function __construct($filename, $mode = 'r+b')
     {
         global $php_errormsg;
 
-        if (strpos($mode, 'w') === false  &&  !is_readable($filename)) {
+        if (strpos($mode, 'w') === false && !is_readable($filename)) {
             // opening for reading non-readable file
             require_once 'Zend/Search/Lucene/Exception.php';
             throw new Zend_Search_Lucene_Exception('File \'' . $filename . '\' is not readable.');
@@ -88,7 +88,7 @@ class Zend_Search_Lucene_Storage_File_Filesystem extends Zend_Search_Lucene_Stor
      * @param integer $whence
      * @return integer
      */
-    public function seek($offset, $whence=SEEK_SET)
+    public function seek($offset, $whence = SEEK_SET)
     {
         return fseek($this->_fileHandle, $offset, $whence);
     }
@@ -121,7 +121,7 @@ class Zend_Search_Lucene_Storage_File_Filesystem extends Zend_Search_Lucene_Stor
      */
     public function close()
     {
-        if ($this->_fileHandle !== null ) {
+        if ($this->_fileHandle !== null) {
             @fclose($this->_fileHandle);
             $this->_fileHandle = null;
         }
@@ -137,61 +137,9 @@ class Zend_Search_Lucene_Storage_File_Filesystem extends Zend_Search_Lucene_Stor
         $position = ftell($this->_fileHandle);
         fseek($this->_fileHandle, 0, SEEK_END);
         $size = ftell($this->_fileHandle);
-        fseek($this->_fileHandle,$position);
+        fseek($this->_fileHandle, $position);
 
         return $size;
-    }
-
-    /**
-     * Read a $length bytes from the file and advance the file pointer.
-     *
-     * @param integer $length
-     * @return string
-     */
-    protected function _fread($length=1)
-    {
-        if ($length == 0) {
-            return '';
-        }
-
-        if ($length < 1024) {
-            return fread($this->_fileHandle, $length);
-        }
-
-        $data = '';
-        while ($length > 0 && !feof($this->_fileHandle)) {
-            $nextBlock = fread($this->_fileHandle, $length);
-            if ($nextBlock === false) {
-                require_once 'Zend/Search/Lucene/Exception.php';
-                throw new Zend_Search_Lucene_Exception( "Error occured while file reading." );
-            }
-
-            $data .= $nextBlock;
-            $length -= strlen($nextBlock);
-        }
-        if ($length != 0) {
-            require_once 'Zend/Search/Lucene/Exception.php';
-            throw new Zend_Search_Lucene_Exception( "Error occured while file reading." );
-        }
-
-        return $data;
-    }
-
-
-    /**
-     * Writes $length number of bytes (all, if $length===null) to the end
-     * of the file.
-     *
-     * @param string $data
-     * @param integer $length
-     */
-    protected function _fwrite($data, $length=null)
-    {
-        if ($length === null ) {
-            fwrite($this->_fileHandle, $data);
-        } else {
-            fwrite($this->_fileHandle, $data, $length);
-        }
     }
 
     /**
@@ -221,10 +169,61 @@ class Zend_Search_Lucene_Storage_File_Filesystem extends Zend_Search_Lucene_Stor
      */
     public function unlock()
     {
-        if ($this->_fileHandle !== null ) {
+        if ($this->_fileHandle !== null) {
             return flock($this->_fileHandle, LOCK_UN);
         } else {
             return true;
+        }
+    }
+
+    /**
+     * Read a $length bytes from the file and advance the file pointer.
+     *
+     * @param integer $length
+     * @return string
+     */
+    protected function _fread($length = 1)
+    {
+        if ($length == 0) {
+            return '';
+        }
+
+        if ($length < 1024) {
+            return fread($this->_fileHandle, $length);
+        }
+
+        $data = '';
+        while ($length > 0 && !feof($this->_fileHandle)) {
+            $nextBlock = fread($this->_fileHandle, $length);
+            if ($nextBlock === false) {
+                require_once 'Zend/Search/Lucene/Exception.php';
+                throw new Zend_Search_Lucene_Exception("Error occured while file reading.");
+            }
+
+            $data .= $nextBlock;
+            $length -= strlen($nextBlock);
+        }
+        if ($length != 0) {
+            require_once 'Zend/Search/Lucene/Exception.php';
+            throw new Zend_Search_Lucene_Exception("Error occured while file reading.");
+        }
+
+        return $data;
+    }
+
+    /**
+     * Writes $length number of bytes (all, if $length===null) to the end
+     * of the file.
+     *
+     * @param string $data
+     * @param integer $length
+     */
+    protected function _fwrite($data, $length = null)
+    {
+        if ($length === null) {
+            fwrite($this->_fileHandle, $data);
+        } else {
+            fwrite($this->_fileHandle, $data, $length);
         }
     }
 }

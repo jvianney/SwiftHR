@@ -51,7 +51,7 @@ class Zend_Validate_Barcode_Royalmail extends Zend_Validate_Barcode_AdapterAbstr
         'I' => 4, 'J' => 4, 'K' => 4, 'L' => 4, 'M' => 4, 'N' => 4,
         'O' => 5, 'P' => 5, 'Q' => 5, 'R' => 5, 'S' => 5, 'T' => 5,
         'U' => 0, 'V' => 0, 'W' => 0, 'X' => 0, 'Y' => 0, 'Z' => 0,
-     );
+    );
 
     protected $_columns = array(
         '0' => 1, '1' => 2, '2' => 3, '3' => 4, '4' => 5, '5' => 0,
@@ -67,36 +67,6 @@ class Zend_Validate_Barcode_Royalmail extends Zend_Validate_Barcode_AdapterAbstr
      * @var string
      */
     protected $_checksum = '_royalmail';
-
-    /**
-     * Validates the checksum ()
-     *
-     * @param  string $value The barcode to validate
-     * @return boolean
-     */
-    protected function _royalmail($value)
-    {
-        $checksum = substr($value, -1, 1);
-        $values   = str_split(substr($value, 0, -1));
-        $rowvalue = 0;
-        $colvalue = 0;
-        foreach($values as $row) {
-            $rowvalue += $this->_rows[$row];
-            $colvalue += $this->_columns[$row];
-        }
-
-        $rowvalue %= 6;
-        $colvalue %= 6;
-
-        $rowchkvalue = array_keys($this->_rows, $rowvalue);
-        $colchkvalue = array_keys($this->_columns, $colvalue);
-        $chkvalue    = current(array_intersect($rowchkvalue, $colchkvalue));
-        if ($chkvalue == $checksum) {
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * Allows start and stop tag within checked chars
@@ -117,5 +87,35 @@ class Zend_Validate_Barcode_Royalmail extends Zend_Validate_Barcode_AdapterAbstr
         }
 
         return parent::checkChars($value);
+    }
+
+    /**
+     * Validates the checksum ()
+     *
+     * @param  string $value The barcode to validate
+     * @return boolean
+     */
+    protected function _royalmail($value)
+    {
+        $checksum = substr($value, -1, 1);
+        $values = str_split(substr($value, 0, -1));
+        $rowvalue = 0;
+        $colvalue = 0;
+        foreach ($values as $row) {
+            $rowvalue += $this->_rows[$row];
+            $colvalue += $this->_columns[$row];
+        }
+
+        $rowvalue %= 6;
+        $colvalue %= 6;
+
+        $rowchkvalue = array_keys($this->_rows, $rowvalue);
+        $colchkvalue = array_keys($this->_columns, $colvalue);
+        $chkvalue = current(array_intersect($rowchkvalue, $colchkvalue));
+        if ($chkvalue == $checksum) {
+            return true;
+        }
+
+        return false;
     }
 }

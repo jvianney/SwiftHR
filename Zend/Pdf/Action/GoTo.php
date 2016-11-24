@@ -52,7 +52,7 @@ class Zend_Pdf_Action_GoTo extends Zend_Pdf_Action
      * Object constructor
      *
      * @param Zend_Pdf_Element_Dictionary $dictionary
-     * @param SplObjectStorage            $processedActions  list of already processed action dictionaries, used to avoid cyclic references
+     * @param SplObjectStorage $processedActions list of already processed action dictionaries, used to avoid cyclic references
      */
     public function __construct(Zend_Pdf_Element $dictionary, SplObjectStorage $processedActions)
     {
@@ -81,11 +81,21 @@ class Zend_Pdf_Action_GoTo extends Zend_Pdf_Action
 
         $dictionary = new Zend_Pdf_Element_Dictionary();
         $dictionary->Type = new Zend_Pdf_Element_Name('Action');
-        $dictionary->S    = new Zend_Pdf_Element_Name('GoTo');
+        $dictionary->S = new Zend_Pdf_Element_Name('GoTo');
         $dictionary->Next = null;
-        $dictionary->D    = $destination->getResource();
+        $dictionary->D = $destination->getResource();
 
         return new Zend_Pdf_Action_GoTo($dictionary, new SplObjectStorage());
+    }
+
+    /**
+     * Get goto action destination
+     *
+     * @return Zend_Pdf_Destination
+     */
+    public function getDestination()
+    {
+        return $this->_destination;
     }
 
     /**
@@ -102,15 +112,5 @@ class Zend_Pdf_Action_GoTo extends Zend_Pdf_Action
         $this->_actionDictionary->D = $destination->getResource();
 
         return $this;
-    }
-
-    /**
-     * Get goto action destination
-     *
-     * @return Zend_Pdf_Destination
-     */
-    public function getDestination()
-    {
-        return $this->_destination;
     }
 }

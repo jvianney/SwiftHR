@@ -16,29 +16,16 @@ class HTMLPurifier_Context
     private $_storage = array();
 
     /**
-     * Registers a variable into the context.
-     * @param $name String name
-     * @param $ref Reference to variable to be registered
-     */
-    public function register($name, &$ref) {
-        if (isset($this->_storage[$name])) {
-            trigger_error("Name $name produces collision, cannot re-register",
-                          E_USER_ERROR);
-            return;
-        }
-        $this->_storage[$name] =& $ref;
-    }
-
-    /**
      * Retrieves a variable reference from the context.
      * @param $name String name
      * @param $ignore_error Boolean whether or not to ignore error
      */
-    public function &get($name, $ignore_error = false) {
+    public function &get($name, $ignore_error = false)
+    {
         if (!isset($this->_storage[$name])) {
             if (!$ignore_error) {
                 trigger_error("Attempted to retrieve non-existent variable $name",
-                              E_USER_ERROR);
+                    E_USER_ERROR);
             }
             $var = null; // so we can return by reference
             return $var;
@@ -50,10 +37,11 @@ class HTMLPurifier_Context
      * Destorys a variable in the context.
      * @param $name String name
      */
-    public function destroy($name) {
+    public function destroy($name)
+    {
         if (!isset($this->_storage[$name])) {
             trigger_error("Attempted to destroy non-existent variable $name",
-                          E_USER_ERROR);
+                E_USER_ERROR);
             return;
         }
         unset($this->_storage[$name]);
@@ -63,7 +51,8 @@ class HTMLPurifier_Context
      * Checks whether or not the variable exists.
      * @param $name String name
      */
-    public function exists($name) {
+    public function exists($name)
+    {
         return isset($this->_storage[$name]);
     }
 
@@ -71,10 +60,26 @@ class HTMLPurifier_Context
      * Loads a series of variables from an associative array
      * @param $context_array Assoc array of variables to load
      */
-    public function loadArray($context_array) {
+    public function loadArray($context_array)
+    {
         foreach ($context_array as $key => $discard) {
             $this->register($key, $context_array[$key]);
         }
+    }
+
+    /**
+     * Registers a variable into the context.
+     * @param $name String name
+     * @param $ref Reference to variable to be registered
+     */
+    public function register($name, &$ref)
+    {
+        if (isset($this->_storage[$name])) {
+            trigger_error("Name $name produces collision, cannot re-register",
+                E_USER_ERROR);
+            return;
+        }
+        $this->_storage[$name] =& $ref;
     }
 
 }

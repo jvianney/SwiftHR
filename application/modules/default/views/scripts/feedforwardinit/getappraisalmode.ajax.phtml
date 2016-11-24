@@ -1,8 +1,8 @@
-<?php 
-/********************************************************************************* 
+<?php
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -20,21 +20,21 @@
  ********************************************************************************/
 ?>
 
-<?php 
+<?php
 //echo "coming here"; die;
 //$data = $this->data;
 $feedforwardInitForm = $this->feedforwardInitForm;
 $appraisal_mode = $this->appraisal_mode;
-   		 $appraisal_mode_period = $appraisal_mode['appraisal_mode'];
-    	 $appraisal_form_year = $appraisal_mode['from_year']; 
-    	 $appraisal_to_year = $appraisal_mode['to_year'];
-    	 $appraisal_period = $appraisal_mode['appraisal_period'];
-    	  
-    $appraisal_mode = $appraisal_form_year.'_'.$appraisal_to_year.'_'.$appraisal_mode_period.'_'.$appraisal_period;
- 	 $feedforwardInitForm->appraisal_mode->addMultiOption(1,utf8_encode($appraisal_mode));
- 	// echo $feedforwardInitForm;
-    //echo $appraisal_mode;
- 	echo $feedforwardInitForm->appraisal_mode; 
- 
+$appraisal_mode_period = $appraisal_mode['appraisal_mode'];
+$appraisal_form_year = $appraisal_mode['from_year'];
+$appraisal_to_year = $appraisal_mode['to_year'];
+$appraisal_period = $appraisal_mode['appraisal_period'];
+
+$appraisal_mode = $appraisal_form_year . '_' . $appraisal_to_year . '_' . $appraisal_mode_period . '_' . $appraisal_period;
+$feedforwardInitForm->appraisal_mode->addMultiOption(1, utf8_encode($appraisal_mode));
+// echo $feedforwardInitForm;
+//echo $appraisal_mode;
+echo $feedforwardInitForm->appraisal_mode;
+
 ?> 
  

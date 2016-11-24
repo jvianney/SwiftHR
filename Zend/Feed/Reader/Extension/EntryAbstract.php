@@ -79,8 +79,8 @@ abstract class Zend_Feed_Reader_Extension_EntryAbstract
      */
     public function __construct(DOMElement $entry, $entryKey, $type = null)
     {
-        $this->_entry       = $entry;
-        $this->_entryKey    = $entryKey;
+        $this->_entry = $entry;
+        $this->_entryKey = $entryKey;
         $this->_domDocument = $entry->ownerDocument;
 
         if ($type !== null) {
@@ -92,24 +92,24 @@ abstract class Zend_Feed_Reader_Extension_EntryAbstract
         if ($this->getType() == Zend_Feed_Reader::TYPE_RSS_10
             || $this->getType() == Zend_Feed_Reader::TYPE_RSS_090
         ) {
-            $this->setXpathPrefix('//rss:item[' . ($this->_entryKey+1) . ']');
+            $this->setXpathPrefix('//rss:item[' . ($this->_entryKey + 1) . ']');
         } elseif ($this->getType() == Zend_Feed_Reader::TYPE_ATOM_10
-                  || $this->getType() == Zend_Feed_Reader::TYPE_ATOM_03
+            || $this->getType() == Zend_Feed_Reader::TYPE_ATOM_03
         ) {
-            $this->setXpathPrefix('//atom:entry[' . ($this->_entryKey+1) . ']');
+            $this->setXpathPrefix('//atom:entry[' . ($this->_entryKey + 1) . ']');
         } else {
-            $this->setXpathPrefix('//item[' . ($this->_entryKey+1) . ']');
+            $this->setXpathPrefix('//item[' . ($this->_entryKey + 1) . ']');
         }
     }
 
     /**
-     * Get the DOM
+     * Get the entry type
      *
-     * @return DOMDocument
+     * @return string
      */
-    public function getDomDocument()
+    public function getType()
     {
-        return $this->_domDocument;
+        return $this->_data['type'];
     }
 
     /**
@@ -124,26 +124,13 @@ abstract class Zend_Feed_Reader_Extension_EntryAbstract
     }
 
     /**
-     * Get the entry type
+     * Get the DOM
      *
-     * @return string
+     * @return DOMDocument
      */
-    public function getType()
+    public function getDomDocument()
     {
-        return $this->_data['type'];
-    }
-
-    /**
-     * Set the XPath query
-     *
-     * @param  DOMXPath $xpath
-     * @return Zend_Feed_Reader_Extension_EntryAbstract
-     */
-    public function setXpath(DOMXPath $xpath)
-    {
-        $this->_xpath = $xpath;
-        $this->_registerNamespaces();
-        return $this;
+        return $this->_domDocument;
     }
 
     /**
@@ -157,6 +144,19 @@ abstract class Zend_Feed_Reader_Extension_EntryAbstract
             $this->setXpath(new DOMXPath($this->getDomDocument()));
         }
         return $this->_xpath;
+    }
+
+    /**
+     * Set the XPath query
+     *
+     * @param  DOMXPath $xpath
+     * @return Zend_Feed_Reader_Extension_EntryAbstract
+     */
+    public function setXpath(DOMXPath $xpath)
+    {
+        $this->_xpath = $xpath;
+        $this->_registerNamespaces();
+        return $this;
     }
 
     /**

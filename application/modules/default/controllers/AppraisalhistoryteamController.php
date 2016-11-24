@@ -20,7 +20,8 @@
  *  Sentrifugo Support <support@sentrifugo.com>
  * ****************************************************************************** */
 
-class Default_AppraisalhistoryteamController extends Zend_Controller_Action {
+class Default_AppraisalhistoryteamController extends Zend_Controller_Action
+{
 
     private $options;
 
@@ -29,17 +30,20 @@ class Default_AppraisalhistoryteamController extends Zend_Controller_Action {
 //										
 //	public $app_status_array = array(1=>APP_PENDING_EMP, 2=>APP_PENDING_L1, 3=>APP_PENDING_L2, 4=>APP_PENDING_L3,
 //										5=>APP_PENDING_L4, 6=>APP_PENDING_L5, 7=>APP_COMPLETED);
-    public function preDispatch() {
-        
+    public function preDispatch()
+    {
+
     }
 
-    public function init() {
+    public function init()
+    {
         $this->_options = $this->getInvokeArg('bootstrap')->getOptions();
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('getsearchedempcontent', 'html')->initContext();
     }
 
-    public function indexAction() {
+    public function indexAction()
+    {
         $appraisalHistoryModel = new Default_Model_Appraisalhistory();
         $call = $this->_getParam('call');
         if ($call == 'ajaxcall')
@@ -64,8 +68,7 @@ class Default_AppraisalhistoryteamController extends Zend_Controller_Action {
             $searchData = '';
             $searchQuery = '';
             $searchArray = '';
-        }
-        else {
+        } else {
             $sort = ($this->_getParam('sort') != '') ? $this->_getParam('sort') : 'DESC';
             $by = ($this->_getParam('by') != '') ? $this->_getParam('by') : 'a.modifieddate';
             if ($dashboardcall == 'Yes')
@@ -78,8 +81,8 @@ class Default_AppraisalhistoryteamController extends Zend_Controller_Action {
             $searchData = rtrim($searchData, ',');
             /** search from grid - END * */
         }
-        $flag='historyteam';
-        $dataTmp = $appraisalHistoryModel->getGrid($sort, $by, $perPage, $pageNo, $searchData, $call, $dashboardcall,$flag);
+        $flag = 'historyteam';
+        $dataTmp = $appraisalHistoryModel->getGrid($sort, $by, $perPage, $pageNo, $searchData, $call, $dashboardcall, $flag);
 
         array_push($data, $dataTmp);
         $this->view->dataArray = $data;
@@ -88,7 +91,8 @@ class Default_AppraisalhistoryteamController extends Zend_Controller_Action {
         $this->render('commongrid/performanceindex', null, true);
     }
 
-    public function viewAction() {
+    public function viewAction()
+    {
         $auth = Zend_Auth::getInstance();
         if ($auth->hasIdentity()) {
             $loginUserId = $auth->getStorage()->read()->id;
@@ -99,60 +103,52 @@ class Default_AppraisalhistoryteamController extends Zend_Controller_Action {
                 if (is_numeric($id) && $id > 0) {
                     $errorMsg = "";
                     $auth = Zend_Auth::getInstance();
-                    if($auth->hasIdentity())
-                    {
+                    if ($auth->hasIdentity()) {
                         $loginUserId = $auth->getStorage()->read()->id;
                         $businessunit_id = $auth->getStorage()->read()->businessunit_id;
-                        $department_id = $auth->getStorage()->read()->department_id; 
+                        $department_id = $auth->getStorage()->read()->department_id;
                         $loginuserRole = $auth->getStorage()->read()->emprole;
                         $loginuserGroup = $auth->getStorage()->read()->group_id;
                     }
-                    $view = $this->view;                        
+                    $view = $this->view;
                     $model = new Default_Model_Appraisalmanager();
                     $app_rating_model = new Default_Model_Appraisalratings();
                     $ratingflag = 'false';
                     $linemangerids = '';
                     $managerprofileimgArr = array();
-                    
-                    $emp_data = $model->getEmpdata_managerapphistory($loginUserId,'',$id);
-                    if(!empty($emp_data))
-                    {
-                            $checkRatingsExists = $app_rating_model->getAppraisalRatingsbyInitId($emp_data[0]['init_id']);
-                            if(!empty($checkRatingsExists))
-                            {
-                                    $ratingflag = 'true';
-                            }
-                    }
-                    if(!empty($emp_data))
-                    {
-                            foreach($emp_data as $key => $empval)
-                            {
-                                    for($i=1;$i<=5;$i++)
-                                    {
-                                            if(isset($empval['line_rating_'.$i]))
-                                            {
-                                                    $linemangerids.=$empval['line_manager_'.$i].',';
-                                            }
-                                    }
-                                    if($linemangerids)
-                                    {
-                                                $linemangerids = rtrim($linemangerids,',');  
-                                                    $managerprofileimgArr = $app_rating_model->getManagerProfileImg($linemangerids);
-                                    }
-                                    $emp_data[$key]= $emp_data[$key]+$managerprofileimgArr;
-                                    $linemangerids = '';
-                                    $managerprofileimgArr = array();
 
+                    $emp_data = $model->getEmpdata_managerapphistory($loginUserId, '', $id);
+                    if (!empty($emp_data)) {
+                        $checkRatingsExists = $app_rating_model->getAppraisalRatingsbyInitId($emp_data[0]['init_id']);
+                        if (!empty($checkRatingsExists)) {
+                            $ratingflag = 'true';
+                        }
+                    }
+                    if (!empty($emp_data)) {
+                        foreach ($emp_data as $key => $empval) {
+                            for ($i = 1; $i <= 5; $i++) {
+                                if (isset($empval['line_rating_' . $i])) {
+                                    $linemangerids .= $empval['line_manager_' . $i] . ',';
+                                }
                             }
+                            if ($linemangerids) {
+                                $linemangerids = rtrim($linemangerids, ',');
+                                $managerprofileimgArr = $app_rating_model->getManagerProfileImg($linemangerids);
+                            }
+                            $emp_data[$key] = $emp_data[$key] + $managerprofileimgArr;
+                            $linemangerids = '';
+                            $managerprofileimgArr = array();
+
+                        }
                     }
                     $view->app_init_id = $id;
                     $view->emp_data = $emp_data;
-                    $view->manager_id = $loginUserId;                            
+                    $view->manager_id = $loginUserId;
                     $view->error_msg = $errorMsg;
                     $view->ratingflag = $ratingflag;
                     $view->loginuserRole = $loginuserRole;
                     $view->loginuserGroup = $loginuserGroup;
-                    
+
                 } else {
 
                     $this->view->rowexist = "norows";
@@ -164,63 +160,56 @@ class Default_AppraisalhistoryteamController extends Zend_Controller_Action {
             $this->view->rowexist = "norows";
         }
     }
-    
+
     public function getsearchedempcontentAction()
     {
         $errorMsg = "";
         $auth = Zend_Auth::getInstance();
-     	if($auth->hasIdentity())
-        {
+        if ($auth->hasIdentity()) {
             $loginUserId = $auth->getStorage()->read()->id;
             $businessunit_id = $auth->getStorage()->read()->businessunit_id;
-            $department_id = $auth->getStorage()->read()->department_id; 
+            $department_id = $auth->getStorage()->read()->department_id;
             $loginuserRole = $auth->getStorage()->read()->emprole;
             $loginuserGroup = $auth->getStorage()->read()->group_id;
         }
         $searchval = '';
         $searchstring = htmlspecialchars($this->_request->getParam('searchstring'));
         $app_init_id = sapp_Global::_decrypt(($this->_request->getParam('app_init_id')));
-       // $searchstring = $this->_request->getParam('searchstring');
-        $view = $this->view;                        
+        // $searchstring = $this->_request->getParam('searchstring');
+        $view = $this->view;
         $model = new Default_Model_Appraisalmanager();
         $app_rating_model = new Default_Model_Appraisalratings();
         $ratingflag = 'false';
         $linemangerids = '';
         $managerprofileimgArr = array();
-		
-        if($searchstring!='')
-        {
-        	$searchval = " and es.userfullname like '%$searchstring%'";
+
+        if ($searchstring != '') {
+            $searchval = " and es.userfullname like '%$searchstring%'";
         }
         //$emp_data = $model->getSearchEmpdata_managerapp($loginUserId,$searchval);
-        if(!empty($app_init_id)) {
-            $emp_data = $model->getEmpdata_managerapphistory($loginUserId,$searchval,$app_init_id);
+        if (!empty($app_init_id)) {
+            $emp_data = $model->getEmpdata_managerapphistory($loginUserId, $searchval, $app_init_id);
         }
-    	if(!empty($emp_data))
-        {
-        	foreach($emp_data as $key => $empval)
-        	{
-        		for($i=1;$i<=5;$i++)
-        		{
-        			if(isset($empval['line_rating_'.$i]))
-        			{
-        				$linemangerids.=$empval['line_manager_'.$i].',';
-        			}
-        		}
-        		if($linemangerids)
-        		{
-					$linemangerids = rtrim($linemangerids,',');  
-					$managerprofileimgArr = $app_rating_model->getManagerProfileImg($linemangerids);
-        		}
-        		$emp_data[$key]= $emp_data[$key]+$managerprofileimgArr;
-        		$linemangerids = '';
-        		$managerprofileimgArr = array();
-        		
-        	}
+        if (!empty($emp_data)) {
+            foreach ($emp_data as $key => $empval) {
+                for ($i = 1; $i <= 5; $i++) {
+                    if (isset($empval['line_rating_' . $i])) {
+                        $linemangerids .= $empval['line_manager_' . $i] . ',';
+                    }
+                }
+                if ($linemangerids) {
+                    $linemangerids = rtrim($linemangerids, ',');
+                    $managerprofileimgArr = $app_rating_model->getManagerProfileImg($linemangerids);
+                }
+                $emp_data[$key] = $emp_data[$key] + $managerprofileimgArr;
+                $linemangerids = '';
+                $managerprofileimgArr = array();
+
+            }
         }
-        
+
         $view->emp_data = $emp_data;
-        $view->manager_id = $loginUserId;                            
+        $view->manager_id = $loginUserId;
         $view->error_msg = $errorMsg;
     }
 }

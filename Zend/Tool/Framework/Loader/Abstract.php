@@ -52,14 +52,7 @@ abstract class Zend_Tool_Framework_Loader_Abstract
     /**
      * @var array
      */
-    private $_loadedClasses  = array();
-
-    /**
-     * _getFiles
-     *
-     * @return array Array Of Files
-     */
-    abstract protected function _getFiles();
+    private $_loadedClasses = array();
 
     /**
      * setRegistry() - required by the enabled interface to get an instance of
@@ -81,7 +74,7 @@ abstract class Zend_Tool_Framework_Loader_Abstract
     public function load()
     {
         $this->_retrievedFiles = $this->getRetrievedFiles();
-        $this->_loadedClasses  = array();
+        $this->_loadedClasses = array();
 
         $manifestRepository = $this->_registry->getManifestRepository();
         $providerRepository = $this->_registry->getProviderRepository();
@@ -90,7 +83,7 @@ abstract class Zend_Tool_Framework_Loader_Abstract
 
         // loop through files and find the classes declared by loading the file
         foreach ($this->_retrievedFiles as $file) {
-            if(is_dir($file)) {
+            if (is_dir($file)) {
                 continue;
             }
 
@@ -109,16 +102,16 @@ abstract class Zend_Tool_Framework_Loader_Abstract
             // reflect class to see if its something we want to load
             $reflectionClass = new ReflectionClass($loadedClass);
             if ($reflectionClass->implementsInterface('Zend_Tool_Framework_Manifest_Interface')
-                && !$reflectionClass->isAbstract())
-            {
+                && !$reflectionClass->isAbstract()
+            ) {
                 $manifestRepository->addManifest($reflectionClass->newInstance());
                 $this->_loadedClasses[] = $loadedClass;
             }
 
             if ($reflectionClass->implementsInterface('Zend_Tool_Framework_Provider_Interface')
                 && !$reflectionClass->isAbstract()
-                && !$providerRepository->hasProvider($reflectionClass->getName(), false))
-            {
+                && !$providerRepository->hasProvider($reflectionClass->getName(), false)
+            ) {
                 $providerRepository->addProvider($reflectionClass->newInstance());
                 $this->_loadedClasses[] = $loadedClass;
             }
@@ -141,6 +134,13 @@ abstract class Zend_Tool_Framework_Loader_Abstract
 
         return $this->_retrievedFiles;
     }
+
+    /**
+     * _getFiles
+     *
+     * @return array Array Of Files
+     */
+    abstract protected function _getFiles();
 
     /**
      * getLoadedClasses()

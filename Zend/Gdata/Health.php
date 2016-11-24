@@ -82,7 +82,12 @@ class Zend_Gdata_Health extends Zend_Gdata
      */
     const HEALTH_SERVICE_NAME = 'health';
     const H9_SANDBOX_SERVICE_NAME = 'weaver';
-
+    public static $namespaces =
+        array('ccr' => 'urn:astm-org:CCR',
+            'batch' => 'http://schemas.google.com/gdata/batch',
+            'h9m' => 'http://schemas.google.com/health/metadata',
+            'gAcl' => 'http://schemas.google.com/acl/2007',
+            'gd' => 'http://schemas.google.com/g/2005');
     /**
      * Profile ID used for all API interactions.  This can only be set when
      * using ClientLogin for authentication.
@@ -90,7 +95,6 @@ class Zend_Gdata_Health extends Zend_Gdata
      * @var string
      */
     private $_profileID = null;
-
     /**
      * True if API calls should be made to the H9 developer sandbox at /h9
      * rather than /health
@@ -98,13 +102,6 @@ class Zend_Gdata_Health extends Zend_Gdata
      * @var bool
      */
     private $_useH9Sandbox = false;
-
-    public static $namespaces =
-        array('ccr' => 'urn:astm-org:CCR',
-              'batch' => 'http://schemas.google.com/gdata/batch',
-              'h9m' => 'http://schemas.google.com/health/metadata',
-              'gAcl' => 'http://schemas.google.com/acl/2007',
-              'gd' => 'http://schemas.google.com/g/2005');
 
     /**
      * Create Zend_Gdata_Health object
@@ -125,27 +122,6 @@ class Zend_Gdata_Health extends Zend_Gdata
     }
 
     /**
-     * Gets the id of the user's profile
-     *
-     * @return string The profile id
-     */
-    public function getProfileID()
-    {
-        return $this->_profileID;
-    }
-
-    /**
-     * Sets which of the user's profiles will be used
-     *
-     * @param string $id The profile ID
-     * @return Zend_Gdata_Health Provides a fluent interface
-     */
-    public function setProfileID($id) {
-        $this->_profileID = $id;
-        return $this;
-    }
-
-     /**
      * Retrieves the list of profiles associated with the user's ClientLogin
      * credentials.
      *
@@ -160,7 +136,7 @@ class Zend_Gdata_Health extends Zend_Gdata
                 'Profiles list feed is only available when using ClientLogin');
         }
 
-        if($query === null)  {
+        if ($query === null) {
             $uri = self::CLIENTLOGIN_PROFILELIST_FEED_URI;
         } else if ($query instanceof Zend_Gdata_Query) {
             $uri = $query->getQueryUrl();
@@ -187,7 +163,8 @@ class Zend_Gdata_Health extends Zend_Gdata
     public function getHealthProfileFeed($query = null)
     {
         if ($this->_httpClient->getClientLoginToken() !== null &&
-            $this->getProfileID() == null) {
+            $this->getProfileID() == null
+        ) {
             require_once 'Zend/Gdata/App/AuthException.php';
             throw new Zend_Gdata_App_AuthException(
                 'Profile ID must not be null. Did you call setProfileID()?');
@@ -196,7 +173,8 @@ class Zend_Gdata_Health extends Zend_Gdata
         if ($query instanceof Zend_Gdata_Query) {
             $uri = $query->getQueryUrl();
         } else if ($this->_httpClient->getClientLoginToken() !== null &&
-                   $query == null) {
+            $query == null
+        ) {
             $uri = self::CLIENTLOGIN_PROFILE_FEED_URI . '/' . $this->getProfileID();
         } else if ($query === null) {
             $uri = self::AUTHSUB_PROFILE_FEED_URI;
@@ -210,6 +188,28 @@ class Zend_Gdata_Health extends Zend_Gdata
         }
 
         return parent::getFeed($uri, 'Zend_Gdata_Health_ProfileFeed');
+    }
+
+    /**
+     * Gets the id of the user's profile
+     *
+     * @return string The profile id
+     */
+    public function getProfileID()
+    {
+        return $this->_profileID;
+    }
+
+    /**
+     * Sets which of the user's profiles will be used
+     *
+     * @param string $id The profile ID
+     * @return Zend_Gdata_Health Provides a fluent interface
+     */
+    public function setProfileID($id)
+    {
+        $this->_profileID = $id;
+        return $this;
     }
 
     /**

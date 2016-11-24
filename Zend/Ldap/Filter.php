@@ -36,12 +36,46 @@ require_once 'Zend/Ldap/Filter/String.php';
  */
 class Zend_Ldap_Filter extends Zend_Ldap_Filter_String
 {
-    const TYPE_EQUALS         = '=';
-    const TYPE_GREATER        = '>';
+    const TYPE_EQUALS = '=';
+    const TYPE_GREATER = '>';
     const TYPE_GREATEROREQUAL = '>=';
-    const TYPE_LESS           = '<';
-    const TYPE_LESSOREQUAL    = '<=';
-    const TYPE_APPROX         = '~=';
+    const TYPE_LESS = '<';
+    const TYPE_LESSOREQUAL = '<=';
+    const TYPE_APPROX = '~=';
+
+    /**
+     * Creates a new Zend_Ldap_Filter.
+     *
+     * @param string $attr
+     * @param string $value
+     * @param string $filtertype
+     * @param string $prepend
+     * @param string $append
+     */
+    public function __construct($attr, $value, $filtertype, $prepend = null, $append = null)
+    {
+        $filter = self::_createFilterString($attr, $value, $filtertype, $prepend, $append);
+        parent::__construct($filter);
+    }
+
+    /**
+     * Create a filter string.
+     *
+     * @param  string $attr
+     * @param  string $value
+     * @param  string $filtertype
+     * @param  string $prepend
+     * @param  string $append
+     * @return string
+     */
+    private static function _createFilterString($attr, $value, $filtertype, $prepend = null, $append = null)
+    {
+        $str = $attr . $filtertype;
+        if ($prepend !== null) $str .= $prepend;
+        $str .= self::escapeValue($value);
+        if ($append !== null) $str .= $append;
+        return $str;
+    }
 
     /**
      * Creates an 'equals' filter.
@@ -227,39 +261,5 @@ class Zend_Ldap_Filter extends Zend_Ldap_Filter_String
          */
         require_once 'Zend/Ldap/Filter/Or.php';
         return new Zend_Ldap_Filter_Or(func_get_args());
-    }
-
-    /**
-     * Create a filter string.
-     *
-     * @param  string $attr
-     * @param  string $value
-     * @param  string $filtertype
-     * @param  string $prepend
-     * @param  string $append
-     * @return string
-     */
-    private static function _createFilterString($attr, $value, $filtertype, $prepend = null, $append = null)
-    {
-        $str = $attr . $filtertype;
-        if ($prepend !== null) $str .= $prepend;
-        $str .= self::escapeValue($value);
-        if ($append !== null) $str .= $append;
-        return $str;
-    }
-
-    /**
-     * Creates a new Zend_Ldap_Filter.
-     *
-     * @param string $attr
-     * @param string $value
-     * @param string $filtertype
-     * @param string $prepend
-     * @param string $append
-     */
-    public function __construct($attr, $value, $filtertype, $prepend = null, $append = null)
-    {
-        $filter = self::_createFilterString($attr, $value, $filtertype, $prepend, $append);
-        parent::__construct($filter);
     }
 }

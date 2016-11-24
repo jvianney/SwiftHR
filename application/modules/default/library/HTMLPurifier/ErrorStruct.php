@@ -13,9 +13,9 @@ class HTMLPurifier_ErrorStruct
      * Possible values for $children first-key. Note that top-level structures
      * are automatically token-level.
      */
-    const TOKEN     = 0;
-    const ATTR      = 1;
-    const CSSPROP   = 2;
+    const TOKEN = 0;
+    const ATTR = 1;
+    const CSSPROP = 2;
 
     /**
      * Type of this struct.
@@ -43,7 +43,8 @@ class HTMLPurifier_ErrorStruct
      */
     public $children = array();
 
-    public function getChild($type, $id) {
+    public function getChild($type, $id)
+    {
         if (!isset($this->children[$type][$id])) {
             $this->children[$type][$id] = new HTMLPurifier_ErrorStruct();
             $this->children[$type][$id]->type = $type;
@@ -51,7 +52,8 @@ class HTMLPurifier_ErrorStruct
         return $this->children[$type][$id];
     }
 
-    public function addError($severity, $message) {
+    public function addError($severity, $message)
+    {
         $this->errors[] = array($severity, $message);
     }
 

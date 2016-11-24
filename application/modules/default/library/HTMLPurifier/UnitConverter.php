@@ -50,7 +50,8 @@ class HTMLPurifier_UnitConverter
      */
     private $bcmath;
 
-    public function __construct($output_precision = 4, $internal_precision = 10, $force_no_bcmath = false) {
+    public function __construct($output_precision = 4, $internal_precision = 10, $force_no_bcmath = false)
+    {
         $this->outputPrecision = $output_precision;
         $this->internalPrecision = $internal_precision;
         $this->bcmath = !$force_no_bcmath && function_exists('bcmul');
@@ -74,11 +75,12 @@ class HTMLPurifier_UnitConverter
      *            and this causes some decimals to be excluded, those
      *            decimals will be added on.
      */
-    public function convert($length, $to_unit) {
+    public function convert($length, $to_unit)
+    {
 
         if (!$length->isValid()) return false;
 
-        $n    = $length->getN();
+        $n = $length->getN();
         $unit = $length->getUnit();
 
         if ($n === '0' || $unit === false) {
@@ -101,7 +103,7 @@ class HTMLPurifier_UnitConverter
         // our default if the initial number has no decimals, or increase
         // it by how ever many decimals, thus, the number of guard digits
         // will always be greater than or equal to internalPrecision.
-        $log = (int) floor(log(abs($n), 10));
+        $log = (int)floor(log(abs($n), 10));
         $cp = ($log < 0) ? $this->internalPrecision - $log : $this->internalPrecision; // internal precision
 
         for ($i = 0; $i < 2; $i++) {
@@ -170,7 +172,8 @@ class HTMLPurifier_UnitConverter
      * @param string $n Decimal number
      * @return int number of sigfigs
      */
-    public function getSigFigs($n) {
+    public function getSigFigs($n)
+    {
         $n = ltrim($n, '0+-');
         $dp = strpos($n, '.'); // decimal position
         if ($dp === false) {
@@ -183,40 +186,55 @@ class HTMLPurifier_UnitConverter
     }
 
     /**
-     * Adds two numbers, using arbitrary precision when available.
+     * Divides two numbers, using arbitrary precision when available.
      */
-    private function add($s1, $s2, $scale) {
-        if ($this->bcmath) return bcadd($s1, $s2, $scale);
-        else return $this->scale($s1 + $s2, $scale);
+    private function div($s1, $s2, $scale)
+    {
+        if ($this->bcmath) return bcdiv($s1, $s2, $scale);
+        else return $this->scale($s1 / $s2, $scale);
+    }
+
+    /**
+     * Scales a float to $scale digits right of decimal point, like BCMath.
+     */
+    private function scale($r, $scale)
+    {
+        if ($scale < 0) {
+            // The f sprintf type doesn't support negative numbers, so we
+            // need to cludge things manually. First get the string.
+            $r = sprintf('%.0f', (float)$r);
+            // Due to floating point precision loss, $r will more than likely
+            // look something like 4652999999999.9234. We grab one more digit
+            // than we need to precise from $r and then use that to round
+            // appropriately.
+            $precise = (string)round(substr($r, 0, strlen($r) + $scale), -1);
+            // Now we return it, truncating the zero that was rounded off.
+            return substr($precise, 0, -1) . str_repeat('0', -$scale + 1);
+        }
+        return sprintf('%.' . $scale . 'f', (float)$r);
     }
 
     /**
      * Multiples two numbers, using arbitrary precision when available.
      */
-    private function mul($s1, $s2, $scale) {
+    private function mul($s1, $s2, $scale)
+    {
         if ($this->bcmath) return bcmul($s1, $s2, $scale);
         else return $this->scale($s1 * $s2, $scale);
-    }
-
-    /**
-     * Divides two numbers, using arbitrary precision when available.
-     */
-    private function div($s1, $s2, $scale) {
-        if ($this->bcmath) return bcdiv($s1, $s2, $scale);
-        else return $this->scale($s1 / $s2, $scale);
     }
 
     /**
      * Rounds a number according to the number of sigfigs it should have,
      * using arbitrary precision when available.
      */
-    private function round($n, $sigfigs) {
-        $new_log = (int) floor(log(abs($n), 10)); // Number of digits left of decimal - 1
+    private function round($n, $sigfigs)
+    {
+        $new_log = (int)floor(log(abs($n), 10)); // Number of digits left of decimal - 1
         $rp = $sigfigs - $new_log - 1; // Number of decimal places needed
         $neg = $n < 0 ? '-' : ''; // Negative sign
         if ($this->bcmath) {
             if ($rp >= 0) {
-                $n = bcadd($n, $neg . '0.' .  str_repeat('0', $rp) . '5', $rp + 1);
+                $n = bcadd($n, $neg . '0.' . str_repeat('0', $rp) . '5', $rp + 1);
                 $n = bcdiv($n, '1', $rp);
             } else {
                 // This algorithm partially depends on the standardized
@@ -231,22 +249,12 @@ class HTMLPurifier_UnitConverter
     }
 
     /**
-     * Scales a float to $scale digits right of decimal point, like BCMath.
+     * Adds two numbers, using arbitrary precision when available.
      */
-    private function scale($r, $scale) {
-        if ($scale < 0) {
-            // The f sprintf type doesn't support negative numbers, so we
-            // need to cludge things manually. First get the string.
-            $r = sprintf('%.0f', (float) $r);
-            // Due to floating point precision loss, $r will more than likely
-            // look something like 4652999999999.9234. We grab one more digit
-            // than we need to precise from $r and then use that to round
-            // appropriately.
-            $precise = (string) round(substr($r, 0, strlen($r) + $scale), -1);
-            // Now we return it, truncating the zero that was rounded off.
-            return substr($precise, 0, -1) . str_repeat('0', -$scale + 1);
-        }
-        return sprintf('%.' . $scale . 'f', (float) $r);
+    private function add($s1, $s2, $scale)
+    {
+        if ($this->bcmath) return bcadd($s1, $s2, $scale);
+        else return $this->scale($s1 + $s2, $scale);
     }
 
 }

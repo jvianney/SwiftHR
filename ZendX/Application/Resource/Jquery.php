@@ -107,7 +107,7 @@ class ZendX_Application_Resource_Jquery
         $options = array_merge($options, array('cdn_ssl' => false));
 
         foreach ($options as $key => $value) {
-            switch(strtolower($key)) {
+            switch (strtolower($key)) {
                 case 'noconflictmode':
                     if (!(bool)$value) {
                         ZendX_JQuery_View_Helper_JQuery::disableNoConflictMode();
@@ -140,7 +140,7 @@ class ZendX_Application_Resource_Jquery
                     $this->_view->JQuery()->addJavascriptFile($value);
                     break;
                 case 'javascriptfiles':
-                    foreach($options['javascriptfiles'] as $file) {
+                    foreach ($options['javascriptfiles'] as $file) {
                         $this->_view->JQuery()->addJavascriptFile($file);
                     }
                     break;
@@ -155,10 +155,10 @@ class ZendX_Application_Resource_Jquery
             }
         }
 
-        if ((isset($options['uienable']) && (bool) $options['uienable'])
-            || (isset($options['ui_enable']) && (bool) $options['ui_enable'])
-            || (!isset($options['ui_enable']) && !isset($options['uienable'])))
-        {
+        if ((isset($options['uienable']) && (bool)$options['uienable'])
+            || (isset($options['ui_enable']) && (bool)$options['ui_enable'])
+            || (!isset($options['ui_enable']) && !isset($options['uienable']))
+        ) {
             $this->_view->JQuery()->uiEnable();
         } else {
             $this->_view->JQuery()->uiDisable();

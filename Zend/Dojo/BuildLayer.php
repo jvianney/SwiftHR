@@ -67,12 +67,12 @@ class Zend_Dojo_BuildLayer
      * @var array
      */
     protected $_profileOptions = array(
-        'action'        => 'release',
-        'optimize'      => 'shrinksafe',
+        'action' => 'release',
+        'optimize' => 'shrinksafe',
         'layerOptimize' => 'shrinksafe',
-        'copyTests'     => false,
-        'loader'        => 'default',
-        'cssOptimize'   => 'comments',
+        'copyTests' => false,
+        'loader' => 'default',
+        'cssOptimize' => 'comments',
     );
 
     /**
@@ -128,111 +128,6 @@ class Zend_Dojo_BuildLayer
     }
 
     /**
-     * Set View object
-     *
-     * @param  Zend_View_Interface $view
-     * @return Zend_Dojo_BuildLayer
-     */
-    public function setView(Zend_View_Interface $view)
-    {
-        $this->_view = $view;
-        return $this;
-    }
-
-    /**
-     * Retrieve view object
-     *
-     * @return Zend_View_Interface|null
-     */
-    public function getView()
-    {
-        return $this->_view;
-    }
-
-    /**
-     * Set dojo() view helper instance
-     *
-     * @param  Zend_Dojo_View_Helper_Dojo_Container $helper
-     * @return Zend_Dojo_BuildLayer
-     */
-    public function setDojoHelper(Zend_Dojo_View_Helper_Dojo_Container $helper)
-    {
-        $this->_dojo = $helper;
-        return $this;
-    }
-
-    /**
-     * Retrieve dojo() view helper instance
-     *
-     * Will retrieve it from the view object if not registered.
-     *
-     * @return Zend_Dojo_View_Helper_Dojo_Container
-     * @throws Zend_Dojo_Exception if not registered and no view object found
-     */
-    public function getDojoHelper()
-    {
-        if (null === $this->_dojo) {
-            if (null === ($view = $this->getView())) {
-                require_once 'Zend/Dojo/Exception.php';
-                throw new Zend_Dojo_Exception('View object not registered; cannot retrieve dojo helper');
-            }
-            $helper = $view->getHelper('dojo');
-            $this->setDojoHelper($view->dojo());
-        }
-        return $this->_dojo;
-    }
-
-    /**
-     * Set custom layer name; e.g. "custom.main"
-     *
-     * @param  string $name
-     * @return Zend_Dojo_BuildLayer
-     */
-    public function setLayerName($name)
-    {
-        if (!preg_match('/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/i', $name)) {
-            require_once 'Zend/Dojo/Exception.php';
-            throw new Zend_Dojo_Exception('Invalid layer name provided; must be of form[a-z][a-z0-9_](\.[a-z][a-z0-9_])+');
-        }
-        $this->_layerName = $name;
-        return $this;
-    }
-
-    /**
-     * Retrieve custom layer name
-     *
-     * @return string|null
-     */
-    public function getLayerName()
-    {
-        return $this->_layerName;
-    }
-
-    /**
-     * Set the path to the custom layer script
-     *
-     * Should be a path relative to dojo.js
-     *
-     * @param  string $path
-     * @return Zend_Dojo_BuildLayer
-     */
-    public function setLayerScriptPath($path)
-    {
-        $this->_layerScriptPath = (string) $path;
-        return $this;
-    }
-
-    /**
-     * Get custom layer script path
-     *
-     * @return string|null
-     */
-    public function getLayerScriptPath()
-    {
-        return $this->_layerScriptPath;
-    }
-
-    /**
      * Set flag indicating whether or not to consume JS aggregated in dojo()
      * view helper
      *
@@ -241,19 +136,8 @@ class Zend_Dojo_BuildLayer
      */
     public function setConsumeJavascript($flag)
     {
-        $this->_consumeJavascript = (bool) $flag;
+        $this->_consumeJavascript = (bool)$flag;
         return $this;
-    }
-
-    /**
-     * Get flag indicating whether or not to consume JS aggregated in dojo()
-     * view helper
-     *
-     * @return bool
-     */
-    public function consumeJavascript()
-    {
-        return $this->_consumeJavascript;
     }
 
     /**
@@ -265,29 +149,7 @@ class Zend_Dojo_BuildLayer
      */
     public function setConsumeOnLoad($flag)
     {
-        $this->_consumeOnLoad = (bool) $flag;
-        return $this;
-    }
-
-    /**
-     * Get flag indicating whether or not to consume dojo.addOnLoad events aggregated in dojo() view helper
-     *
-     * @return bool
-     */
-    public function consumeOnLoad()
-    {
-        return $this->_consumeOnLoad;
-    }
-
-    /**
-     * Set many build profile options at once
-     *
-     * @param  array $options
-     * @return Zend_Dojo_BuildLayer
-     */
-    public function setProfileOptions(array $options)
-    {
-        $this->_profileOptions += $options;
+        $this->_consumeOnLoad = (bool)$flag;
         return $this;
     }
 
@@ -312,19 +174,8 @@ class Zend_Dojo_BuildLayer
      */
     public function addProfileOption($key, $value)
     {
-        $this->_profileOptions[(string) $key] = $value;
+        $this->_profileOptions[(string)$key] = $value;
         return $this;
-    }
-
-    /**
-     * Is a given build profile option set?
-     *
-     * @param  string $key
-     * @return bool
-     */
-    public function hasProfileOption($key)
-    {
-        return array_key_exists((string) $key, $this->_profileOptions);
     }
 
     /**
@@ -338,19 +189,20 @@ class Zend_Dojo_BuildLayer
     public function getProfileOption($key)
     {
         if ($this->hasProfileOption($key)) {
-            return $this->_profileOptions[(string) $key];
+            return $this->_profileOptions[(string)$key];
         }
         return null;
     }
 
     /**
-     * Get all build profile options
+     * Is a given build profile option set?
      *
-     * @return array
+     * @param  string $key
+     * @return bool
      */
-    public function getProfileOptions()
+    public function hasProfileOption($key)
     {
-        return $this->_profileOptions;
+        return array_key_exists((string)$key, $this->_profileOptions);
     }
 
     /**
@@ -362,7 +214,7 @@ class Zend_Dojo_BuildLayer
     public function removeProfileOption($name)
     {
         if ($this->hasProfileOption($name)) {
-            unset($this->_profileOptions[(string) $name]);
+            unset($this->_profileOptions[(string)$name]);
         }
         return $this;
     }
@@ -379,80 +231,18 @@ class Zend_Dojo_BuildLayer
     }
 
     /**
-     * Add a build profile dependency prefix
-     *
-     * If just the prefix is passed, sets path to "../$prefix".
-     *
-     * @param  string $prefix
-     * @param  null|string $path
-     * @return Zend_Dojo_BuildLayer
-     */
-    public function addProfilePrefix($prefix, $path = null)
-    {
-        if (null === $path) {
-            $path = '../' . $prefix;
-        }
-        $this->_profilePrefixes[$prefix] = array($prefix, $path);
-        return $this;
-    }
-
-    /**
-     * Set multiple dependency prefixes for bulid profile
-     *
-     * @param  array $prefixes
-     * @return Zend_Dojo_BuildLayer
-     */
-    public function setProfilePrefixes(array $prefixes)
-    {
-        foreach ($prefixes as $prefix => $path) {
-            $this->addProfilePrefix($prefix, $path);
-        }
-        return $this;
-    }
-
-    /**
-     * Get build profile dependency prefixes
-     *
-     * @return array
-     */
-    public function getProfilePrefixes()
-    {
-        $layerName = $this->getLayerName();
-        if (null !== $layerName) {
-            $prefix    = $this->_getPrefix($layerName);
-            if (!array_key_exists($prefix, $this->_profilePrefixes)) {
-                $this->addProfilePrefix($prefix);
-            }
-        }
-        $view = $this->getView();
-        if (!empty($view)) {
-            $helper = $this->getDojoHelper();
-            if ($helper) {
-                $modules = $helper->getModules();
-                foreach ($modules as $module) {
-                    $prefix = $this->_getPrefix($module);
-                    if (!array_key_exists($prefix, $this->_profilePrefixes)) {
-                        $this->addProfilePrefix($prefix);
-                    }
-                }
-            }
-        }
-        return $this->_profilePrefixes;
-    }
-
-    /**
      * Generate module layer script
      *
      * @return string
      */
     public function generateLayerScript()
     {
-        $helper        = $this->getDojoHelper();
-        $layerName     = $this->getLayerName();
-        $modulePaths   = $helper->getModulePaths();
-        $modules       = $helper->getModules();
+        $helper = $this->getDojoHelper();
+        $layerName = $this->getLayerName();
+        $modulePaths = $helper->getModulePaths();
+        $modules = $helper->getModules();
         $onLoadActions = $helper->getOnLoadActions();
-        $javascript    = $helper->getJavascript();
+        $javascript = $helper->getJavascript();
 
         $content = 'dojo.provide("' . $layerName . '");' . "\n\n(function(){\n";
 
@@ -481,14 +271,116 @@ class Zend_Dojo_BuildLayer
     }
 
     /**
+     * Retrieve dojo() view helper instance
+     *
+     * Will retrieve it from the view object if not registered.
+     *
+     * @return Zend_Dojo_View_Helper_Dojo_Container
+     * @throws Zend_Dojo_Exception if not registered and no view object found
+     */
+    public function getDojoHelper()
+    {
+        if (null === $this->_dojo) {
+            if (null === ($view = $this->getView())) {
+                require_once 'Zend/Dojo/Exception.php';
+                throw new Zend_Dojo_Exception('View object not registered; cannot retrieve dojo helper');
+            }
+            $helper = $view->getHelper('dojo');
+            $this->setDojoHelper($view->dojo());
+        }
+        return $this->_dojo;
+    }
+
+    /**
+     * Retrieve view object
+     *
+     * @return Zend_View_Interface|null
+     */
+    public function getView()
+    {
+        return $this->_view;
+    }
+
+    /**
+     * Set View object
+     *
+     * @param  Zend_View_Interface $view
+     * @return Zend_Dojo_BuildLayer
+     */
+    public function setView(Zend_View_Interface $view)
+    {
+        $this->_view = $view;
+        return $this;
+    }
+
+    /**
+     * Set dojo() view helper instance
+     *
+     * @param  Zend_Dojo_View_Helper_Dojo_Container $helper
+     * @return Zend_Dojo_BuildLayer
+     */
+    public function setDojoHelper(Zend_Dojo_View_Helper_Dojo_Container $helper)
+    {
+        $this->_dojo = $helper;
+        return $this;
+    }
+
+    /**
+     * Retrieve custom layer name
+     *
+     * @return string|null
+     */
+    public function getLayerName()
+    {
+        return $this->_layerName;
+    }
+
+    /**
+     * Set custom layer name; e.g. "custom.main"
+     *
+     * @param  string $name
+     * @return Zend_Dojo_BuildLayer
+     */
+    public function setLayerName($name)
+    {
+        if (!preg_match('/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/i', $name)) {
+            require_once 'Zend/Dojo/Exception.php';
+            throw new Zend_Dojo_Exception('Invalid layer name provided; must be of form[a-z][a-z0-9_](\.[a-z][a-z0-9_])+');
+        }
+        $this->_layerName = $name;
+        return $this;
+    }
+
+    /**
+     * Get flag indicating whether or not to consume dojo.addOnLoad events aggregated in dojo() view helper
+     *
+     * @return bool
+     */
+    public function consumeOnLoad()
+    {
+        return $this->_consumeOnLoad;
+    }
+
+    /**
+     * Get flag indicating whether or not to consume JS aggregated in dojo()
+     * view helper
+     *
+     * @return bool
+     */
+    public function consumeJavascript()
+    {
+        return $this->_consumeJavascript;
+    }
+
+    /**
      * Generate build profile
      *
      * @return string
      */
     public function generateBuildProfile()
     {
-        $profileOptions  = $this->getProfileOptions();
-        $layerName       = $this->getLayerName();
+        $profileOptions = $this->getProfileOptions();
+        $layerName = $this->getLayerName();
         $layerScriptPath = $this->getLayerScriptPath();
         $profilePrefixes = $this->getProfilePrefixes();
 
@@ -498,13 +390,103 @@ class Zend_Dojo_BuildLayer
 
         $profile = $profileOptions;
         $profile['layers'] = array(array(
-            'name'              => $layerScriptPath,
+            'name' => $layerScriptPath,
             'layerDependencies' => array(),
-            'dependencies'      => array($layerName),
+            'dependencies' => array($layerName),
         ));
         $profile['prefixes'] = array_values($profilePrefixes);
 
         return 'dependencies = ' . $this->_filterJsonProfileToJavascript($profile) . ';';
+    }
+
+    /**
+     * Get all build profile options
+     *
+     * @return array
+     */
+    public function getProfileOptions()
+    {
+        return $this->_profileOptions;
+    }
+
+    /**
+     * Set many build profile options at once
+     *
+     * @param  array $options
+     * @return Zend_Dojo_BuildLayer
+     */
+    public function setProfileOptions(array $options)
+    {
+        $this->_profileOptions += $options;
+        return $this;
+    }
+
+    /**
+     * Get custom layer script path
+     *
+     * @return string|null
+     */
+    public function getLayerScriptPath()
+    {
+        return $this->_layerScriptPath;
+    }
+
+    /**
+     * Set the path to the custom layer script
+     *
+     * Should be a path relative to dojo.js
+     *
+     * @param  string $path
+     * @return Zend_Dojo_BuildLayer
+     */
+    public function setLayerScriptPath($path)
+    {
+        $this->_layerScriptPath = (string)$path;
+        return $this;
+    }
+
+    /**
+     * Get build profile dependency prefixes
+     *
+     * @return array
+     */
+    public function getProfilePrefixes()
+    {
+        $layerName = $this->getLayerName();
+        if (null !== $layerName) {
+            $prefix = $this->_getPrefix($layerName);
+            if (!array_key_exists($prefix, $this->_profilePrefixes)) {
+                $this->addProfilePrefix($prefix);
+            }
+        }
+        $view = $this->getView();
+        if (!empty($view)) {
+            $helper = $this->getDojoHelper();
+            if ($helper) {
+                $modules = $helper->getModules();
+                foreach ($modules as $module) {
+                    $prefix = $this->_getPrefix($module);
+                    if (!array_key_exists($prefix, $this->_profilePrefixes)) {
+                        $this->addProfilePrefix($prefix);
+                    }
+                }
+            }
+        }
+        return $this->_profilePrefixes;
+    }
+
+    /**
+     * Set multiple dependency prefixes for bulid profile
+     *
+     * @param  array $prefixes
+     * @return Zend_Dojo_BuildLayer
+     */
+    public function setProfilePrefixes(array $prefixes)
+    {
+        foreach ($prefixes as $prefix => $path) {
+            $this->addProfilePrefix($prefix, $path);
+        }
+        return $this;
     }
 
     /**
@@ -515,8 +497,26 @@ class Zend_Dojo_BuildLayer
      */
     protected function _getPrefix($module)
     {
-        $segments  = explode('.', $module, 2);
+        $segments = explode('.', $module, 2);
         return $segments[0];
+    }
+
+    /**
+     * Add a build profile dependency prefix
+     *
+     * If just the prefix is passed, sets path to "../$prefix".
+     *
+     * @param  string $prefix
+     * @param  null|string $path
+     * @return Zend_Dojo_BuildLayer
+     */
+    public function addProfilePrefix($prefix, $path = null)
+    {
+        if (null === $path) {
+            $path = '../' . $prefix;
+        }
+        $this->_profilePrefixes[$prefix] = array($prefix, $path);
+        return $this;
     }
 
     /**

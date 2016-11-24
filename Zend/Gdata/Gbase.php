@@ -74,14 +74,6 @@ class Zend_Gdata_Gbase extends Zend_Gdata
      * Authentication service name for Google Base
      */
     const AUTH_SERVICE_NAME = 'gbase';
-
-    /**
-     * The default URI for POST methods
-     *
-     * @var string
-     */
-    protected $_defaultPostUri = self::GBASE_ITEM_FEED_URI;
-
     /**
      * Namespaces used for Zend_Gdata_Gbase
      *
@@ -91,6 +83,12 @@ class Zend_Gdata_Gbase extends Zend_Gdata
         array('g', 'http://base.google.com/ns/1.0', 1, 0),
         array('batch', 'http://schemas.google.com/gdata/batch', 1, 0)
     );
+    /**
+     * The default URI for POST methods
+     *
+     * @var string
+     */
+    protected $_defaultPostUri = self::GBASE_ITEM_FEED_URI;
 
     /**
      * Create Zend_Gdata_Gbase object
@@ -136,7 +134,7 @@ class Zend_Gdata_Gbase extends Zend_Gdata
         if ($location === null) {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'Location must not be null');
+                'Location must not be null');
         } else if ($location instanceof Zend_Gdata_Query) {
             $uri = $location->getQueryUrl();
         } else {

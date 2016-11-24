@@ -43,7 +43,7 @@ require_once "ZendX/JQuery/View/Helper/JQuery/Container.php";
 /**
  * jQuery Helper. Functions as a stack for code and loads all jQuery dependencies.
  *
- * @uses 	   Zend_Json
+ * @uses       Zend_Json
  * @package    ZendX_JQuery
  * @subpackage View
  * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
@@ -52,19 +52,18 @@ require_once "ZendX/JQuery/View/Helper/JQuery/Container.php";
 class ZendX_JQuery_View_Helper_JQuery extends Zend_View_Helper_Abstract
 {
     /**
+     * jQuery no Conflict Mode
+     *
+     * @see          http://docs.jquery.com/Using_jQuery_with_Other_Libraries
+     * @staticvar Boolean Status of noConflict Mode
+     */
+    private static $noConflictMode = false;
+    /**
      * @var Zend_View_Interface
      */
     public $view;
 
-	/**
-	 * jQuery no Conflict Mode
-	 *
-	 * @see	      http://docs.jquery.com/Using_jQuery_with_Other_Libraries
-	 * @staticvar Boolean Status of noConflict Mode
-	 */
-    private static $noConflictMode = false;
-
-   /**
+    /**
      * Initialize helper
      *
      * Retrieve container from registry or create new container and store in
@@ -83,11 +82,53 @@ class ZendX_JQuery_View_Helper_JQuery extends Zend_View_Helper_Abstract
         $this->_container = $registry[__CLASS__];
     }
 
-	/**
-	 * Return jQuery View Helper class, to execute jQuery library related functions.
-	 *
-	 * @return ZendX_JQuery_View_Helper_JQuery_Container
-	 */
+    /**
+     * Enable the jQuery internal noConflict Mode to work with
+     * other Javascript libraries. Will setup jQuery in the variable
+     * $j instead of $ to overcome conflicts.
+     *
+     * @link http://docs.jquery.com/Using_jQuery_with_Other_Libraries
+     */
+    public static function enableNoConflictMode()
+    {
+        self::$noConflictMode = true;
+    }
+
+    /**
+     * Disable noConflict Mode of jQuery if this was previously enabled.
+     *
+     * @return void
+     */
+    public static function disableNoConflictMode()
+    {
+        self::$noConflictMode = false;
+    }
+
+    /**
+     * Return current jQuery handler based on noConflict mode settings.
+     *
+     * @return String
+     */
+    public static function getJQueryHandler()
+    {
+        return ((self::getNoConflictMode() == true) ? '$j' : '$');
+    }
+
+    /**
+     * Return current status of the jQuery no Conflict Mode
+     *
+     * @return Boolean
+     */
+    public static function getNoConflictMode()
+    {
+        return self::$noConflictMode;
+    }
+
+    /**
+     * Return jQuery View Helper class, to execute jQuery library related functions.
+     *
+     * @return ZendX_JQuery_View_Helper_JQuery_Container
+     */
     public function jQuery()
     {
         return $this->_container;
@@ -109,7 +150,7 @@ class ZendX_JQuery_View_Helper_JQuery extends Zend_View_Helper_Abstract
      * Proxy to container methods
      *
      * @param  string $method
-     * @param  array  $args
+     * @param  array $args
      * @return mixed
      * @throws Zend_View_Exception For invalid method calls
      */
@@ -121,47 +162,5 @@ class ZendX_JQuery_View_Helper_JQuery extends Zend_View_Helper_Abstract
         }
 
         return call_user_func_array(array($this->_container, $method), $args);
-    }
-
-	/**
-	 * Enable the jQuery internal noConflict Mode to work with
-	 * other Javascript libraries. Will setup jQuery in the variable
-	 * $j instead of $ to overcome conflicts.
-	 *
-	 * @link http://docs.jquery.com/Using_jQuery_with_Other_Libraries
-	 */
-    public static function enableNoConflictMode()
-    {
-    	self::$noConflictMode = true;
-    }
-
-	/**
-	 * Disable noConflict Mode of jQuery if this was previously enabled.
-	 *
-	 * @return void
-	 */
-    public static function disableNoConflictMode()
-    {
-    	self::$noConflictMode = false;
-    }
-
-	/**
-	 * Return current status of the jQuery no Conflict Mode
-	 *
-	 * @return Boolean
-	 */
-    public static function getNoConflictMode()
-    {
-    	return self::$noConflictMode;
-    }
-
-    /**
-     * Return current jQuery handler based on noConflict mode settings.
-     *
-     * @return String
-     */
-    public static function getJQueryHandler()
-    {
-        return ((self::getNoConflictMode()==true)?'$j':'$');
     }
 }

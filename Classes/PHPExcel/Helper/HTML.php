@@ -3,7 +3,7 @@
 class PHPExcel_Helper_HTML
 {
     protected static $colourMap = array(
-        'aliceblue' => 'f0f8ff', 
+        'aliceblue' => 'f0f8ff',
         'antiquewhite' => 'faebd7',
         'antiquewhite1' => 'ffefdb',
         'antiquewhite2' => 'eedfcc',
@@ -526,12 +526,12 @@ class PHPExcel_Helper_HTML
     protected $size;
     protected $color;
 
-	protected $bold = false;
-	protected $italic = false;
-	protected $underline = false;
-	protected $superscript = false;
-	protected $subscript = false;
-	protected $strikethrough = false;
+    protected $bold = false;
+    protected $italic = false;
+    protected $underline = false;
+    protected $superscript = false;
+    protected $subscript = false;
+    protected $strikethrough = false;
 
     protected $startTagCallbacks = array(
         'font' => 'startFontTag',
@@ -573,16 +573,8 @@ class PHPExcel_Helper_HTML
 
     protected $richTextObject;
 
-    protected function initialise() {
-        $this->face = $this->size = $this->color = null;
-        $this->bold = $this->italic = $this->underline = $this->superscript = $this->subscript = $this->strikethrough = false;
-
-        $this->stack = array();
-
-        $this->stringData = '';
-    }
-
-    public function toRichTextObject($html) {
+    public function toRichTextObject($html)
+    {
         $this->initialise();
 
         //	Create a new DOM object
@@ -599,7 +591,36 @@ class PHPExcel_Helper_HTML
         return $this->richTextObject;
     }
 
-    protected function buildTextRun() {
+    protected function initialise()
+    {
+        $this->face = $this->size = $this->color = null;
+        $this->bold = $this->italic = $this->underline = $this->superscript = $this->subscript = $this->strikethrough = false;
+
+        $this->stack = array();
+
+        $this->stringData = '';
+    }
+
+    protected function parseElements(DOMNode $element)
+    {
+        foreach ($element->childNodes as $child) {
+            if ($child instanceof DOMText) {
+                $this->parseTextNode($child);
+            } elseif ($child instanceof DOMElement) {
+                $this->parseElementNode($child);
+            }
+        }
+    }
+
+    protected function parseTextNode(DOMText $textNode)
+    {
+        $domText = preg_replace('/\s+/u', ' ', ltrim($textNode->nodeValue));
+        $this->stringData .= $domText;
+        $this->buildTextRun();
+    }
+
+    protected function buildTextRun()
+    {
         $text = $this->stringData;
         if (trim($text) === '')
             return;
@@ -612,7 +633,7 @@ class PHPExcel_Helper_HTML
             $richtextRun->getFont()->setSize($this->size);
         }
         if ($this->color) {
-            $richtextRun->getFont()->setColor( new PHPExcel_Style_Color( 'ff' . $this->color ) );
+            $richtextRun->getFont()->setColor(new PHPExcel_Style_Color('ff' . $this->color));
         }
         if ($this->bold) {
             $richtextRun->getFont()->setBold(true);
@@ -635,109 +656,8 @@ class PHPExcel_Helper_HTML
         $this->stringData = '';
     }
 
-    protected function rgbToColour($rgb) {
-        preg_match_all('/\d+/', $rgb, $values);
-        foreach($values[0] as &$value) {
-            $value = str_pad(dechex($value), 2, '0', STR_PAD_LEFT);
-        }
-        return implode($values[0]);
-    }
-
-    protected function colourNameLookup($rgb) {
-        return self::$colourMap[$rgb];
-    }
-
-    protected function startFontTag($tag) {
-        foreach ($tag->attributes as $attribute) {
-            $attributeName = strtolower($attribute->name);
-            $attributeValue = $attribute->value;
-
-            if ($attributeName == 'color') {
-                if (preg_match('/rgb\s*\(/', $attributeValue)) {
-                    $this->$attributeName = $this->rgbToColour($attributeValue);
-                } elseif(strpos(trim($attributeValue), '#') === 0) {
-                    $this->$attributeName = ltrim($attributeValue, '#');
-                } else {
-                    $this->$attributeName = $this->colourNameLookup($attributeValue);
-                }
-            } else {
-                $this->$attributeName = $attributeValue;
-            }
-        }
-    }
-
-    protected function endFontTag() {
-        $this->face = $this->size = $this->color = null;
-    }
-
-    protected function startBoldTag() {
-        $this->bold = true;
-    }
-
-    protected function endBoldTag() {
-        $this->bold = false;
-    }
-
-    protected function startItalicTag() {
-        $this->italic = true;
-    }
-
-    protected function endItalicTag() {
-        $this->italic = false;
-    }
-
-    protected function startUnderlineTag() {
-        $this->underline = true;
-    }
-
-    protected function endUnderlineTag() {
-        $this->underline = false;
-    }
-
-    protected function startSubscriptTag() {
-        $this->subscript = true;
-    }
-
-    protected function endSubscriptTag() {
-        $this->subscript = false;
-    }
-
-    protected function startSuperscriptTag() {
-        $this->superscript = true;
-    }
-
-    protected function endSuperscriptTag() {
-        $this->superscript = false;
-    }
-
-    protected function startStrikethruTag() {
-        $this->strikethrough = true;
-    }
-
-    protected function endStrikethruTag() {
-        $this->strikethrough = false;
-    }
-
-    protected function breakTag() {
-        $this->stringData .= PHP_EOL;
-    }
-
-    protected function parseTextNode(DOMText $textNode) {
-        $domText = preg_replace('/\s+/u', ' ', ltrim($textNode->nodeValue));
-        $this->stringData .= $domText;
-        $this->buildTextRun();
-    }
-
-    protected function handleCallback($element, $callbackTag, $callbacks) {
-        if (isset($callbacks[$callbackTag])) {
-            $elementHandler = $callbacks[$callbackTag];
-            if (method_exists($this, $elementHandler)) {
-                call_user_func(array($this, $elementHandler), $element);
-            }
-        }
-    }
-
-    protected function parseElementNode(DOMElement $element) {
+    protected function parseElementNode(DOMElement $element)
+    {
         $callbackTag = strtolower($element->nodeName);
         $this->stack[] = $callbackTag;
 
@@ -750,13 +670,117 @@ class PHPExcel_Helper_HTML
         $this->handleCallback($element, $callbackTag, $this->endTagCallbacks);
     }
 
-    protected function parseElements(DOMNode $element) {
-        foreach ($element->childNodes as $child) {
-            if ($child instanceof DOMText) {
-                $this->parseTextNode($child);
-            } elseif ($child instanceof DOMElement) {
-                $this->parseElementNode($child);
+    protected function handleCallback($element, $callbackTag, $callbacks)
+    {
+        if (isset($callbacks[$callbackTag])) {
+            $elementHandler = $callbacks[$callbackTag];
+            if (method_exists($this, $elementHandler)) {
+                call_user_func(array($this, $elementHandler), $element);
             }
         }
+    }
+
+    protected function startFontTag($tag)
+    {
+        foreach ($tag->attributes as $attribute) {
+            $attributeName = strtolower($attribute->name);
+            $attributeValue = $attribute->value;
+
+            if ($attributeName == 'color') {
+                if (preg_match('/rgb\s*\(/', $attributeValue)) {
+                    $this->$attributeName = $this->rgbToColour($attributeValue);
+                } elseif (strpos(trim($attributeValue), '#') === 0) {
+                    $this->$attributeName = ltrim($attributeValue, '#');
+                } else {
+                    $this->$attributeName = $this->colourNameLookup($attributeValue);
+                }
+            } else {
+                $this->$attributeName = $attributeValue;
+            }
+        }
+    }
+
+    protected function rgbToColour($rgb)
+    {
+        preg_match_all('/\d+/', $rgb, $values);
+        foreach ($values[0] as &$value) {
+            $value = str_pad(dechex($value), 2, '0', STR_PAD_LEFT);
+        }
+        return implode($values[0]);
+    }
+
+    protected function colourNameLookup($rgb)
+    {
+        return self::$colourMap[$rgb];
+    }
+
+    protected function endFontTag()
+    {
+        $this->face = $this->size = $this->color = null;
+    }
+
+    protected function startBoldTag()
+    {
+        $this->bold = true;
+    }
+
+    protected function endBoldTag()
+    {
+        $this->bold = false;
+    }
+
+    protected function startItalicTag()
+    {
+        $this->italic = true;
+    }
+
+    protected function endItalicTag()
+    {
+        $this->italic = false;
+    }
+
+    protected function startUnderlineTag()
+    {
+        $this->underline = true;
+    }
+
+    protected function endUnderlineTag()
+    {
+        $this->underline = false;
+    }
+
+    protected function startSubscriptTag()
+    {
+        $this->subscript = true;
+    }
+
+    protected function endSubscriptTag()
+    {
+        $this->subscript = false;
+    }
+
+    protected function startSuperscriptTag()
+    {
+        $this->superscript = true;
+    }
+
+    protected function endSuperscriptTag()
+    {
+        $this->superscript = false;
+    }
+
+    protected function startStrikethruTag()
+    {
+        $this->strikethrough = true;
+    }
+
+    protected function endStrikethruTag()
+    {
+        $this->strikethrough = false;
+    }
+
+    protected function breakTag()
+    {
+        $this->stringData .= PHP_EOL;
     }
 }

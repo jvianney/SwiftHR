@@ -59,6 +59,14 @@ class Zend_Crypt_Rsa_Key implements Countable
 
     /**
      * @return string
+     */
+    public function __toString()
+    {
+        return $this->toString();
+    }
+
+    /**
+     * @return string
      * @throws Zend_Crypt_Exception
      */
     public function toString()
@@ -73,14 +81,6 @@ class Zend_Crypt_Rsa_Key implements Countable
          */
         require_once 'Zend/Crypt/Exception.php';
         throw new Zend_Crypt_Exception('No public key string representation is available');
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->toString();
     }
 
     public function count()

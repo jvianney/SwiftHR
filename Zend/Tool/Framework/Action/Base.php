@@ -55,18 +55,6 @@ class Zend_Tool_Framework_Action_Base implements Zend_Tool_Framework_Action_Inte
     }
 
     /**
-     * setName()
-     *
-     * @param string $name
-     * @return Zend_Tool_Framework_Action_Base
-     */
-    public function setName($name)
-    {
-        $this->_name = $name;
-        return $this;
-    }
-
-    /**
      * getName()
      *
      * @return string
@@ -80,6 +68,18 @@ class Zend_Tool_Framework_Action_Base implements Zend_Tool_Framework_Action_Inte
     }
 
     /**
+     * setName()
+     *
+     * @param string $name
+     * @return Zend_Tool_Framework_Action_Base
+     */
+    public function setName($name)
+    {
+        $this->_name = $name;
+        return $this;
+    }
+
+    /**
      * _parseName - internal method to determine the name of an action when one is not explicity provided.
      *
      * @param Zend_Tool_Framework_Action_Interface $action
@@ -88,7 +88,7 @@ class Zend_Tool_Framework_Action_Base implements Zend_Tool_Framework_Action_Inte
     protected function _parseName()
     {
         $className = get_class($this);
-        $actionName = substr($className, strrpos($className, '_')+1);
+        $actionName = substr($className, strrpos($className, '_') + 1);
         return $actionName;
     }
 

@@ -68,6 +68,16 @@ class Zend_CodeGenerator_Php_Docblock_Tag_Param extends Zend_CodeGenerator_Php_D
     }
 
     /**
+     * getDatatype
+     *
+     * @return string
+     */
+    public function getDatatype()
+    {
+        return $this->_datatype;
+    }
+
+    /**
      * setDatatype()
      *
      * @param string $datatype
@@ -80,13 +90,13 @@ class Zend_CodeGenerator_Php_Docblock_Tag_Param extends Zend_CodeGenerator_Php_D
     }
 
     /**
-     * getDatatype
+     * getParamName()
      *
      * @return string
      */
-    public function getDatatype()
+    public function getParamName()
     {
-        return $this->_datatype;
+        return $this->_paramName;
     }
 
     /**
@@ -102,16 +112,6 @@ class Zend_CodeGenerator_Php_Docblock_Tag_Param extends Zend_CodeGenerator_Php_D
     }
 
     /**
-     * getParamName()
-     *
-     * @return string
-     */
-    public function getParamName()
-    {
-        return $this->_paramName;
-    }
-
-    /**
      * generate()
      *
      * @return string
@@ -119,7 +119,7 @@ class Zend_CodeGenerator_Php_Docblock_Tag_Param extends Zend_CodeGenerator_Php_D
     public function generate()
     {
         $output = '@param '
-            . (($this->_datatype  != null) ? $this->_datatype : 'unknown')
+            . (($this->_datatype != null) ? $this->_datatype : 'unknown')
             . (($this->_paramName != null) ? ' $' . $this->_paramName : '')
             . (($this->_description != null) ? ' ' . $this->_description : '');
         return $output;

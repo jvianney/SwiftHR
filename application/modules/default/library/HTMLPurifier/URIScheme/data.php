@@ -3,7 +3,8 @@
 /**
  * Implements data: URI for base64 encoded images supported by GD.
  */
-class HTMLPurifier_URIScheme_data extends HTMLPurifier_URIScheme {
+class HTMLPurifier_URIScheme_data extends HTMLPurifier_URIScheme
+{
 
     public $browsable = true;
     public $allowed_types = array(
@@ -12,12 +13,13 @@ class HTMLPurifier_URIScheme_data extends HTMLPurifier_URIScheme {
         'image/jpeg' => true,
         'image/gif' => true,
         'image/png' => true,
-        );
+    );
     // this is actually irrelevant since we only write out the path
     // component
     public $may_omit_host = true;
 
-    public function doValidate(&$uri, $config, $context) {
+    public function doValidate(&$uri, $config, $context)
+    {
         $result = explode(',', $uri->path, 2);
         $is_base64 = false;
         $charset = null;
@@ -26,7 +28,7 @@ class HTMLPurifier_URIScheme_data extends HTMLPurifier_URIScheme {
             list($metadata, $data) = $result;
             // do some legwork on the metadata
             $metas = explode(';', $metadata);
-            while(!empty($metas)) {
+            while (!empty($metas)) {
                 $cur = array_shift($metas);
                 if ($cur == 'base64') {
                     $is_base64 = true;
@@ -90,7 +92,9 @@ class HTMLPurifier_URIScheme_data extends HTMLPurifier_URIScheme {
         return true;
     }
 
-    public function muteErrorHandler($errno, $errstr) {}
+    public function muteErrorHandler($errno, $errstr)
+    {
+    }
 
 }
 

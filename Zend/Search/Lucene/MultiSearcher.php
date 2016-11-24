@@ -40,11 +40,28 @@ class Zend_Search_Lucene_Interface_MultiSearcher implements Zend_Search_Lucene_I
      * @var array
      */
     protected $_indices;
+    /**
+     * Callback used to choose target index for new documents
+     *
+     * Function/method signature:
+     *    Zend_Search_Lucene_Interface  callbackFunction(Zend_Search_Lucene_Document $document, array $indices);
+     *
+     * null means "default documents distributing algorithm"
+     *
+     * @var callback
+     */
+    protected $_documentDistributorCallBack = null;
+    /**
+     * Terms stream priority queue object
+     *
+     * @var Zend_Search_Lucene_TermStreamsPriorityQueue
+     */
+    private $_termsStream = null;
 
     /**
      * Object constructor.
      *
-     * @param array $indices   Arrays of indices for search
+     * @param array $indices Arrays of indices for search
      * @throws Zend_Search_Lucene_Exception
      */
     public function __construct($indices = array())
@@ -58,17 +75,6 @@ class Zend_Search_Lucene_Interface_MultiSearcher implements Zend_Search_Lucene_I
             }
         }
     }
-
-    /**
-     * Add index for searching.
-     *
-     * @param Zend_Search_Lucene_Interface $index
-     */
-    public function addIndex(Zend_Search_Lucene_Interface $index)
-    {
-        $this->_indices[] = $index;
-    }
-
 
     /**
      * Get current generation number
@@ -99,109 +105,6 @@ class Zend_Search_Lucene_Interface_MultiSearcher implements Zend_Search_Lucene_I
     }
 
     /**
-     * Get index format version
-     *
-     * @return integer
-     * @throws Zend_Search_Lucene_Exception
-     */
-    public function getFormatVersion()
-    {
-        require_once 'Zend/Search/Lucene/Exception.php';
-        throw new Zend_Search_Lucene_Exception("Format version can't be retrieved for multi-searcher");
-    }
-
-    /**
-     * Set index format version.
-     * Index is converted to this format at the nearest upfdate time
-     *
-     * @param int $formatVersion
-     */
-    public function setFormatVersion($formatVersion)
-    {
-        foreach ($this->_indices as $index) {
-            $index->setFormatVersion($formatVersion);
-        }
-    }
-
-    /**
-     * Returns the Zend_Search_Lucene_Storage_Directory instance for this index.
-     *
-     * @return Zend_Search_Lucene_Storage_Directory
-     */
-    public function getDirectory()
-    {
-        require_once 'Zend/Search/Lucene/Exception.php';
-        throw new Zend_Search_Lucene_Exception("Index directory can't be retrieved for multi-searcher");
-    }
-
-    /**
-     * Returns the total number of documents in this index (including deleted documents).
-     *
-     * @return integer
-     */
-    public function count()
-    {
-        $count = 0;
-
-        foreach ($this->_indices as $index) {
-            $count += $index->count();
-        }
-
-        return $count;
-    }
-
-    /**
-     * Returns one greater than the largest possible document number.
-     * This may be used to, e.g., determine how big to allocate a structure which will have
-     * an element for every document number in an index.
-     *
-     * @return integer
-     */
-    public function maxDoc()
-    {
-        return $this->count();
-    }
-
-    /**
-     * Returns the total number of non-deleted documents in this index.
-     *
-     * @return integer
-     */
-    public function numDocs()
-    {
-        $docs = 0;
-
-        foreach ($this->_indices as $index) {
-            $docs += $index->numDocs();
-        }
-
-        return $docs;
-    }
-
-    /**
-     * Checks, that document is deleted
-     *
-     * @param integer $id
-     * @return boolean
-     * @throws Zend_Search_Lucene_Exception    Exception is thrown if $id is out of the range
-     */
-    public function isDeleted($id)
-    {
-        foreach ($this->_indices as $index) {
-            $indexCount = $index->count();
-
-            if ($indexCount > $id) {
-                return $index->isDeleted($id);
-            }
-
-            $id -= $indexCount;
-        }
-
-        require_once 'Zend/Search/Lucene/Exception.php';
-        throw new Zend_Search_Lucene_Exception('Document id is out of the range.');
-    }
-
-    /**
      * Set default search field.
      *
      * Null means, that search is performed through all fields by default
@@ -216,7 +119,6 @@ class Zend_Search_Lucene_Interface_MultiSearcher implements Zend_Search_Lucene_I
             $index->setDefaultSearchField($fieldName);
         }
     }
-
 
     /**
      * Get default search field.
@@ -284,6 +186,119 @@ class Zend_Search_Lucene_Interface_MultiSearcher implements Zend_Search_Lucene_I
         }
 
         return $defaultResultSetLimit;
+    }
+
+    /**
+     * Add index for searching.
+     *
+     * @param Zend_Search_Lucene_Interface $index
+     */
+    public function addIndex(Zend_Search_Lucene_Interface $index)
+    {
+        $this->_indices[] = $index;
+    }
+
+    /**
+     * Get index format version
+     *
+     * @return integer
+     * @throws Zend_Search_Lucene_Exception
+     */
+    public function getFormatVersion()
+    {
+        require_once 'Zend/Search/Lucene/Exception.php';
+        throw new Zend_Search_Lucene_Exception("Format version can't be retrieved for multi-searcher");
+    }
+
+    /**
+     * Set index format version.
+     * Index is converted to this format at the nearest upfdate time
+     *
+     * @param int $formatVersion
+     */
+    public function setFormatVersion($formatVersion)
+    {
+        foreach ($this->_indices as $index) {
+            $index->setFormatVersion($formatVersion);
+        }
+    }
+
+    /**
+     * Returns the Zend_Search_Lucene_Storage_Directory instance for this index.
+     *
+     * @return Zend_Search_Lucene_Storage_Directory
+     */
+    public function getDirectory()
+    {
+        require_once 'Zend/Search/Lucene/Exception.php';
+        throw new Zend_Search_Lucene_Exception("Index directory can't be retrieved for multi-searcher");
+    }
+
+    /**
+     * Returns one greater than the largest possible document number.
+     * This may be used to, e.g., determine how big to allocate a structure which will have
+     * an element for every document number in an index.
+     *
+     * @return integer
+     */
+    public function maxDoc()
+    {
+        return $this->count();
+    }
+
+    /**
+     * Returns the total number of documents in this index (including deleted documents).
+     *
+     * @return integer
+     */
+    public function count()
+    {
+        $count = 0;
+
+        foreach ($this->_indices as $index) {
+            $count += $index->count();
+        }
+
+        return $count;
+    }
+
+    /**
+     * Returns the total number of non-deleted documents in this index.
+     *
+     * @return integer
+     */
+    public function numDocs()
+    {
+        $docs = 0;
+
+        foreach ($this->_indices as $index) {
+            $docs += $index->numDocs();
+        }
+
+        return $docs;
+    }
+
+    /**
+     * Checks, that document is deleted
+     *
+     * @param integer $id
+     * @return boolean
+     * @throws Zend_Search_Lucene_Exception    Exception is thrown if $id is out of the range
+     */
+    public function isDeleted($id)
+    {
+        foreach ($this->_indices as $index) {
+            $indexCount = $index->count();
+
+            if ($indexCount > $id) {
+                return $index->isDeleted($id);
+            }
+
+            $id -= $indexCount;
+        }
+
+        require_once 'Zend/Search/Lucene/Exception.php';
+        throw new Zend_Search_Lucene_Exception('Document id is out of the range.');
     }
 
     /**
@@ -777,18 +792,15 @@ class Zend_Search_Lucene_Interface_MultiSearcher implements Zend_Search_Lucene_I
         throw new Zend_Search_Lucene_Exception('Document id is out of the range.');
     }
 
-
     /**
-     * Callback used to choose target index for new documents
+     * Get callback for choosing target index.
      *
-     * Function/method signature:
-     *    Zend_Search_Lucene_Interface  callbackFunction(Zend_Search_Lucene_Document $document, array $indices);
-     *
-     * null means "default documents distributing algorithm"
-     *
-     * @var callback
+     * @return callback
      */
-    protected $_documentDistributorCallBack = null;
+    public function getDocumentDistributorCallback()
+    {
+        return $this->_documentDistributorCallBack;
+    }
 
     /**
      * Set callback for choosing target index.
@@ -798,22 +810,12 @@ class Zend_Search_Lucene_Interface_MultiSearcher implements Zend_Search_Lucene_I
      */
     public function setDocumentDistributorCallback($callback)
     {
-        if ($callback !== null  &&  !is_callable($callback)) {
+        if ($callback !== null && !is_callable($callback)) {
             require_once 'Zend/Search/Lucene/Exception.php';
             throw new Zend_Search_Lucene_Exception('$callback parameter must be a valid callback.');
         }
 
         $this->_documentDistributorCallBack = $callback;
-    }
-
-    /**
-     * Get callback for choosing target index.
-     *
-     * @return callback
-     */
-    public function getDocumentDistributorCallback()
-    {
-        return $this->_documentDistributorCallBack;
     }
 
     /**
@@ -870,14 +872,6 @@ class Zend_Search_Lucene_Interface_MultiSearcher implements Zend_Search_Lucene_I
 
         return array_unique(call_user_func_array('array_merge', $termsList));
     }
-
-
-    /**
-     * Terms stream priority queue object
-     *
-     * @var Zend_Search_Lucene_TermStreamsPriorityQueue
-     */
-    private $_termsStream = null;
 
     /**
      * Reset terms stream.

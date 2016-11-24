@@ -49,6 +49,26 @@ class HTMLPurifier_Lexer
     public $tracksLineNumbers = false;
 
     // -- STATIC ----------------------------------------------------------
+    /**
+     * Most common entity to raw value conversion table for special entities.
+     */
+    protected $_special_entity2str =
+        array(
+            '&quot;' => '"',
+            '&amp;' => '&',
+            '&lt;' => '<',
+            '&gt;' => '>',
+            '&#39;' => "'",
+            '&#039;' => "'",
+            '&#x27;' => "'"
+        );
+
+    // -- CONVENIENCE MEMBERS ---------------------------------------------
+
+    public function __construct()
+    {
+        $this->_entity_parser = new HTMLPurifier_EntityParser();
+    }
 
     /**
      * Retrieves or sets the default Lexer as a Prototype Factory.
@@ -65,7 +85,8 @@ class HTMLPurifier_Lexer
      * @param $config Instance of HTMLPurifier_Config
      * @return Concrete lexer.
      */
-    public static function create($config) {
+    public static function create($config)
+    {
 
         if (!($config instanceof HTMLPurifier_Config)) {
             $lexer = $config;
@@ -85,29 +106,31 @@ class HTMLPurifier_Lexer
             $inst = $lexer;
         } else {
 
-            if (is_null($lexer)) { do {
-                // auto-detection algorithm
+            if (is_null($lexer)) {
+                do {
+                    // auto-detection algorithm
 
-                if ($needs_tracking) {
-                    $lexer = 'DirectLex';
-                    break;
-                }
+                    if ($needs_tracking) {
+                        $lexer = 'DirectLex';
+                        break;
+                    }
 
-                if (
-                    class_exists('DOMDocument') &&
-                    method_exists('DOMDocument', 'loadHTML') &&
-                    !extension_loaded('domxml')
-                ) {
-                    // check for DOM support, because while it's part of the
-                    // core, it can be disabled compile time. Also, the PECL
-                    // domxml extension overrides the default DOM, and is evil
-                    // and nasty and we shan't bother to support it
-                    $lexer = 'DOMLex';
-                } else {
-                    $lexer = 'DirectLex';
-                }
+                    if (
+                        class_exists('DOMDocument') &&
+                        method_exists('DOMDocument', 'loadHTML') &&
+                        !extension_loaded('domxml')
+                    ) {
+                        // check for DOM support, because while it's part of the
+                        // core, it can be disabled compile time. Also, the PECL
+                        // domxml extension overrides the default DOM, and is evil
+                        // and nasty and we shan't bother to support it
+                        $lexer = 'DOMLex';
+                    } else {
+                        $lexer = 'DirectLex';
+                    }
 
-            } while(0); } // do..while so we can break
+                } while (0);
+            } // do..while so we can break
 
             // instantiate recognized string names
             switch ($lexer) {
@@ -137,25 +160,20 @@ class HTMLPurifier_Lexer
 
     }
 
-    // -- CONVENIENCE MEMBERS ---------------------------------------------
-
-    public function __construct() {
-        $this->_entity_parser = new HTMLPurifier_EntityParser();
-    }
-
     /**
-     * Most common entity to raw value conversion table for special entities.
+     * Callback function for escapeCDATA() that does the work.
+     *
+     * @warning Though this is public in order to let the callback happen,
+     *          calling it directly is not recommended.
+     * @params $matches PCRE matches array, with index 0 the entire match
+     *                  and 1 the inside of the CDATA section.
+     * @returns Escaped internals of the CDATA section.
      */
-    protected $_special_entity2str =
-            array(
-                    '&quot;' => '"',
-                    '&amp;'  => '&',
-                    '&lt;'   => '<',
-                    '&gt;'   => '>',
-                    '&#39;'  => "'",
-                    '&#039;' => "'",
-                    '&#x27;' => "'"
-            );
+    protected static function CDATACallback($matches)
+    {
+        // not exactly sure why the character set is needed, but whatever
+        return htmlspecialchars($matches[1], ENT_COMPAT, 'UTF-8');
+    }
 
     /**
      * Parses special entities into the proper characters.
@@ -171,14 +189,15 @@ class HTMLPurifier_Lexer
      * @param $string String character data to be parsed.
      * @returns Parsed character data.
      */
-    public function parseData($string) {
+    public function parseData($string)
+    {
 
         // following functions require at least one character
         if ($string === '') return '';
 
         // subtracts amps that cannot possibly be escaped
         $num_amp = substr_count($string, '&') - substr_count($string, '& ') -
-            ($string[strlen($string)-1] === '&' ? 1 : 0);
+            ($string[strlen($string) - 1] === '&' ? 1 : 0);
 
         if (!$num_amp) return $string; // abort if no entities
         $num_esc_amp = substr_count($string, '&amp;');
@@ -186,7 +205,7 @@ class HTMLPurifier_Lexer
 
         // code duplication for sake of optimization, see above
         $num_amp_2 = substr_count($string, '&') - substr_count($string, '& ') -
-            ($string[strlen($string)-1] === '&' ? 1 : 0);
+            ($string[strlen($string) - 1] === '&' ? 1 : 0);
 
         if ($num_amp_2 <= $num_esc_amp) return $string;
 
@@ -201,58 +220,9 @@ class HTMLPurifier_Lexer
      * @param $string String HTML.
      * @return HTMLPurifier_Token array representation of HTML.
      */
-    public function tokenizeHTML($string, $config, $context) {
+    public function tokenizeHTML($string, $config, $context)
+    {
         trigger_error('Call to abstract class', E_USER_ERROR);
-    }
-
-    /**
-     * Translates CDATA sections into regular sections (through escaping).
-     *
-     * @param $string HTML string to process.
-     * @returns HTML with CDATA sections escaped.
-     */
-    protected static function escapeCDATA($string) {
-        return preg_replace_callback(
-            '/<!\[CDATA\[(.+?)\]\]>/s',
-            array('HTMLPurifier_Lexer', 'CDATACallback'),
-            $string
-        );
-    }
-
-    /**
-     * Special CDATA case that is especially convoluted for <script>
-     */
-    protected static function escapeCommentedCDATA($string) {
-        return preg_replace_callback(
-            '#<!--//--><!\[CDATA\[//><!--(.+?)//--><!\]\]>#s',
-            array('HTMLPurifier_Lexer', 'CDATACallback'),
-            $string
-        );
-    }
-
-    /**
-     * Special Internet Explorer conditional comments should be removed.
-     */
-    protected static function removeIEConditional($string) {
-        return preg_replace(
-            '#<!--\[if [^>]+\]>.*?<!\[endif\]-->#si', // probably should generalize for all strings
-            '',
-            $string
-        );
-    }
-
-    /**
-     * Callback function for escapeCDATA() that does the work.
-     *
-     * @warning Though this is public in order to let the callback happen,
-     *          calling it directly is not recommended.
-     * @params $matches PCRE matches array, with index 0 the entire match
-     *                  and 1 the inside of the CDATA section.
-     * @returns Escaped internals of the CDATA section.
-     */
-    protected static function CDATACallback($matches) {
-        // not exactly sure why the character set is needed, but whatever
-        return htmlspecialchars($matches[1], ENT_COMPAT, 'UTF-8');
     }
 
     /**
@@ -260,7 +230,8 @@ class HTMLPurifier_Lexer
      * encoding, extracting bits, and other good stuff.
      * @todo Consider making protected
      */
-    public function normalize($html, $config, $context) {
+    public function normalize($html, $config, $context)
+    {
 
         // normalize newlines to \n
         if ($config->get('Core.NormalizeNewlines')) {
@@ -308,10 +279,50 @@ class HTMLPurifier_Lexer
     }
 
     /**
+     * Special CDATA case that is especially convoluted for <script>
+     */
+    protected static function escapeCommentedCDATA($string)
+    {
+        return preg_replace_callback(
+            '#<!--//--><!\[CDATA\[//><!--(.+?)//--><!\]\]>#s',
+            array('HTMLPurifier_Lexer', 'CDATACallback'),
+            $string
+        );
+    }
+
+    /**
+     * Translates CDATA sections into regular sections (through escaping).
+     *
+     * @param $string HTML string to process.
+     * @returns HTML with CDATA sections escaped.
+     */
+    protected static function escapeCDATA($string)
+    {
+        return preg_replace_callback(
+            '/<!\[CDATA\[(.+?)\]\]>/s',
+            array('HTMLPurifier_Lexer', 'CDATACallback'),
+            $string
+        );
+    }
+
+    /**
+     * Special Internet Explorer conditional comments should be removed.
+     */
+    protected static function removeIEConditional($string)
+    {
+        return preg_replace(
+            '#<!--\[if [^>]+\]>.*?<!\[endif\]-->#si', // probably should generalize for all strings
+            '',
+            $string
+        );
+    }
+
+    /**
      * Takes a string of HTML (fragment or document) and returns the content
      * @todo Consider making protected
      */
-    public function extractBody($html) {
+    public function extractBody($html)
+    {
         $matches = array();
         $result = preg_match('!<body[^>]*>(.*)</body>!is', $html, $matches);
         if ($result) {

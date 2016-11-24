@@ -61,33 +61,44 @@ class Zend_Form_Decorator_Fieldset extends Zend_Form_Decorator_Abstract
     protected $_placement = null;
 
     /**
-     * Get options
+     * Render a fieldset
      *
-     * Merges in element attributes as well.
-     *
-     * @return array
+     * @param  string $content
+     * @return string
      */
-    public function getOptions()
+    public function render($content)
     {
-        $options = parent::getOptions();
-        if (null !== ($element = $this->getElement())) {
-            $attribs = $element->getAttribs();
-            $options = array_merge($attribs, $options);
-            $this->setOptions($options);
+        $element = $this->getElement();
+        $view = $element->getView();
+        if (null === $view) {
+            return $content;
         }
-        return $options;
-    }
 
-    /**
-     * Set legend
-     *
-     * @param  string $value
-     * @return Zend_Form_Decorator_Fieldset
-     */
-    public function setLegend($value)
-    {
-        $this->_legend = (string) $value;
-        return $this;
+        $legend = $this->getLegend();
+        $attribs = $this->getOptions();
+        $name = $element->getFullyQualifiedName();
+        $id = (string)$element->getId();
+
+        if (!array_key_exists('id', $attribs) && '' !== $id) {
+            $attribs['id'] = 'fieldset-' . $id;
+        }
+
+        if (null !== $legend) {
+            if (null !== ($translator = $element->getTranslator())) {
+                $legend = $translator->translate($legend);
+            }
+
+            $attribs['legend'] = $legend;
+        }
+
+        foreach (array_keys($attribs) as $attrib) {
+            $testAttrib = strtolower($attrib);
+            if (in_array($testAttrib, $this->stripAttribs)) {
+                unset($attribs[$attrib]);
+            }
+        }
+
+        return $view->fieldset($name, $content, $attribs);
     }
 
     /**
@@ -113,43 +124,32 @@ class Zend_Form_Decorator_Fieldset extends Zend_Form_Decorator_Abstract
     }
 
     /**
-     * Render a fieldset
+     * Set legend
      *
-     * @param  string $content
-     * @return string
+     * @param  string $value
+     * @return Zend_Form_Decorator_Fieldset
      */
-    public function render($content)
+    public function setLegend($value)
     {
-        $element = $this->getElement();
-        $view    = $element->getView();
-        if (null === $view) {
-            return $content;
+        $this->_legend = (string)$value;
+        return $this;
+    }
+
+    /**
+     * Get options
+     *
+     * Merges in element attributes as well.
+     *
+     * @return array
+     */
+    public function getOptions()
+    {
+        $options = parent::getOptions();
+        if (null !== ($element = $this->getElement())) {
+            $attribs = $element->getAttribs();
+            $options = array_merge($attribs, $options);
+            $this->setOptions($options);
         }
-
-        $legend  = $this->getLegend();
-        $attribs = $this->getOptions();
-        $name    = $element->getFullyQualifiedName();
-        $id      = (string)$element->getId();
-
-        if (!array_key_exists('id', $attribs) && '' !== $id) {
-            $attribs['id'] = 'fieldset-' . $id;
-        }
-
-        if (null !== $legend) {
-            if (null !== ($translator = $element->getTranslator())) {
-                $legend = $translator->translate($legend);
-            }
-
-            $attribs['legend'] = $legend;
-        }
-
-        foreach (array_keys($attribs) as $attrib) {
-            $testAttrib = strtolower($attrib);
-            if (in_array($testAttrib, $this->stripAttribs)) {
-                unset($attribs[$attrib]);
-            }
-        }
-
-        return $view->fieldset($name, $content, $attribs);
+        return $options;
     }
 }

@@ -44,6 +44,15 @@ abstract class Zend_Markup_Renderer_Html_HtmlAbstract implements Zend_Markup_Ren
      */
     protected $_renderer;
 
+    /**
+     * Get the HTML renderer instance
+     *
+     * @return Zend_Markup_Renderer_Html
+     */
+    public function getRenderer()
+    {
+        return $this->_renderer;
+    }
 
     /**
      * Set the HTML renderer instance
@@ -55,15 +64,5 @@ abstract class Zend_Markup_Renderer_Html_HtmlAbstract implements Zend_Markup_Ren
     public function setRenderer(Zend_Markup_Renderer_Html $renderer)
     {
         $this->_renderer = $renderer;
-    }
-
-    /**
-     * Get the HTML renderer instance
-     *
-     * @return Zend_Markup_Renderer_Html
-     */
-    public function getRenderer()
-    {
-        return $this->_renderer;
     }
 }

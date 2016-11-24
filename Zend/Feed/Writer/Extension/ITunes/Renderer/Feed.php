@@ -67,17 +67,6 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Feed
     }
 
     /**
-     * Append feed namespaces
-     *
-     * @return void
-     */
-    protected function _appendNamespaces()
-    {
-        $this->getRootElement()->setAttribute('xmlns:itunes',
-            'http://www.itunes.com/dtds/podcast-1.0.dtd');
-    }
-
-    /**
      * Set feed authors
      *
      * @param  DOMDocument $dom
@@ -132,7 +121,7 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Feed
         if (!$cats || empty($cats)) {
             return;
         }
-        foreach ($cats as $key=>$cat) {
+        foreach ($cats as $key => $cat) {
             if (!is_array($cat)) {
                 $el = $dom->createElement('itunes:category');
                 $el->setAttribute('text', $cat);
@@ -316,5 +305,16 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Feed
         $el->appendChild($text);
         $root->appendChild($el);
         $this->_called = true;
+    }
+
+    /**
+     * Append feed namespaces
+     *
+     * @return void
+     */
+    protected function _appendNamespaces()
+    {
+        $this->getRootElement()->setAttribute('xmlns:itunes',
+            'http://www.itunes.com/dtds/podcast-1.0.dtd');
     }
 }

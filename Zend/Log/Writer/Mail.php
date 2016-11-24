@@ -46,61 +46,6 @@ require_once 'Zend/Log/Formatter/Simple.php';
 class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
 {
     /**
-     * Array of formatted events to include in message body.
-     *
-     * @var array
-     */
-    protected $_eventsToMail = array();
-
-    /**
-     * Array of formatted lines for use in an HTML email body; these events
-     * are formatted with an optional formatter if the caller is using
-     * Zend_Layout.
-     *
-     * @var array
-     */
-    protected $_layoutEventsToMail = array();
-
-    /**
-     * Zend_Mail instance to use
-     *
-     * @var Zend_Mail
-     */
-    protected $_mail;
-
-    /**
-     * Zend_Layout instance to use; optional.
-     *
-     * @var Zend_Layout
-     */
-    protected $_layout;
-
-    /**
-     * Optional formatter for use when rendering with Zend_Layout.
-     *
-     * @var Zend_Log_Formatter_Interface
-     */
-    protected $_layoutFormatter;
-
-    /**
-     * Array keeping track of the number of entries per priority level.
-     *
-     * @var array
-     */
-    protected $_numEntriesPerPriority = array();
-
-    /**
-     * Subject prepend text.
-     *
-     * Can only be used of the Zend_Mail object has not already had its
-     * subject line set.  Using this will cause the subject to have the entry
-     * counts per-priority level appended to it.
-     *
-     * @var string|null
-     */
-    protected $_subjectPrependText;
-
-    /**
      * MethodMap for Zend_Mail's headers
      *
      * @var array
@@ -111,6 +56,54 @@ class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
         'cc' => 'addCc',
         'bcc' => 'addBcc',
     );
+    /**
+     * Array of formatted events to include in message body.
+     *
+     * @var array
+     */
+    protected $_eventsToMail = array();
+    /**
+     * Array of formatted lines for use in an HTML email body; these events
+     * are formatted with an optional formatter if the caller is using
+     * Zend_Layout.
+     *
+     * @var array
+     */
+    protected $_layoutEventsToMail = array();
+    /**
+     * Zend_Mail instance to use
+     *
+     * @var Zend_Mail
+     */
+    protected $_mail;
+    /**
+     * Zend_Layout instance to use; optional.
+     *
+     * @var Zend_Layout
+     */
+    protected $_layout;
+    /**
+     * Optional formatter for use when rendering with Zend_Layout.
+     *
+     * @var Zend_Log_Formatter_Interface
+     */
+    protected $_layoutFormatter;
+    /**
+     * Array keeping track of the number of entries per priority level.
+     *
+     * @var array
+     */
+    protected $_numEntriesPerPriority = array();
+    /**
+     * Subject prepend text.
+     *
+     * Can only be used of the Zend_Mail object has not already had its
+     * subject line set.  Using this will cause the subject to have the entry
+     * counts per-priority level appended to it.
+     *
+     * @var string|null
+     */
+    protected $_subjectPrependText;
 
     /**
      * Class constructor.
@@ -130,6 +123,51 @@ class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
             $this->setLayout($layout);
         }
         $this->_formatter = new Zend_Log_Formatter_Simple();
+    }
+
+    /**
+     * Set the layout
+     *
+     * @param Zend_Layout|array $layout
+     * @return Zend_Log_Writer_Mail
+     * @throws Zend_Log_Exception
+     */
+    public function setLayout($layout)
+    {
+        if (is_array($layout)) {
+            $layout = $this->_constructLayoutFromConfig($layout);
+        }
+
+        if (!$layout instanceof Zend_Layout) {
+            require_once 'Zend/Log/Exception.php';
+            throw new Zend_Log_Exception('Mail must be an instance of Zend_Layout or an array');
+        }
+        $this->_layout = $layout;
+
+        return $this;
+    }
+
+    /**
+     * Construct a Zend_Layout instance based on a configuration array
+     *
+     * @param array $config
+     * @return Zend_Layout
+     * @throws Zend_Log_Exception
+     */
+    protected function _constructLayoutFromConfig(array $config)
+    {
+        $config = array_merge(array(
+            'layout' => 'Zend_Layout',
+            'layoutOptions' => null
+        ), $config);
+
+        $layoutClass = $config['layout'];
+        $layout = new $layoutClass($config['layoutOptions']);
+        if (!$layout instanceof Zend_Layout) {
+            throw new Zend_Log_Exception($layout . 'must extend Zend_Layout');
+        }
+
+        return $layout;
     }
 
     /**
@@ -156,28 +194,6 @@ class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
         }
 
         return $writer;
-    }
-
-    /**
-     * Set the layout
-     *
-     * @param Zend_Layout|array $layout
-     * @return Zend_Log_Writer_Mail
-     * @throws Zend_Log_Exception
-     */
-    public function setLayout($layout)
-    {
-        if (is_array($layout)) {
-            $layout = $this->_constructLayoutFromConfig($layout);
-        }
-
-        if (!$layout instanceof Zend_Layout) {
-            require_once 'Zend/Log/Exception.php';
-            throw new Zend_Log_Exception('Mail must be an instance of Zend_Layout or an array');
-        }
-        $this->_layout = $layout;
-
-        return $this;
     }
 
     /**
@@ -230,62 +246,28 @@ class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
     }
 
     /**
-     * Construct a Zend_Layout instance based on a configuration array
+     * Allows caller to have the mail subject dynamically set to contain the
+     * entry counts per-priority level.
      *
-     * @param array $config
-     * @return Zend_Layout
+     * Sets the text for use in the subject, with entry counts per-priority
+     * level appended to the end.  Since a Zend_Mail subject can only be set
+     * once, this method cannot be used if the Zend_Mail object already has a
+     * subject set.
+     *
+     * @param  string $subject Subject prepend text.
+     * @return Zend_Log_Writer_Mail
      * @throws Zend_Log_Exception
      */
-    protected function _constructLayoutFromConfig(array $config)
+    public function setSubjectPrependText($subject)
     {
-        $config = array_merge(array(
-            'layout' => 'Zend_Layout',
-            'layoutOptions' => null
-        ), $config);
-
-        $layoutClass = $config['layout'];
-        $layout = new $layoutClass($config['layoutOptions']);
-        if (!$layout instanceof Zend_Layout) {
-            throw new Zend_Log_Exception($layout . 'must extend Zend_Layout');
+        if ($this->_mail->getSubject()) {
+            throw new Zend_Log_Exception(
+                'subject already set on mail; ' .
+                'cannot set subject prepend text');
         }
 
-        return $layout;
-    }
-
-    /**
-     * Places event line into array of lines to be used as message body.
-     *
-     * Handles the formatting of both plaintext entries, as well as those
-     * rendered with Zend_Layout.
-     *
-     * @param  array $event Event data
-     * @return void
-     */
-    protected function _write($event)
-    {
-        // Track the number of entries per priority level.
-        if (!isset($this->_numEntriesPerPriority[$event['priorityName']])) {
-            $this->_numEntriesPerPriority[$event['priorityName']] = 1;
-        } else {
-            $this->_numEntriesPerPriority[$event['priorityName']]++;
-        }
-
-        $formattedEvent = $this->_formatter->format($event);
-
-        // All plaintext events are to use the standard formatter.
-        $this->_eventsToMail[] = $formattedEvent;
-
-        // If we have a Zend_Layout instance, use a specific formatter for the
-        // layout if one exists.  Otherwise, just use the event with its
-        // default format.
-        if ($this->_layout) {
-            if ($this->_layoutFormatter) {
-                $this->_layoutEventsToMail[] =
-                    $this->_layoutFormatter->format($event);
-            } else {
-                $this->_layoutEventsToMail[] = $formattedEvent;
-            }
-        }
+        $this->_subjectPrependText = (string)$subject;
+        return $this;
     }
 
     /**
@@ -315,35 +297,10 @@ class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
         if (!$this->_layout) {
             throw new Zend_Log_Exception(
                 'cannot set formatter for layout; ' .
-                    'a Zend_Layout instance is not in use');
+                'a Zend_Layout instance is not in use');
         }
 
         $this->_layoutFormatter = $formatter;
-        return $this;
-    }
-
-    /**
-     * Allows caller to have the mail subject dynamically set to contain the
-     * entry counts per-priority level.
-     *
-     * Sets the text for use in the subject, with entry counts per-priority
-     * level appended to the end.  Since a Zend_Mail subject can only be set
-     * once, this method cannot be used if the Zend_Mail object already has a
-     * subject set.
-     *
-     * @param  string $subject Subject prepend text.
-     * @return Zend_Log_Writer_Mail
-     * @throws Zend_Log_Exception
-     */
-    public function setSubjectPrependText($subject)
-    {
-        if ($this->_mail->getSubject()) {
-            throw new Zend_Log_Exception(
-                'subject already set on mail; ' .
-                    'cannot set subject prepend text');
-        }
-
-        $this->_subjectPrependText = (string) $subject;
         return $this;
     }
 
@@ -388,10 +345,10 @@ class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
             } catch (Exception $e) {
                 trigger_error(
                     "exception occurred when rendering layout; " .
-                        "unable to set html body for message; " .
-                        "message = {$e->getMessage()}; " .
-                        "code = {$e->getCode()}; " .
-                        "exception class = " . get_class($e),
+                    "unable to set html body for message; " .
+                    "message = {$e->getMessage()}; " .
+                    "code = {$e->getCode()}; " .
+                    "exception class = " . get_class($e),
                     E_USER_NOTICE);
             }
         }
@@ -404,9 +361,9 @@ class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
         } catch (Exception $e) {
             trigger_error(
                 "unable to send log entries via email; " .
-                    "message = {$e->getMessage()}; " .
-                    "code = {$e->getCode()}; " .
-                        "exception class = " . get_class($e),
+                "message = {$e->getMessage()}; " .
+                "code = {$e->getCode()}; " .
+                "exception class = " . get_class($e),
                 E_USER_WARNING);
         }
     }
@@ -426,5 +383,41 @@ class Zend_Log_Writer_Mail extends Zend_Log_Writer_Abstract
         }
 
         return implode(', ', $strings);
+    }
+
+    /**
+     * Places event line into array of lines to be used as message body.
+     *
+     * Handles the formatting of both plaintext entries, as well as those
+     * rendered with Zend_Layout.
+     *
+     * @param  array $event Event data
+     * @return void
+     */
+    protected function _write($event)
+    {
+        // Track the number of entries per priority level.
+        if (!isset($this->_numEntriesPerPriority[$event['priorityName']])) {
+            $this->_numEntriesPerPriority[$event['priorityName']] = 1;
+        } else {
+            $this->_numEntriesPerPriority[$event['priorityName']]++;
+        }
+
+        $formattedEvent = $this->_formatter->format($event);
+
+        // All plaintext events are to use the standard formatter.
+        $this->_eventsToMail[] = $formattedEvent;
+
+        // If we have a Zend_Layout instance, use a specific formatter for the
+        // layout if one exists.  Otherwise, just use the event with its
+        // default format.
+        if ($this->_layout) {
+            if ($this->_layoutFormatter) {
+                $this->_layoutEventsToMail[] =
+                    $this->_layoutFormatter->format($event);
+            } else {
+                $this->_layoutEventsToMail[] = $formattedEvent;
+            }
+        }
     }
 }

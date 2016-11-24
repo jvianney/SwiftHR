@@ -94,7 +94,7 @@ class Zend_Feed_Entry_Atom extends Zend_Feed_Entry_Abstract
                 $response = $client->request('DELETE');
             }
             $httpStatus = $response->getStatus();
-            switch ((int) $httpStatus / 100) {
+            switch ((int)$httpStatus / 100) {
                 // Success
                 case 2:
                     return true;
@@ -113,6 +113,48 @@ class Zend_Feed_Entry_Atom extends Zend_Feed_Entry_Abstract
         } while (true);
     }
 
+    /**
+     * Easy access to <link> tags keyed by "rel" attributes.
+     *
+     * If $elt->link() is called with no arguments, we will attempt to
+     * return the value of the <link> tag(s) like all other
+     * method-syntax attribute access. If an argument is passed to
+     * link(), however, then we will return the "href" value of the
+     * first <link> tag that has a "rel" attribute matching $rel:
+     *
+     * $elt->link(): returns the value of the link tag.
+     * $elt->link('self'): returns the href from the first <link rel="self"> in the entry.
+     *
+     * @param  string $rel The "rel" attribute to look for.
+     * @return mixed
+     */
+    public function link($rel = null)
+    {
+        if ($rel === null) {
+            return parent::__call('link', null);
+        }
+
+        // index link tags by their "rel" attribute.
+        $links = parent::__get('link');
+        if (!is_array($links)) {
+            if ($links instanceof Zend_Feed_Element) {
+                $links = array($links);
+            } else {
+                return $links;
+            }
+        }
+
+        foreach ($links as $link) {
+            if (empty($link['rel'])) {
+                $link['rel'] = 'alternate'; // see Atom 1.0 spec
+            }
+            if ($rel == $link['rel']) {
+                return $link['href'];
+            }
+        }
+
+        return null;
+    }
 
     /**
      * Save a new or updated Atom entry.
@@ -187,7 +229,7 @@ class Zend_Feed_Entry_Atom extends Zend_Feed_Entry_Abstract
                  */
                 require_once 'Zend/Feed/Exception.php';
                 throw new Zend_Feed_Exception('Expected response code 201, got '
-                                              . $response->getStatus());
+                    . $response->getStatus());
             }
         }
 
@@ -221,7 +263,7 @@ class Zend_Feed_Entry_Atom extends Zend_Feed_Entry_Abstract
              */
             require_once 'Zend/Feed/Exception.php';
             throw new Zend_Feed_Exception('No root <feed> element found in server response:'
-                                          . "\n\n" . $client->responseBody);
+                . "\n\n" . $client->responseBody);
         }
 
         if ($this->_element->parentNode) {
@@ -231,50 +273,6 @@ class Zend_Feed_Entry_Atom extends Zend_Feed_Entry_Abstract
         } else {
             $this->_element = $newEntry;
         }
-    }
-
-
-    /**
-     * Easy access to <link> tags keyed by "rel" attributes.
-     *
-     * If $elt->link() is called with no arguments, we will attempt to
-     * return the value of the <link> tag(s) like all other
-     * method-syntax attribute access. If an argument is passed to
-     * link(), however, then we will return the "href" value of the
-     * first <link> tag that has a "rel" attribute matching $rel:
-     *
-     * $elt->link(): returns the value of the link tag.
-     * $elt->link('self'): returns the href from the first <link rel="self"> in the entry.
-     *
-     * @param  string $rel The "rel" attribute to look for.
-     * @return mixed
-     */
-    public function link($rel = null)
-    {
-        if ($rel === null) {
-            return parent::__call('link', null);
-        }
-
-        // index link tags by their "rel" attribute.
-        $links = parent::__get('link');
-        if (!is_array($links)) {
-            if ($links instanceof Zend_Feed_Element) {
-                $links = array($links);
-            } else {
-                return $links;
-            }
-        }
-
-        foreach ($links as $link) {
-            if (empty($link['rel'])) {
-                $link['rel'] = 'alternate'; // see Atom 1.0 spec
-            }
-            if ($rel == $link['rel']) {
-                return $link['href'];
-            }
-        }
-
-        return null;
     }
 
 }

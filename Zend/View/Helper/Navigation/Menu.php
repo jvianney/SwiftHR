@@ -69,7 +69,7 @@ class Zend_View_Helper_Navigation_Menu
      * View helper entry point:
      * Retrieves helper and optionally sets container to operate on
      *
-     * @param  Zend_Navigation_Container $container  [optional] container to
+     * @param  Zend_Navigation_Container $container [optional] container to
      *                                               operate on
      * @return Zend_View_Helper_Navigation_Menu      fluent interface,
      *                                               returns self
@@ -86,18 +86,143 @@ class Zend_View_Helper_Navigation_Menu
     // Accessors:
 
     /**
-     * Sets CSS class to use for the first 'ul' element when rendering
+     * Renders the inner-most sub menu for the active page in the $container
      *
-     * @param  string $ulClass                   CSS class to set
-     * @return Zend_View_Helper_Navigation_Menu  fluent interface, returns self
+     * This is a convenience method which is equivalent to the following call:
+     * <code>
+     * renderMenu($container, array(
+     *     'indent'           => $indent,
+     *     'ulClass'          => $ulClass,
+     *     'minDepth'         => null,
+     *     'maxDepth'         => null,
+     *     'onlyActiveBranch' => true,
+     *     'renderParents'    => false
+     * ));
+     * </code>
+     *
+     * @param  Zend_Navigation_Container $container [optional] container to
+     *                                               render. Default is to render
+     *                                               the container registered in
+     *                                               the helper.
+     * @param  string $ulClass [optional] CSS class to
+     *                                               use for UL element. Default
+     *                                               is to use the value from
+     *                                               {@link getUlClass()}.
+     * @param  string|int $indent [optional] indentation as
+     *                                               a string or number of
+     *                                               spaces. Default is to use
+     *                                               the value retrieved from
+     *                                               {@link getIndent()}.
+     * @return string                                rendered content
      */
-    public function setUlClass($ulClass)
+    public function renderSubMenu(Zend_Navigation_Container $container = null,
+                                  $ulClass = null,
+                                  $indent = null)
     {
-        if (is_string($ulClass)) {
-            $this->_ulClass = $ulClass;
+        return $this->renderMenu($container, array(
+            'indent' => $indent,
+            'ulClass' => $ulClass,
+            'minDepth' => null,
+            'maxDepth' => null,
+            'onlyActiveBranch' => true,
+            'renderParents' => false
+        ));
+    }
+
+    /**
+     * Renders helper
+     *
+     * Renders a HTML 'ul' for the given $container. If $container is not given,
+     * the container registered in the helper will be used.
+     *
+     * Available $options:
+     *
+     *
+     * @param  Zend_Navigation_Container $container [optional] container to
+     *                                               create menu from. Default
+     *                                               is to use the container
+     *                                               retrieved from
+     *                                               {@link getContainer()}.
+     * @param  array $options [optional] options for
+     *                                               controlling rendering
+     * @return string                                rendered menu
+     */
+    public function renderMenu(Zend_Navigation_Container $container = null,
+                               array $options = array())
+    {
+        if (null === $container) {
+            $container = $this->getContainer();
         }
 
-        return $this;
+        $options = $this->_normalizeOptions($options);
+
+        if ($options['onlyActiveBranch'] && !$options['renderParents']) {
+            $html = $this->_renderDeepestMenu($container,
+                $options['ulClass'],
+                $options['indent'],
+                $options['minDepth'],
+                $options['maxDepth']);
+        } else {
+            $html = $this->_renderMenu($container,
+                $options['ulClass'],
+                $options['indent'],
+                $options['minDepth'],
+                $options['maxDepth'],
+                $options['onlyActiveBranch']);
+        }
+
+        return $html;
+    }
+
+    /**
+     * Normalizes given render options
+     *
+     * @param  array $options [optional] options to normalize
+     * @return array           normalized options
+     */
+    protected function _normalizeOptions(array $options = array())
+    {
+        if (isset($options['indent'])) {
+            $options['indent'] = $this->_getWhitespace($options['indent']);
+        } else {
+            $options['indent'] = $this->getIndent();
+        }
+
+        if (isset($options['ulClass']) && $options['ulClass'] !== null) {
+            $options['ulClass'] = (string)$options['ulClass'];
+        } else {
+            $options['ulClass'] = $this->getUlClass();
+        }
+
+        if (array_key_exists('minDepth', $options)) {
+            if (null !== $options['minDepth']) {
+                $options['minDepth'] = (int)$options['minDepth'];
+            }
+        } else {
+            $options['minDepth'] = $this->getMinDepth();
+        }
+
+        if ($options['minDepth'] < 0 || $options['minDepth'] === null) {
+            $options['minDepth'] = 0;
+        }
+
+        if (array_key_exists('maxDepth', $options)) {
+            if (null !== $options['maxDepth']) {
+                $options['maxDepth'] = (int)$options['maxDepth'];
+            }
+        } else {
+            $options['maxDepth'] = $this->getMaxDepth();
+        }
+
+        if (!isset($options['onlyActiveBranch'])) {
+            $options['onlyActiveBranch'] = $this->getOnlyActiveBranch();
+        }
+
+        if (!isset($options['renderParents'])) {
+            $options['renderParents'] = $this->getRenderParents();
+        }
+
+        return $options;
     }
 
     /**
@@ -111,15 +236,17 @@ class Zend_View_Helper_Navigation_Menu
     }
 
     /**
-     * Sets a flag indicating whether only active branch should be rendered
+     * Sets CSS class to use for the first 'ul' element when rendering
      *
-     * @param  bool $flag                        [optional] render only active
-     *                                           branch. Default is true.
+     * @param  string $ulClass CSS class to set
      * @return Zend_View_Helper_Navigation_Menu  fluent interface, returns self
      */
-    public function setOnlyActiveBranch($flag = true)
+    public function setUlClass($ulClass)
     {
-        $this->_onlyActiveBranch = (bool) $flag;
+        if (is_string($ulClass)) {
+            $this->_ulClass = $ulClass;
+        }
+
         return $this;
     }
 
@@ -137,18 +264,15 @@ class Zend_View_Helper_Navigation_Menu
     }
 
     /**
-     * Enables/disables rendering of parents when only rendering active branch
+     * Sets a flag indicating whether only active branch should be rendered
      *
-     * See {@link setOnlyActiveBranch()} for more information.
-     *
-     * @param  bool $flag                        [optional] render parents when
-     *                                           rendering active branch.
-     *                                           Default is true.
+     * @param  bool $flag [optional] render only active
+     *                                           branch. Default is true.
      * @return Zend_View_Helper_Navigation_Menu  fluent interface, returns self
      */
-    public function setRenderParents($flag = true)
+    public function setOnlyActiveBranch($flag = true)
     {
-        $this->_renderParents = (bool) $flag;
+        $this->_onlyActiveBranch = (bool)$flag;
         return $this;
     }
 
@@ -165,148 +289,34 @@ class Zend_View_Helper_Navigation_Menu
         return $this->_renderParents;
     }
 
-    /**
-     * Sets which partial view script to use for rendering menu
-     *
-     * @param  string|array $partial             partial view script or null. If
-     *                                           an array is given, it is
-     *                                           expected to contain two values;
-     *                                           the partial view script to use,
-     *                                           and the module where the script
-     *                                           can be found.
-     * @return Zend_View_Helper_Navigation_Menu  fluent interface, returns self
-     */
-    public function setPartial($partial)
-    {
-        if (null === $partial || is_string($partial) || is_array($partial)) {
-            $this->_partial = $partial;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Returns partial view script to use for rendering menu
-     *
-     * @return string|array|null
-     */
-    public function getPartial()
-    {
-        return $this->_partial;
-    }
-
     // Public methods:
 
     /**
-     * Returns an HTML string containing an 'a' element for the given page if
-     * the page's href is not empty, and a 'span' element if it is empty
+     * Enables/disables rendering of parents when only rendering active branch
      *
-     * Overrides {@link Zend_View_Helper_Navigation_Abstract::htmlify()}.
+     * See {@link setOnlyActiveBranch()} for more information.
      *
-     * @param  Zend_Navigation_Page $page  page to generate HTML for
-     * @return string                      HTML string for the given page
+     * @param  bool $flag [optional] render parents when
+     *                                           rendering active branch.
+     *                                           Default is true.
+     * @return Zend_View_Helper_Navigation_Menu  fluent interface, returns self
      */
-    public function htmlify(Zend_Navigation_Page $page)
+    public function setRenderParents($flag = true)
     {
-        // get label and title for translating
-        $label = $page->getLabel();
-        $title = $page->getTitle();
-
-        // translate label and title?
-        if ($this->getUseTranslator() && $t = $this->getTranslator()) {
-            if (is_string($label) && !empty($label)) {
-                $label = $t->translate($label);
-            }
-            if (is_string($title) && !empty($title)) {
-                $title = $t->translate($title);
-            }
-        }
-
-        // get attribs for element
-        $attribs = array(
-            'id'     => $page->getId(),
-            'title'  => $title,
-            'class'  => $page->getClass()
-        );
-
-        // does page have a href?
-        if ($href = $page->getHref()) {
-            $element = 'a';
-            $attribs['href'] = $href;
-            $attribs['target'] = $page->getTarget();
-            $attribs['accesskey'] = $page->getAccessKey();
-        } else {
-            $element = 'span';
-        }
-
-        return '<' . $element . $this->_htmlAttribs($attribs) . '>'
-             . $this->view->escape($label)
-             . '</' . $element . '>';
+        $this->_renderParents = (bool)$flag;
+        return $this;
     }
-
-    /**
-     * Normalizes given render options
-     *
-     * @param  array $options  [optional] options to normalize
-     * @return array           normalized options
-     */
-    protected function _normalizeOptions(array $options = array())
-    {
-        if (isset($options['indent'])) {
-            $options['indent'] = $this->_getWhitespace($options['indent']);
-        } else {
-            $options['indent'] = $this->getIndent();
-        }
-
-        if (isset($options['ulClass']) && $options['ulClass'] !== null) {
-            $options['ulClass'] = (string) $options['ulClass'];
-        } else {
-            $options['ulClass'] = $this->getUlClass();
-        }
-
-        if (array_key_exists('minDepth', $options)) {
-            if (null !== $options['minDepth']) {
-                $options['minDepth'] = (int) $options['minDepth'];
-            }
-        } else {
-            $options['minDepth'] = $this->getMinDepth();
-        }
-
-        if ($options['minDepth'] < 0 || $options['minDepth'] === null) {
-            $options['minDepth'] = 0;
-        }
-
-        if (array_key_exists('maxDepth', $options)) {
-            if (null !== $options['maxDepth']) {
-                $options['maxDepth'] = (int) $options['maxDepth'];
-            }
-        } else {
-            $options['maxDepth'] = $this->getMaxDepth();
-        }
-
-        if (!isset($options['onlyActiveBranch'])) {
-            $options['onlyActiveBranch'] = $this->getOnlyActiveBranch();
-        }
-
-        if (!isset($options['renderParents'])) {
-            $options['renderParents'] = $this->getRenderParents();
-        }
-
-        return $options;
-    }
-
-    // Render methods:
 
     /**
      * Renders the deepest active menu within [$minDepth, $maxDeth], (called
      * from {@link renderMenu()})
      *
-     * @param  Zend_Navigation_Container $container  container to render
-     * @param  array                     $active     active page and depth
-     * @param  string                    $ulClass    CSS class for first UL
-     * @param  string                    $indent     initial indentation
-     * @param  int|null                  $minDepth   minimum depth
-     * @param  int|null                  $maxDepth   maximum depth
+     * @param  Zend_Navigation_Container $container container to render
+     * @param  array $active active page and depth
+     * @param  string $ulClass CSS class for first UL
+     * @param  string $indent initial indentation
+     * @param  int|null $minDepth minimum depth
+     * @param  int|null $maxDepth maximum depth
      * @return string                                rendered menu
      */
     protected function _renderDeepestMenu(Zend_Navigation_Container $container,
@@ -327,7 +337,7 @@ class Zend_View_Helper_Navigation_Menu
         } else if (!$active['page']->hasPages()) {
             // found pages has no children; render siblings
             $active['page'] = $active['page']->getParent();
-        } else if (is_int($maxDepth) && $active['depth'] +1 > $maxDepth) {
+        } else if (is_int($maxDepth) && $active['depth'] + 1 > $maxDepth) {
             // children are below max depth; render siblings
             $active['page'] = $active['page']->getParent();
         }
@@ -350,15 +360,64 @@ class Zend_View_Helper_Navigation_Menu
         return $html;
     }
 
+    // Render methods:
+
+    /**
+     * Returns an HTML string containing an 'a' element for the given page if
+     * the page's href is not empty, and a 'span' element if it is empty
+     *
+     * Overrides {@link Zend_View_Helper_Navigation_Abstract::htmlify()}.
+     *
+     * @param  Zend_Navigation_Page $page page to generate HTML for
+     * @return string                      HTML string for the given page
+     */
+    public function htmlify(Zend_Navigation_Page $page)
+    {
+        // get label and title for translating
+        $label = $page->getLabel();
+        $title = $page->getTitle();
+
+        // translate label and title?
+        if ($this->getUseTranslator() && $t = $this->getTranslator()) {
+            if (is_string($label) && !empty($label)) {
+                $label = $t->translate($label);
+            }
+            if (is_string($title) && !empty($title)) {
+                $title = $t->translate($title);
+            }
+        }
+
+        // get attribs for element
+        $attribs = array(
+            'id' => $page->getId(),
+            'title' => $title,
+            'class' => $page->getClass()
+        );
+
+        // does page have a href?
+        if ($href = $page->getHref()) {
+            $element = 'a';
+            $attribs['href'] = $href;
+            $attribs['target'] = $page->getTarget();
+            $attribs['accesskey'] = $page->getAccessKey();
+        } else {
+            $element = 'span';
+        }
+
+        return '<' . $element . $this->_htmlAttribs($attribs) . '>'
+            . $this->view->escape($label)
+            . '</' . $element . '>';
+    }
+
     /**
      * Renders a normal menu (called from {@link renderMenu()})
      *
-     * @param  Zend_Navigation_Container $container   container to render
-     * @param  string                    $ulClass     CSS class for first UL
-     * @param  string                    $indent      initial indentation
-     * @param  int|null                  $minDepth    minimum depth
-     * @param  int|null                  $maxDepth    maximum depth
-     * @param  bool                      $onlyActive  render only active branch?
+     * @param  Zend_Navigation_Container $container container to render
+     * @param  string $ulClass CSS class for first UL
+     * @param  string $indent initial indentation
+     * @param  int|null $minDepth minimum depth
+     * @param  int|null $maxDepth maximum depth
+     * @param  bool $onlyActive render only active branch?
      * @return string
      */
     protected function _renderMenu(Zend_Navigation_Container $container,
@@ -380,7 +439,7 @@ class Zend_View_Helper_Navigation_Menu
 
         // create iterator
         $iterator = new RecursiveIteratorIterator($container,
-                            RecursiveIteratorIterator::SELF_FIRST);
+            RecursiveIteratorIterator::SELF_FIRST);
         if (is_int($maxDepth)) {
             $iterator->setMaxDepth($maxDepth);
         }
@@ -403,7 +462,8 @@ class Zend_View_Helper_Navigation_Menu
                     } else if ($foundPage->getParent()->hasPage($page)) {
                         // page is a sibling of the active page...
                         if (!$foundPage->hasPages() ||
-                            is_int($maxDepth) && $foundDepth + 1 > $maxDepth) {
+                            is_int($maxDepth) && $foundDepth + 1 > $maxDepth
+                        ) {
                             // accept if active page has no children, or the
                             // children are too deep to be rendered
                             $accept = true;
@@ -422,7 +482,7 @@ class Zend_View_Helper_Navigation_Menu
 
             if ($depth > $prevDepth) {
                 // start new ul tag
-                if ($ulClass && $depth ==  0) {
+                if ($ulClass && $depth == 0) {
                     $ulClass = ' class="' . $ulClass . '"';
                 } else {
                     $ulClass = '';
@@ -445,7 +505,7 @@ class Zend_View_Helper_Navigation_Menu
             // render li tag and page
             $liClass = $isActive ? ' class="active"' : '';
             $html .= $myIndent . '    <li' . $liClass . '>' . self::EOL
-                   . $myIndent . '        ' . $this->htmlify($page) . self::EOL;
+                . $myIndent . '        ' . $this->htmlify($page) . self::EOL;
 
             // store as previous depth for next iteration
             $prevDepth = $depth;
@@ -453,10 +513,10 @@ class Zend_View_Helper_Navigation_Menu
 
         if ($html) {
             // done iterating container; close open ul/li tags
-            for ($i = $prevDepth+1; $i > 0; $i--) {
-                $myIndent = $indent . str_repeat('        ', $i-1);
+            for ($i = $prevDepth + 1; $i > 0; $i--) {
+                $myIndent = $indent . str_repeat('        ', $i - 1);
                 $html .= $myIndent . '    </li>' . self::EOL
-                       . $myIndent . '</ul>' . self::EOL;
+                    . $myIndent . '</ul>' . self::EOL;
             }
             $html = rtrim($html, self::EOL);
         }
@@ -465,93 +525,63 @@ class Zend_View_Helper_Navigation_Menu
     }
 
     /**
-     * Renders helper
+     * Renders menu
      *
-     * Renders a HTML 'ul' for the given $container. If $container is not given,
-     * the container registered in the helper will be used.
+     * Implements {@link Zend_View_Helper_Navigation_Helper::render()}.
      *
-     * Available $options:
+     * If a partial view is registered in the helper, the menu will be rendered
+     * using the given partial script. If no partial is registered, the menu
+     * will be rendered as an 'ul' element by the helper's internal method.
      *
+     * @see renderPartial()
+     * @see renderMenu()
      *
-     * @param  Zend_Navigation_Container $container  [optional] container to
-     *                                               create menu from. Default
-     *                                               is to use the container
-     *                                               retrieved from
-     *                                               {@link getContainer()}.
-     * @param  array                     $options    [optional] options for
-     *                                               controlling rendering
-     * @return string                                rendered menu
+     * @param  Zend_Navigation_Container $container [optional] container to
+     *                                               render. Default is to
+     *                                               render the container
+     *                                               registered in the helper.
+     * @return string                                helper output
      */
-    public function renderMenu(Zend_Navigation_Container $container = null,
-                               array $options = array())
+    public function render(Zend_Navigation_Container $container = null)
     {
-        if (null === $container) {
-            $container = $this->getContainer();
-        }
-
-        $options = $this->_normalizeOptions($options);
-
-        if ($options['onlyActiveBranch'] && !$options['renderParents']) {
-            $html = $this->_renderDeepestMenu($container,
-                                              $options['ulClass'],
-                                              $options['indent'],
-                                              $options['minDepth'],
-                                              $options['maxDepth']);
+        if ($partial = $this->getPartial()) {
+            return $this->renderPartial($container, $partial);
         } else {
-            $html = $this->_renderMenu($container,
-                                       $options['ulClass'],
-                                       $options['indent'],
-                                       $options['minDepth'],
-                                       $options['maxDepth'],
-                                       $options['onlyActiveBranch']);
+            return $this->renderMenu($container);
         }
-
-        return $html;
     }
 
     /**
-     * Renders the inner-most sub menu for the active page in the $container
+     * Returns partial view script to use for rendering menu
      *
-     * This is a convenience method which is equivalent to the following call:
-     * <code>
-     * renderMenu($container, array(
-     *     'indent'           => $indent,
-     *     'ulClass'          => $ulClass,
-     *     'minDepth'         => null,
-     *     'maxDepth'         => null,
-     *     'onlyActiveBranch' => true,
-     *     'renderParents'    => false
-     * ));
-     * </code>
-     *
-     * @param  Zend_Navigation_Container $container  [optional] container to
-     *                                               render. Default is to render
-     *                                               the container registered in
-     *                                               the helper.
-     * @param  string                    $ulClass    [optional] CSS class to
-     *                                               use for UL element. Default
-     *                                               is to use the value from
-     *                                               {@link getUlClass()}.
-     * @param  string|int                $indent     [optional] indentation as
-     *                                               a string or number of
-     *                                               spaces. Default is to use
-     *                                               the value retrieved from
-     *                                               {@link getIndent()}.
-     * @return string                                rendered content
+     * @return string|array|null
      */
-    public function renderSubMenu(Zend_Navigation_Container $container = null,
-                                  $ulClass = null,
-                                  $indent = null)
+    public function getPartial()
     {
-        return $this->renderMenu($container, array(
-            'indent'           => $indent,
-            'ulClass'          => $ulClass,
-            'minDepth'         => null,
-            'maxDepth'         => null,
-            'onlyActiveBranch' => true,
-            'renderParents'    => false
-        ));
+        return $this->_partial;
     }
+
+    /**
+     * Sets which partial view script to use for rendering menu
+     *
+     * @param  string|array $partial partial view script or null. If
+     *                                           an array is given, it is
+     *                                           expected to contain two values;
+     *                                           the partial view script to use,
+     *                                           and the module where the script
+     *                                           can be found.
+     * @return Zend_View_Helper_Navigation_Menu  fluent interface, returns self
+     */
+    public function setPartial($partial)
+    {
+        if (null === $partial || is_string($partial) || is_array($partial)) {
+            $this->_partial = $partial;
+        }
+
+        return $this;
+    }
+
+    // Zend_View_Helper_Navigation_Helper:
 
     /**
      * Renders the given $container by invoking the partial view helper
@@ -560,11 +590,11 @@ class Zend_View_Helper_Navigation_Menu
      * as-is, and will be available in the partial script as 'container', e.g.
      * <code>echo 'Number of pages: ', count($this->container);</code>.
      *
-     * @param  Zend_Navigation_Container $container  [optional] container to
+     * @param  Zend_Navigation_Container $container [optional] container to
      *                                               pass to view script. Default
      *                                               is to use the container
      *                                               registered in the helper.
-     * @param  string|array             $partial     [optional] partial view
+     * @param  string|array $partial [optional] partial view
      *                                               script to use. Default is to
      *                                               use the partial registered
      *                                               in the helper. If an array
@@ -604,8 +634,8 @@ class Zend_View_Helper_Navigation_Menu
                 require_once 'Zend/View/Exception.php';
                 $e = new Zend_View_Exception(
                     'Unable to render menu: A view partial supplied as '
-                    .  'an array must contain two values: partial view '
-                    .  'script and module where script can be found'
+                    . 'an array must contain two values: partial view '
+                    . 'script and module where script can be found'
                 );
                 $e->setView($this->view);
                 throw $e;
@@ -615,34 +645,5 @@ class Zend_View_Helper_Navigation_Menu
         }
 
         return $this->view->partial($partial, null, $model);
-    }
-
-    // Zend_View_Helper_Navigation_Helper:
-
-    /**
-     * Renders menu
-     *
-     * Implements {@link Zend_View_Helper_Navigation_Helper::render()}.
-     *
-     * If a partial view is registered in the helper, the menu will be rendered
-     * using the given partial script. If no partial is registered, the menu
-     * will be rendered as an 'ul' element by the helper's internal method.
-     *
-     * @see renderPartial()
-     * @see renderMenu()
-     *
-     * @param  Zend_Navigation_Container $container  [optional] container to
-     *                                               render. Default is to
-     *                                               render the container
-     *                                               registered in the helper.
-     * @return string                                helper output
-     */
-    public function render(Zend_Navigation_Container $container = null)
-    {
-        if ($partial = $this->getPartial()) {
-            return $this->renderPartial($container, $partial);
-        } else {
-            return $this->renderMenu($container);
-        }
     }
 }

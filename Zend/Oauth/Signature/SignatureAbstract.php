@@ -78,36 +78,6 @@ abstract class Zend_Oauth_Signature_SignatureAbstract
     }
 
     /**
-     * Sign a request
-     *
-     * @param  array $params
-     * @param  null|string $method
-     * @param  null|string $url
-     * @return string
-     */
-    public abstract function sign(array $params, $method = null, $url = null);
-
-    /**
-     * Normalize the base signature URL
-     *
-     * @param  string $url
-     * @return string
-     */
-    public function normaliseBaseSignatureUrl($url)
-    {
-        $uri = Zend_Uri_Http::fromString($url);
-        if ($uri->getScheme() == 'http' && $uri->getPort() == '80') {
-            $uri->setPort('');
-        } elseif ($uri->getScheme() == 'https' && $uri->getPort() == '443') {
-            $uri->setPort('');
-        }
-        $uri->setQuery('');
-        $uri->setFragment('');
-        $uri->setHost(strtolower($uri->getHost()));
-        return $uri->getUri(true);
-    }
-
-    /**
      * Assemble key from consumer and token secrets
      *
      * @return string
@@ -123,6 +93,16 @@ abstract class Zend_Oauth_Signature_SignatureAbstract
         }
         return implode('&', $parts);
     }
+
+    /**
+     * Sign a request
+     *
+     * @param  array $params
+     * @param  null|string $method
+     * @param  null|string $url
+     * @return string
+     */
+    public abstract function sign(array $params, $method = null, $url = null);
 
     /**
      * Get base signature string
@@ -156,6 +136,26 @@ abstract class Zend_Oauth_Signature_SignatureAbstract
             $this->_toByteValueOrderedQueryString($encodedParams)
         );
         return implode('&', $baseStrings);
+    }
+
+    /**
+     * Normalize the base signature URL
+     *
+     * @param  string $url
+     * @return string
+     */
+    public function normaliseBaseSignatureUrl($url)
+    {
+        $uri = Zend_Uri_Http::fromString($url);
+        if ($uri->getScheme() == 'http' && $uri->getPort() == '80') {
+            $uri->setPort('');
+        } elseif ($uri->getScheme() == 'https' && $uri->getPort() == '443') {
+            $uri->setPort('');
+        }
+        $uri->setQuery('');
+        $uri->setFragment('');
+        $uri->setHost(strtolower($uri->getHost()));
+        return $uri->getUri(true);
     }
 
     /**

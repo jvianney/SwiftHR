@@ -51,6 +51,18 @@ class Zend_Feed_Builder_Entry extends ArrayObject
     }
 
     /**
+     * Timestamp of the update date
+     *
+     * @param  int $lastUpdate
+     * @return Zend_Feed_Builder_Entry
+     */
+    public function setLastUpdate($lastUpdate)
+    {
+        $this->offsetSet('lastUpdate', $lastUpdate);
+        return $this;
+    }
+
+    /**
      * Read only properties accessor
      *
      * @param  string $name property to read
@@ -138,18 +150,6 @@ class Zend_Feed_Builder_Entry extends ArrayObject
     }
 
     /**
-     * Timestamp of the update date
-     *
-     * @param  int $lastUpdate
-     * @return Zend_Feed_Builder_Entry
-     */
-    public function setLastUpdate($lastUpdate)
-    {
-        $this->offsetSet('lastUpdate', $lastUpdate);
-        return $this;
-    }
-
-    /**
      * Sets the url of the commented page associated to the entry
      *
      * @param  string $comments
@@ -183,7 +183,7 @@ class Zend_Feed_Builder_Entry extends ArrayObject
     public function setSource($title, $url)
     {
         $this->offsetSet('source', array('title' => $title,
-                                         'url' => $url));
+            'url' => $url));
         return $this;
     }
 
@@ -289,8 +289,8 @@ class Zend_Feed_Builder_Entry extends ArrayObject
             $enclosure = $this->offsetGet('enclosure');
         }
         $enclosure[] = array('url' => $url,
-                             'type' => $type,
-                             'length' => $length);
+            'type' => $type,
+            'length' => $length);
         $this->offsetSet('enclosure', $enclosure);
         return $this;
     }

@@ -49,7 +49,7 @@ class Zend_InfoCard_Xml_Security_Transform_XmlExcC14N
         $dom = new DOMDocument();
         $dom->loadXML($strXMLData);
 
-        if(method_exists($dom, 'C14N')) {
+        if (method_exists($dom, 'C14N')) {
             return $dom->C14N(true, false);
         }
 

@@ -119,13 +119,13 @@ class Zend_Validate_GreaterThan extends Zend_Validate_Abstract
             return false;
         }
         return true;
-       /* $value = new Zend_Date($value);
-        $min = new Zend_Date($this->_min);
-        if($min->isLater($value)) {
-            $this->_error(self::NOT_GREATER);
-            return false;
-        }
-         return true;*/
+        /* $value = new Zend_Date($value);
+         $min = new Zend_Date($this->_min);
+         if($min->isLater($value)) {
+             $this->_error(self::NOT_GREATER);
+             return false;
+         }
+          return true;*/
     }
 
 }

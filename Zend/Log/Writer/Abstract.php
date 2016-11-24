@@ -46,9 +46,32 @@ abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
     protected $_formatter;
 
     /**
+     * Validate and optionally convert the config to array
+     *
+     * @param  array|Zend_Config $config Zend_Config or Array
+     * @return array
+     * @throws Zend_Log_Exception
+     */
+    static protected function _parseConfig($config)
+    {
+        if ($config instanceof Zend_Config) {
+            $config = $config->toArray();
+        }
+
+        if (!is_array($config)) {
+            require_once 'Zend/Log/Exception.php';
+            throw new Zend_Log_Exception(
+                'Configuration must be an array or instance of Zend_Config'
+            );
+        }
+
+        return $config;
+    }
+
+    /**
      * Add a filter specific to this writer.
      *
-     * @param  Zend_Log_Filter_Interface  $filter
+     * @param  Zend_Log_Filter_Interface $filter
      * @return Zend_Log_Writer_Abstract
      */
     public function addFilter($filter)
@@ -76,7 +99,7 @@ abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
     public function write($event)
     {
         foreach ($this->_filters as $filter) {
-            if (! $filter->accept($event)) {
+            if (!$filter->accept($event)) {
                 return;
             }
         }
@@ -84,6 +107,14 @@ abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
         // exception occurs on error
         $this->_write($event);
     }
+
+    /**
+     * Write a message to the log.
+     *
+     * @param  array $event log data event
+     * @return void
+     */
+    abstract protected function _write($event);
 
     /**
      * Set a new formatter for this writer
@@ -103,36 +134,6 @@ abstract class Zend_Log_Writer_Abstract implements Zend_Log_FactoryInterface
      * @return void
      */
     public function shutdown()
-    {}
-
-    /**
-     * Write a message to the log.
-     *
-     * @param  array  $event  log data event
-     * @return void
-     */
-    abstract protected function _write($event);
-
-    /**
-     * Validate and optionally convert the config to array
-     *
-     * @param  array|Zend_Config $config Zend_Config or Array
-     * @return array
-     * @throws Zend_Log_Exception
-     */
-    static protected function _parseConfig($config)
     {
-        if ($config instanceof Zend_Config) {
-            $config = $config->toArray();
-        }
-
-        if (!is_array($config)) {
-            require_once 'Zend/Log/Exception.php';
-            throw new Zend_Log_Exception(
-                'Configuration must be an array or instance of Zend_Config'
-            );
-        }
-
-        return $config;
     }
 }

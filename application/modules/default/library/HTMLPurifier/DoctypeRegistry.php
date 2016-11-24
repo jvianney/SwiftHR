@@ -24,8 +24,9 @@ class HTMLPurifier_DoctypeRegistry
      * @return Editable registered doctype
      */
     public function register($doctype, $xml = true, $modules = array(),
-        $tidy_modules = array(), $aliases = array(), $dtd_public = null, $dtd_system = null
-    ) {
+                             $tidy_modules = array(), $aliases = array(), $dtd_public = null, $dtd_system = null
+    )
+    {
         if (!is_array($modules)) $modules = array($modules);
         if (!is_array($tidy_modules)) $tidy_modules = array($tidy_modules);
         if (!is_array($aliases)) $aliases = array($aliases);
@@ -47,13 +48,27 @@ class HTMLPurifier_DoctypeRegistry
     }
 
     /**
+     * Creates a doctype based on a configuration object,
+     * will perform initialization on the doctype
+     * @note Use this function to get a copy of doctype that config
+     *       can hold on to (this is necessary in order to tell
+     *       Generator whether or not the current document is XML
+     *       based or not).
+     */
+    public function make($config)
+    {
+        return clone $this->get($this->getDoctypeFromConfig($config));
+    }
+
+    /**
      * Retrieves reference to a doctype of a certain name
      * @note This function resolves aliases
      * @note When possible, use the more fully-featured make()
      * @param $doctype Name of doctype
      * @return Editable doctype object
      */
-    public function get($doctype) {
+    public function get($doctype)
+    {
         if (isset($this->aliases[$doctype])) $doctype = $this->aliases[$doctype];
         if (!isset($this->doctypes[$doctype])) {
             trigger_error('Doctype ' . htmlspecialchars($doctype) . ' does not exist', E_USER_ERROR);
@@ -64,21 +79,10 @@ class HTMLPurifier_DoctypeRegistry
     }
 
     /**
-     * Creates a doctype based on a configuration object,
-     * will perform initialization on the doctype
-     * @note Use this function to get a copy of doctype that config
-     *       can hold on to (this is necessary in order to tell
-     *       Generator whether or not the current document is XML
-     *       based or not).
-     */
-    public function make($config) {
-        return clone $this->get($this->getDoctypeFromConfig($config));
-    }
-
-    /**
      * Retrieves the doctype from the configuration object
      */
-    public function getDoctypeFromConfig($config) {
+    public function getDoctypeFromConfig($config)
+    {
         // recommended test
         $doctype = $config->get('HTML.Doctype');
         if (!empty($doctype)) return $doctype;

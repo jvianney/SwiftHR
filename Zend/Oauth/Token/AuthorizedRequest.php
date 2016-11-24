@@ -59,6 +59,23 @@ class Zend_Oauth_Token_AuthorizedRequest extends Zend_Oauth_Token
     }
 
     /**
+     * Parse string data into array
+     *
+     * @return array
+     */
+    protected function _parseData()
+    {
+        $params = array();
+        if (empty($this->_data)) {
+            return;
+        }
+        foreach ($this->_data as $key => $value) {
+            $params[rawurldecode($key)] = rawurldecode($value);
+        }
+        return $params;
+    }
+
+    /**
      * Retrieve token data
      *
      * @return array
@@ -81,22 +98,5 @@ class Zend_Oauth_Token_AuthorizedRequest extends Zend_Oauth_Token
             return true;
         }
         return false;
-    }
-
-    /**
-     * Parse string data into array
-     *
-     * @return array
-     */
-    protected function _parseData()
-    {
-        $params = array();
-        if (empty($this->_data)) {
-            return;
-        }
-        foreach ($this->_data as $key => $value) {
-            $params[rawurldecode($key)] = rawurldecode($value);
-        }
-        return $params;
     }
 }

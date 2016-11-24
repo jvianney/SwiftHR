@@ -7,23 +7,23 @@
  * tokens. If a token is not recognized but a TagTransform is defined for
  * that element, the element will be transformed accordingly.
  */
-
 class HTMLPurifier_Strategy_RemoveForeignElements extends HTMLPurifier_Strategy
 {
 
-    public function execute($tokens, $config, $context) {
+    public function execute($tokens, $config, $context)
+    {
         $definition = $config->getHTMLDefinition();
         $generator = new HTMLPurifier_Generator($config, $context);
         $result = array();
 
         $escape_invalid_tags = $config->get('Core.EscapeInvalidTags');
-        $remove_invalid_img  = $config->get('Core.RemoveInvalidImg');
+        $remove_invalid_img = $config->get('Core.RemoveInvalidImg');
 
         // currently only used to determine if comments should be kept
         $trusted = $config->get('HTML.Trusted');
 
         $remove_script_contents = $config->get('Core.RemoveScriptContents');
-        $hidden_elements     = $config->get('Core.HiddenElements');
+        $hidden_elements = $config->get('Core.HiddenElements');
 
         // remove script contents compatibility
         if ($remove_script_contents === true) {
@@ -48,25 +48,25 @@ class HTMLPurifier_Strategy_RemoveForeignElements extends HTMLPurifier_Strategy
             $e =& $context->get('ErrorCollector');
         }
 
-        foreach($tokens as $token) {
+        foreach ($tokens as $token) {
             if ($remove_until) {
                 if (empty($token->is_tag) || $token->name !== $remove_until) {
                     continue;
                 }
             }
-            if (!empty( $token->is_tag )) {
+            if (!empty($token->is_tag)) {
                 // DEFINITION CALL
 
                 // before any processing, try to transform the element
                 if (
-                    isset($definition->info_tag_transform[$token->name])
+                isset($definition->info_tag_transform[$token->name])
                 ) {
                     $original_name = $token->name;
                     // there is a transformation for this tag
                     // DEFINITION CALL
                     $token = $definition->
-                                info_tag_transform[$token->name]->
-                                    transform($token, $config, $context);
+                    info_tag_transform[$token->name]->
+                    transform($token, $config, $context);
                     if ($e) $e->send(E_NOTICE, 'Strategy_RemoveForeignElements: Tag transform', $original_name);
                 }
 

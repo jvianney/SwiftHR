@@ -29,8 +29,8 @@
  */
 class Zend_Ldap_Converter
 {
-    const STANDARD         = 0;
-    const BOOLEAN          = 1;
+    const STANDARD = 0;
+    const BOOLEAN = 1;
     const GENERALIZED_TIME = 2;
 
     /**
@@ -45,9 +45,9 @@ class Zend_Ldap_Converter
      */
     public static function ascToHex32($string)
     {
-        for ($i = 0; $i<strlen($string); $i++) {
+        for ($i = 0; $i < strlen($string); $i++) {
             $char = substr($string, $i, 1);
-            if (ord($char)<32) {
+            if (ord($char) < 32) {
                 $hex = dechex(ord($char));
                 if (strlen($hex) == 1) $hex = '0' . $hex;
                 $string = str_replace($char, '\\' . $hex, $string);
@@ -81,8 +81,8 @@ class Zend_Ldap_Converter
      *
      * @todo write more tests
      *
-     * @param    mixed     $value     The value to convert
-     * @param    int       $ytpe      The conversion type to use
+     * @param    mixed $value The value to convert
+     * @param    int $ytpe The conversion type to use
      * @return    string
      * @throws    Zend_Ldap_Converter_Exception
      */
@@ -126,14 +126,36 @@ class Zend_Ldap_Converter
     }
 
     /**
+     * Convert a boolean value to an LDAP-compatible string
+     *
+     * This converts a boolean value of TRUE, an integer-value of 1 and a
+     * case-insensitive string 'true' to an LDAP-compatible 'TRUE'. All other
+     * other values are converted to an LDAP-compatible 'FALSE'.
+     *
+     * @param    boolean|integer|string $value The boolean value to encode
+     * @return    string
+     */
+    public static function toLdapBoolean($value)
+    {
+        $return = 'FALSE';
+        if (!is_scalar($value)) {
+            return $return;
+        }
+        if (true === $value || 'true' === strtolower($value) || 1 === $value) {
+            $return = 'TRUE';
+        }
+        return $return;
+    }
+
+    /**
      * Converts a date-entity to an LDAP-compatible date-string
      *
      * The date-entity <var>$date</var> can be either a timestamp, a
      * DateTime Object, a string that is parseable by strtotime() or a Zend_Date
      * Object.
      *
-     * @param    integer|string|DateTimt|Zend_Date        $date    The date-entity
-     * @param    boolean                                    $asUtc    Whether to return the LDAP-compatible date-string
+     * @param    integer|string|DateTimt|Zend_Date $date The date-entity
+     * @param    boolean $asUtc Whether to return the LDAP-compatible date-string
      *                                                          as UTC or as local value
      * @return    string
      * @throws    InvalidArgumentException
@@ -157,38 +179,16 @@ class Zend_Ldap_Converter
             $date->setTimezone(new DateTimeZone('UTC'));
             $timezone = 'Z';
         }
-        if ( '+0000' === $timezone ) {
+        if ('+0000' === $timezone) {
             $timezone = 'Z';
         }
         return $date->format('YmdHis') . $timezone;
     }
 
     /**
-     * Convert a boolean value to an LDAP-compatible string
-     *
-     * This converts a boolean value of TRUE, an integer-value of 1 and a
-     * case-insensitive string 'true' to an LDAP-compatible 'TRUE'. All other
-     * other values are converted to an LDAP-compatible 'FALSE'.
-     *
-     * @param    boolean|integer|string        $value    The boolean value to encode
-     * @return    string
-     */
-    public static function toLdapBoolean($value)
-    {
-        $return = 'FALSE';
-        if (!is_scalar($value)) {
-            return $return;
-        }
-        if (true === $value || 'true' === strtolower($value) || 1 === $value) {
-            $return = 'TRUE';
-        }
-        return $return;
-    }
-
-    /**
      * Serialize any value for storage in LDAP
      *
-     * @param    mixed        $value    The value to serialize
+     * @param    mixed $value The value to serialize
      * @return    string
      */
     public static function toLdapSerialize($value)
@@ -202,9 +202,9 @@ class Zend_Ldap_Converter
      * By setting the <var>$type</var>-parameter the conversion of a certain
      * type can be forced
      * .
-     * @param    string    $value             The value to convert
-     * @param    int        $ytpe              The conversion type to use
-     * @param    boolean    $dateTimeAsUtc    Return DateTime values in UTC timezone
+     * @param    string $value The value to convert
+     * @param    int $ytpe The conversion type to use
+     * @param    boolean $dateTimeAsUtc Return DateTime values in UTC timezone
      * @return    mixed
      * @throws    Zend_Ldap_Converter_Exception
      */
@@ -229,10 +229,29 @@ class Zend_Ldap_Converter
                 }
                 try {
                     return self::fromLdapUnserialize($value);
-                } catch (UnexpectedValueException $e) { }
+                } catch (UnexpectedValueException $e) {
+                }
                 break;
         }
         return $value;
+    }
+
+    /**
+     * Convert an LDAP-compatible boolean value into a PHP-compatible one
+     *
+     * @param    string $value The value to convert
+     * @return    boolean
+     * @throws    InvalidArgumentException
+     */
+    public static function fromLdapBoolean($value)
+    {
+        if ('TRUE' === $value) {
+            return true;
+        } else if ('FALSE' === $value) {
+            return false;
+        } else {
+            throw new InvalidArgumentException('The given value is not a boolean value');
+        }
     }
 
     /**
@@ -240,15 +259,15 @@ class Zend_Ldap_Converter
      *
      * CAVEAT: The DateTime-Object returned will alwasy be set to UTC-Timezone.
      *
-     * @param    string        $date    The generalized-Time
-     * @param    boolean        $asUtc    Return the DateTime with UTC timezone
+     * @param    string $date The generalized-Time
+     * @param    boolean $asUtc Return the DateTime with UTC timezone
      * @return    DateTime
      * @throws    InvalidArgumentException if a non-parseable-format is given
      */
     public static function fromLdapDateTime($date, $asUtc = true)
     {
-        $datepart = array ();
-        if (!preg_match('/^(\d{4})/', $date, $datepart) ) {
+        $datepart = array();
+        if (!preg_match('/^(\d{4})/', $date, $datepart)) {
             throw new InvalidArgumentException('Invalid date format found');
         }
 
@@ -256,12 +275,12 @@ class Zend_Ldap_Converter
             throw new InvalidArgumentException('Invalid date format found (too short)');
         }
 
-        $time = array (
+        $time = array(
             // The year is mandatory!
-            'year'   => $datepart[1],
-            'month'  => 1,
-            'day'    => 1,
-            'hour'   => 0,
+            'year' => $datepart[1],
+            'month' => 1,
+            'day' => 1,
+            'hour' => 0,
             'minute' => 0,
             'second' => 0,
             'offdir' => '+',
@@ -318,7 +337,7 @@ class Zend_Ldap_Converter
 
         // Set Offset
         $offsetRegEx = '/([Z\-\+])(\d{2}\'?){0,1}(\d{2}\'?){0,1}$/';
-        $off         = array ();
+        $off = array();
         if (preg_match($offsetRegEx, $date, $off)) {
             $offset = $off[1];
             if ($offset == '+' || $offset == '-') {
@@ -343,17 +362,17 @@ class Zend_Ldap_Converter
 
         // Raw-Data is present, so lets create a DateTime-Object from it.
         $offset = $time['offdir']
-                . str_pad($time['offsethours'],2,'0',STR_PAD_LEFT)
-                . str_pad($time['offsetminutes'],2,'0',STR_PAD_LEFT);
+            . str_pad($time['offsethours'], 2, '0', STR_PAD_LEFT)
+            . str_pad($time['offsetminutes'], 2, '0', STR_PAD_LEFT);
         $timestring = $time['year'] . '-'
-                    . str_pad($time['month'], 2, '0', STR_PAD_LEFT) . '-'
-                    . str_pad($time['day'], 2, '0', STR_PAD_LEFT) . ' '
-                    . str_pad($time['hour'], 2, '0', STR_PAD_LEFT) . ':'
-                    . str_pad($time['minute'], 2, '0', STR_PAD_LEFT) . ':'
-                    . str_pad($time['second'], 2, '0', STR_PAD_LEFT)
-                    . $time['offdir']
-                    . str_pad($time['offsethours'], 2, '0', STR_PAD_LEFT)
-                    . str_pad($time['offsetminutes'], 2, '0', STR_PAD_LEFT);
+            . str_pad($time['month'], 2, '0', STR_PAD_LEFT) . '-'
+            . str_pad($time['day'], 2, '0', STR_PAD_LEFT) . ' '
+            . str_pad($time['hour'], 2, '0', STR_PAD_LEFT) . ':'
+            . str_pad($time['minute'], 2, '0', STR_PAD_LEFT) . ':'
+            . str_pad($time['second'], 2, '0', STR_PAD_LEFT)
+            . $time['offdir']
+            . str_pad($time['offsethours'], 2, '0', STR_PAD_LEFT)
+            . str_pad($time['offsetminutes'], 2, '0', STR_PAD_LEFT);
         $date = new DateTime($timestring);
         if ($asUtc) {
             $date->setTimezone(new DateTimeZone('UTC'));
@@ -362,34 +381,16 @@ class Zend_Ldap_Converter
     }
 
     /**
-     * Convert an LDAP-compatible boolean value into a PHP-compatible one
-     *
-     * @param    string        $value        The value to convert
-     * @return    boolean
-     * @throws    InvalidArgumentException
-     */
-    public static function fromLdapBoolean($value)
-    {
-        if ( 'TRUE' === $value ) {
-            return true;
-        } else if ( 'FALSE' === $value ) {
-            return false;
-        } else {
-            throw new InvalidArgumentException('The given value is not a boolean value');
-        }
-    }
-
-    /**
      * Unserialize a serialized value to return the corresponding object
      *
-     * @param    string        $value    The value to convert
+     * @param    string $value The value to convert
      * @return    mixed
      * @throws    UnexpectedValueException
      */
     public static function fromLdapUnserialize($value)
     {
         $v = @unserialize($value);
-        if (false===$v && $value != 'b:0;') {
+        if (false === $v && $value != 'b:0;') {
             throw new UnexpectedValueException('The given value could not be unserialized');
         }
         return $v;

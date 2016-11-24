@@ -8,14 +8,14 @@
  *          automatically generated, it will have already absorbed the
  *          blacklist. If you're hacking around, make sure you use load()!
  */
-
 class HTMLPurifier_AttrDef_HTML_ID extends HTMLPurifier_AttrDef
 {
 
     // ref functionality disabled, since we also have to verify
     // whether or not the ID it refers to exists
 
-    public function validate($id, $config, $context) {
+    public function validate($id, $config, $context)
+    {
 
         if (!$config->get('Attr.EnableID')) return false;
 
@@ -29,13 +29,13 @@ class HTMLPurifier_AttrDef_HTML_ID extends HTMLPurifier_AttrDef
             // prevent re-appending the prefix
             if (strpos($id, $prefix) !== 0) $id = $prefix . $id;
         } elseif ($config->get('Attr.IDPrefixLocal') !== '') {
-            trigger_error('%Attr.IDPrefixLocal cannot be used unless '.
+            trigger_error('%Attr.IDPrefixLocal cannot be used unless ' .
                 '%Attr.IDPrefix is set', E_USER_WARNING);
         }
 
         //if (!$this->ref) {
-            $id_accumulator =& $context->get('IDAccumulator');
-            if (isset($id_accumulator->ids[$id])) return false;
+        $id_accumulator =& $context->get('IDAccumulator');
+        if (isset($id_accumulator->ids[$id])) return false;
         //}
 
         // we purposely avoid using regex, hopefully this is faster
@@ -47,7 +47,7 @@ class HTMLPurifier_AttrDef_HTML_ID extends HTMLPurifier_AttrDef
             $trim = trim( // primitive style of regexps, I suppose
                 $id,
                 'A..Za..z0..9:-._'
-              );
+            );
             $result = ($trim === '');
         }
 
@@ -56,7 +56,9 @@ class HTMLPurifier_AttrDef_HTML_ID extends HTMLPurifier_AttrDef
             return false;
         }
 
-        if (/*!$this->ref && */$result) $id_accumulator->add($id);
+        if (/*!$this->ref && */
+        $result
+        ) $id_accumulator->add($id);
 
         // if no change was made to the ID, return the result
         // else, return the new id if stripping whitespace made it

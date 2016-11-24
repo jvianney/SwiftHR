@@ -61,7 +61,7 @@ class Zend_View_Helper_Currency extends Zend_View_Helper_Abstract
     /**
      * Output a formatted currency
      *
-     * @param  integer|float                    $value    Currency value to output
+     * @param  integer|float $value Currency value to output
      * @param  string|Zend_Locale|Zend_Currency $currency OPTIONAL Currency to use for this call
      * @return string Formatted currency
      */
@@ -90,6 +90,16 @@ class Zend_View_Helper_Currency extends Zend_View_Helper_Abstract
     }
 
     /**
+     * Retrieve currency object
+     *
+     * @return Zend_Currency|null
+     */
+    public function getCurrency()
+    {
+        return $this->_currency;
+    }
+
+    /**
      * Sets a currency to use
      *
      * @param  Zend_Currency|String|Zend_Locale $currency Currency to use
@@ -105,15 +115,5 @@ class Zend_View_Helper_Currency extends Zend_View_Helper_Abstract
         $this->_currency = $currency;
 
         return $this;
-    }
-
-    /**
-     * Retrieve currency object
-     *
-     * @return Zend_Currency|null
-     */
-    public function getCurrency()
-    {
-        return $this->_currency;
     }
 }

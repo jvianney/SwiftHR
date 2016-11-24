@@ -48,15 +48,8 @@ class Zend_Auth
      * @return void
      */
     protected function __construct()
-    {}
-
-    /**
-     * Singleton pattern implementation makes "clone" unavailable
-     *
-     * @return void
-     */
-    protected function __clone()
-    {}
+    {
+    }
 
     /**
      * Returns an instance of Zend_Auth
@@ -72,38 +65,6 @@ class Zend_Auth
         }
 
         return self::$_instance;
-    }
-
-    /**
-     * Returns the persistent storage handler
-     *
-     * Session storage is used by default unless a different storage adapter has been set.
-     *
-     * @return Zend_Auth_Storage_Interface
-     */
-    public function getStorage()
-    {
-        if (null === $this->_storage) {
-            /**
-             * @see Zend_Auth_Storage_Session
-             */
-            require_once 'Zend/Auth/Storage/Session.php';
-            $this->setStorage(new Zend_Auth_Storage_Session());
-        }
-
-        return $this->_storage;
-    }
-
-    /**
-     * Sets the persistent storage handler
-     *
-     * @param  Zend_Auth_Storage_Interface $storage
-     * @return Zend_Auth Provides a fluent interface
-     */
-    public function setStorage(Zend_Auth_Storage_Interface $storage)
-    {
-        $this->_storage = $storage;
-        return $this;
     }
 
     /**
@@ -142,6 +103,48 @@ class Zend_Auth
     }
 
     /**
+     * Returns the persistent storage handler
+     *
+     * Session storage is used by default unless a different storage adapter has been set.
+     *
+     * @return Zend_Auth_Storage_Interface
+     */
+    public function getStorage()
+    {
+        if (null === $this->_storage) {
+            /**
+             * @see Zend_Auth_Storage_Session
+             */
+            require_once 'Zend/Auth/Storage/Session.php';
+            $this->setStorage(new Zend_Auth_Storage_Session());
+        }
+
+        return $this->_storage;
+    }
+
+    /**
+     * Sets the persistent storage handler
+     *
+     * @param  Zend_Auth_Storage_Interface $storage
+     * @return Zend_Auth Provides a fluent interface
+     */
+    public function setStorage(Zend_Auth_Storage_Interface $storage)
+    {
+        $this->_storage = $storage;
+        return $this;
+    }
+
+    /**
+     * Clears the identity from persistent storage
+     *
+     * @return void
+     */
+    public function clearIdentity()
+    {
+        $this->getStorage()->clear();
+    }
+
+    /**
      * Returns the identity from storage or null if no identity is available
      *
      * @return mixed|null
@@ -158,12 +161,11 @@ class Zend_Auth
     }
 
     /**
-     * Clears the identity from persistent storage
+     * Singleton pattern implementation makes "clone" unavailable
      *
      * @return void
      */
-    public function clearIdentity()
+    protected function __clone()
     {
-        $this->getStorage()->clear();
     }
 }

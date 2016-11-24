@@ -43,24 +43,59 @@ require_once 'Zend/Reflection/Parameter.php';
 class Zend_Reflection_Method extends ReflectionMethod
 {
     /**
-     * Retrieve method docblock reflection
+     * Get all method parameter reflection objects
      *
-     * @return Zend_Reflection_Docblock
-     * @throws Zend_Reflection_Exception
+     * @param  string $reflectionClass Name of reflection class to use
+     * @return array of Zend_Reflection_Parameter objects
      */
-    public function getDocblock($reflectionClass = 'Zend_Reflection_Docblock')
+    public function getParameters($reflectionClass = 'Zend_Reflection_Parameter')
     {
-        if ('' == $this->getDocComment()) {
-            require_once 'Zend/Reflection/Exception.php';
-            throw new Zend_Reflection_Exception($this->getName() . ' does not have a docblock');
+        $phpReflections = parent::getParameters();
+        $zendReflections = array();
+        while ($phpReflections && ($phpReflection = array_shift($phpReflections))) {
+            $instance = new $reflectionClass(array($this->getDeclaringClass()->getName(), $this->getName()), $phpReflection->getName());
+            if (!$instance instanceof Zend_Reflection_Parameter) {
+                require_once 'Zend/Reflection/Exception.php';
+                throw new Zend_Reflection_Exception('Invalid reflection class provided; must extend Zend_Reflection_Parameter');
+            }
+            $zendReflections[] = $instance;
+            unset($phpReflection);
         }
+        unset($phpReflections);
+        return $zendReflections;
+    }
 
-        $instance = new $reflectionClass($this);
-        if (!$instance instanceof Zend_Reflection_Docblock) {
+    /**
+     * Get reflection of declaring class
+     *
+     * @param  string $reflectionClass Name of reflection class to use
+     * @return Zend_Reflection_Class
+     */
+    public function getDeclaringClass($reflectionClass = 'Zend_Reflection_Class')
+    {
+        $phpReflection = parent::getDeclaringClass();
+        $zendReflection = new $reflectionClass($phpReflection->getName());
+        if (!$zendReflection instanceof Zend_Reflection_Class) {
             require_once 'Zend/Reflection/Exception.php';
-            throw new Zend_Reflection_Exception('Invalid reflection class provided; must extend Zend_Reflection_Docblock');
+            throw new Zend_Reflection_Exception('Invalid reflection class provided; must extend Zend_Reflection_Class');
         }
-        return $instance;
+        unset($phpReflection);
+        return $zendReflection;
+    }
+
+    /**
+     * Get method contents
+     *
+     * @param  bool $includeDocblock
+     * @return string
+     */
+    public function getContents($includeDocblock = true)
+    {
+        $fileContents = file($this->getFileName());
+        $startNum = $this->getStartLine($includeDocblock);
+        $endNum = ($this->getEndLine() - $this->getStartLine());
+
+        return implode("\n", array_splice($fileContents, $startNum, $endNum, true));
     }
 
     /**
@@ -81,59 +116,24 @@ class Zend_Reflection_Method extends ReflectionMethod
     }
 
     /**
-     * Get reflection of declaring class
+     * Retrieve method docblock reflection
      *
-     * @param  string $reflectionClass Name of reflection class to use
-     * @return Zend_Reflection_Class
+     * @return Zend_Reflection_Docblock
+     * @throws Zend_Reflection_Exception
      */
-    public function getDeclaringClass($reflectionClass = 'Zend_Reflection_Class')
+    public function getDocblock($reflectionClass = 'Zend_Reflection_Docblock')
     {
-        $phpReflection  = parent::getDeclaringClass();
-        $zendReflection = new $reflectionClass($phpReflection->getName());
-        if (!$zendReflection instanceof Zend_Reflection_Class) {
+        if ('' == $this->getDocComment()) {
             require_once 'Zend/Reflection/Exception.php';
-            throw new Zend_Reflection_Exception('Invalid reflection class provided; must extend Zend_Reflection_Class');
+            throw new Zend_Reflection_Exception($this->getName() . ' does not have a docblock');
         }
-        unset($phpReflection);
-        return $zendReflection;
-    }
 
-    /**
-     * Get all method parameter reflection objects
-     *
-     * @param  string $reflectionClass Name of reflection class to use
-     * @return array of Zend_Reflection_Parameter objects
-     */
-    public function getParameters($reflectionClass = 'Zend_Reflection_Parameter')
-    {
-        $phpReflections  = parent::getParameters();
-        $zendReflections = array();
-        while ($phpReflections && ($phpReflection = array_shift($phpReflections))) {
-            $instance = new $reflectionClass(array($this->getDeclaringClass()->getName(), $this->getName()), $phpReflection->getName());
-            if (!$instance instanceof Zend_Reflection_Parameter) {
-                require_once 'Zend/Reflection/Exception.php';
-                throw new Zend_Reflection_Exception('Invalid reflection class provided; must extend Zend_Reflection_Parameter');
-            }
-            $zendReflections[] = $instance;
-            unset($phpReflection);
+        $instance = new $reflectionClass($this);
+        if (!$instance instanceof Zend_Reflection_Docblock) {
+            require_once 'Zend/Reflection/Exception.php';
+            throw new Zend_Reflection_Exception('Invalid reflection class provided; must extend Zend_Reflection_Docblock');
         }
-        unset($phpReflections);
-        return $zendReflections;
-    }
-
-    /**
-     * Get method contents
-     *
-     * @param  bool $includeDocblock
-     * @return string
-     */
-    public function getContents($includeDocblock = true)
-    {
-        $fileContents = file($this->getFileName());
-        $startNum = $this->getStartLine($includeDocblock);
-        $endNum = ($this->getEndLine() - $this->getStartLine());
-
-        return implode("\n", array_splice($fileContents, $startNum, $endNum, true));
+        return $instance;
     }
 
     /**

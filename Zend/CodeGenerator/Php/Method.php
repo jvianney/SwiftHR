@@ -114,20 +114,6 @@ class Zend_CodeGenerator_Php_Method extends Zend_CodeGenerator_Php_Member_Abstra
     }
 
     /**
-     * setParameters()
-     *
-     * @param array $parameters
-     * @return Zend_CodeGenerator_Php_Method
-     */
-    public function setParameters(Array $parameters)
-    {
-        foreach ($parameters as $parameter) {
-            $this->setParameter($parameter);
-        }
-        return $this;
-    }
-
-    /**
      * setParameter()
      *
      * @param Zend_CodeGenerator_Php_Parameter|array $parameter
@@ -150,13 +136,13 @@ class Zend_CodeGenerator_Php_Method extends Zend_CodeGenerator_Php_Member_Abstra
     }
 
     /**
-     * getParameters()
+     * getBody()
      *
-     * @return array Array of Zend_CodeGenerator_Php_Parameter
+     * @return string
      */
-    public function getParameters()
+    public function getBody()
     {
-        return $this->_parameters;
+        return $this->_body;
     }
 
     /**
@@ -169,16 +155,6 @@ class Zend_CodeGenerator_Php_Method extends Zend_CodeGenerator_Php_Member_Abstra
     {
         $this->_body = $body;
         return $this;
-    }
-
-    /**
-     * getBody()
-     *
-     * @return string
-     */
-    public function getBody()
-    {
-        return $this->_body;
     }
 
     /**
@@ -222,8 +198,8 @@ class Zend_CodeGenerator_Php_Method extends Zend_CodeGenerator_Php_Member_Abstra
 
         if ($this->_body && $this->isSourceDirty()) {
             $output .= '        '
-                    .  str_replace(self::LINE_FEED, self::LINE_FEED . $indent . $indent, trim($this->_body))
-                    .  self::LINE_FEED;
+                . str_replace(self::LINE_FEED, self::LINE_FEED . $indent . $indent, trim($this->_body))
+                . self::LINE_FEED;
         } elseif ($this->_body) {
             $output .= $this->_body . self::LINE_FEED;
         }
@@ -231,6 +207,30 @@ class Zend_CodeGenerator_Php_Method extends Zend_CodeGenerator_Php_Member_Abstra
         $output .= $indent . '}' . self::LINE_FEED;
 
         return $output;
+    }
+
+    /**
+     * getParameters()
+     *
+     * @return array Array of Zend_CodeGenerator_Php_Parameter
+     */
+    public function getParameters()
+    {
+        return $this->_parameters;
+    }
+
+    /**
+     * setParameters()
+     *
+     * @param array $parameters
+     * @return Zend_CodeGenerator_Php_Method
+     */
+    public function setParameters(Array $parameters)
+    {
+        foreach ($parameters as $parameter) {
+            $this->setParameter($parameter);
+        }
+        return $this;
     }
 
 }

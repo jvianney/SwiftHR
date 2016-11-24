@@ -104,16 +104,6 @@ class Zend_Test_PHPUnit_Db_Connection extends PHPUnit_Extensions_Database_DB_Def
     }
 
     /**
-     * Returns a Zend_Db Connection
-     *
-     * @return Zend_Db_Adapter_Abstract
-     */
-    public function getConnection()
-    {
-        return $this->_connection;
-    }
-
-    /**
      * Returns a database metadata object that can be used to retrieve table
      * meta data from the database.
      *
@@ -121,10 +111,20 @@ class Zend_Test_PHPUnit_Db_Connection extends PHPUnit_Extensions_Database_DB_Def
      */
     public function getMetaData()
     {
-        if($this->_metaData === null) {
+        if ($this->_metaData === null) {
             $this->_metaData = new Zend_Test_PHPUnit_Db_Metadata_Generic($this->getConnection(), $this->getSchema());
         }
         return $this->_metaData;
+    }
+
+    /**
+     * Returns a Zend_Db Connection
+     *
+     * @return Zend_Db_Adapter_Abstract
+     */
+    public function getConnection()
+    {
+        return $this->_connection;
     }
 
     /**

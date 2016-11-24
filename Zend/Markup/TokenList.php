@@ -41,16 +41,6 @@ class Zend_Markup_TokenList implements RecursiveIterator
     protected $_tokens = array();
 
     /**
-     * Get the current token
-     *
-     * @return Zend_Markup_Token
-     */
-    public function current()
-    {
-        return current($this->_tokens);
-    }
-
-    /**
      * Get the children of the current token
      *
      * @return Zend_Markup_TokenList
@@ -120,5 +110,15 @@ class Zend_Markup_TokenList implements RecursiveIterator
     public function valid()
     {
         return $this->current() !== false;
+    }
+
+    /**
+     * Get the current token
+     *
+     * @return Zend_Markup_Token
+     */
+    public function current()
+    {
+        return current($this->_tokens);
     }
 }

@@ -47,38 +47,6 @@ abstract class Zend_Controller_Action_Helper_Abstract
     protected $_frontController = null;
 
     /**
-     * setActionController()
-     *
-     * @param  Zend_Controller_Action $actionController
-     * @return Zend_Controller_ActionHelper_Abstract Provides a fluent interface
-     */
-    public function setActionController(Zend_Controller_Action $actionController = null)
-    {
-        $this->_actionController = $actionController;
-        return $this;
-    }
-
-    /**
-     * Retrieve current action controller
-     *
-     * @return Zend_Controller_Action
-     */
-    public function getActionController()
-    {
-        return $this->_actionController;
-    }
-
-    /**
-     * Retrieve front controller instance
-     *
-     * @return Zend_Controller_Front
-     */
-    public function getFrontController()
-    {
-        return Zend_Controller_Front::getInstance();
-    }
-
-    /**
      * Hook into action controller initialization
      *
      * @return void
@@ -118,6 +86,38 @@ abstract class Zend_Controller_Action_Helper_Abstract
         }
 
         return $controller->getRequest();
+    }
+
+    /**
+     * Retrieve current action controller
+     *
+     * @return Zend_Controller_Action
+     */
+    public function getActionController()
+    {
+        return $this->_actionController;
+    }
+
+    /**
+     * setActionController()
+     *
+     * @param  Zend_Controller_Action $actionController
+     * @return Zend_Controller_ActionHelper_Abstract Provides a fluent interface
+     */
+    public function setActionController(Zend_Controller_Action $actionController = null)
+    {
+        $this->_actionController = $actionController;
+        return $this;
+    }
+
+    /**
+     * Retrieve front controller instance
+     *
+     * @return Zend_Controller_Front
+     */
+    public function getFrontController()
+    {
+        return Zend_Controller_Front::getInstance();
     }
 
     /**

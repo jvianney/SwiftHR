@@ -51,6 +51,56 @@ class Zend_Tool_Project_Provider_Module
     implements Zend_Tool_Framework_Provider_Pretendable
 {
 
+    /**
+     * create()
+     *
+     * @param string $name
+     */
+    public function create($name) //, $moduleProfile = null)
+    {
+        $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
+
+        // determine if testing is enabled in the project
+        require_once 'Zend/Tool/Project/Provider/Test.php';
+        //$testingEnabled = Zend_Tool_Project_Provider_Test::isTestingEnabled($this->_loadedProfile);
+
+        $resources = self::createResources($this->_loadedProfile, $name);
+
+        $response = $this->_registry->getResponse();
+
+        if ($this->_registry->getRequest()->isPretend()) {
+            $response->appendContent('I would create the following module and artifacts:');
+            foreach (new RecursiveIteratorIterator($resources, RecursiveIteratorIterator::SELF_FIRST) as $resource) {
+                if (is_callable(array($resource->getContext(), 'getPath'))) {
+                    $response->appendContent($resource->getContext()->getPath());
+                }
+            }
+        } else {
+            $response->appendContent('Creating the following module and artifacts:');
+            $enabledFilter = new Zend_Tool_Project_Profile_Iterator_EnabledResourceFilter($resources);
+            foreach (new RecursiveIteratorIterator($enabledFilter, RecursiveIteratorIterator::SELF_FIRST) as $resource) {
+                $response->appendContent($resource->getContext()->getPath());
+                $resource->create();
+            }
+
+            $response->appendContent('Added a key for path module directory to the application.ini file');
+            $appConfigFile = $this->_loadedProfile->search('ApplicationConfigFile');
+            $appConfigFile->removeStringItem('resources.frontController.moduleDirectory', 'production');
+            $appConfigFile->addStringItem('resources.frontController.moduleDirectory', 'APPLICATION_PATH "/modules"', 'production', false);
+
+            if (strtolower($name) == 'default') {
+                $response->appendContent('Added a key for the default module to the application.ini file');
+                $appConfigFile->addStringItem('resources.frontController.params.prefixDefaultModule', '1', 'production');
+            }
+
+            $appConfigFile->create();
+
+            // store changes to the profile
+            $this->_storeProfile();
+        }
+
+    }
+
     public static function createResources(Zend_Tool_Project_Profile $profile, $moduleName, Zend_Tool_Project_Profile_Resource $targetModuleResource = null)
     {
 
@@ -60,7 +110,7 @@ class Zend_Tool_Project_Provider_Module
             $targetModuleEnabledResources = array(
                 'ControllersDirectory', 'ModelsDirectory', 'ViewsDirectory',
                 'ViewScriptsDirectory', 'ViewHelpersDirectory', 'ViewFiltersDirectory'
-                );
+            );
         }
 
         // find the actual modules directory we will use to house our module
@@ -79,9 +129,9 @@ class Zend_Tool_Project_Provider_Module
             $targetModuleResource,
             array(
                 'denyNames' => array('ModulesDirectory', 'ViewControllerScriptsDirectory'),
-                'denyType'  => 'Zend_Tool_Project_Context_Filesystem_File'
-                )
-            );
+                'denyType' => 'Zend_Tool_Project_Context_Filesystem_File'
+            )
+        );
 
         // the iterator for the module skeleton
         $targetIterator = new RecursiveIteratorIterator($moduleContextFilterIterator, RecursiveIteratorIterator::SELF_FIRST);
@@ -125,56 +175,6 @@ class Zend_Tool_Project_Provider_Module
         }
 
         return $moduleDirectory;
-    }
-
-    /**
-     * create()
-     *
-     * @param string $name
-     */
-    public function create($name) //, $moduleProfile = null)
-    {
-        $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
-
-        // determine if testing is enabled in the project
-        require_once 'Zend/Tool/Project/Provider/Test.php';
-        //$testingEnabled = Zend_Tool_Project_Provider_Test::isTestingEnabled($this->_loadedProfile);
-        
-        $resources = self::createResources($this->_loadedProfile, $name);
-
-        $response = $this->_registry->getResponse();
-
-        if ($this->_registry->getRequest()->isPretend()) {
-            $response->appendContent('I would create the following module and artifacts:');
-            foreach (new RecursiveIteratorIterator($resources, RecursiveIteratorIterator::SELF_FIRST) as $resource) {
-                if (is_callable(array($resource->getContext(), 'getPath'))) {
-                    $response->appendContent($resource->getContext()->getPath());
-                }
-            }
-        } else {
-            $response->appendContent('Creating the following module and artifacts:');
-            $enabledFilter = new Zend_Tool_Project_Profile_Iterator_EnabledResourceFilter($resources);
-            foreach (new RecursiveIteratorIterator($enabledFilter, RecursiveIteratorIterator::SELF_FIRST) as $resource) {
-                $response->appendContent($resource->getContext()->getPath());
-                $resource->create();
-            }
-
-            $response->appendContent('Added a key for path module directory to the application.ini file');
-            $appConfigFile = $this->_loadedProfile->search('ApplicationConfigFile');
-            $appConfigFile->removeStringItem('resources.frontController.moduleDirectory', 'production');
-            $appConfigFile->addStringItem('resources.frontController.moduleDirectory', 'APPLICATION_PATH "/modules"', 'production', false);
-
-            if (strtolower($name) == 'default') {
-                $response->appendContent('Added a key for the default module to the application.ini file');
-                $appConfigFile->addStringItem('resources.frontController.params.prefixDefaultModule', '1', 'production');
-            }
-
-            $appConfigFile->create();
-
-            // store changes to the profile
-            $this->_storeProfile();
-        }
-
     }
 
 }

@@ -47,37 +47,37 @@ require_once 'Zend/Db.php';
 abstract class Zend_Db_Table_Abstract
 {
 
-    const ADAPTER          = 'db';
-    const DEFINITION        = 'definition';
+    const ADAPTER = 'db';
+    const DEFINITION = 'definition';
     const DEFINITION_CONFIG_NAME = 'definitionConfigName';
-    const SCHEMA           = 'schema';
-    const NAME             = 'name';
-    const PRIMARY          = 'primary';
-    const COLS             = 'cols';
-    const METADATA         = 'metadata';
-    const METADATA_CACHE   = 'metadataCache';
+    const SCHEMA = 'schema';
+    const NAME = 'name';
+    const PRIMARY = 'primary';
+    const COLS = 'cols';
+    const METADATA = 'metadata';
+    const METADATA_CACHE = 'metadataCache';
     const METADATA_CACHE_IN_CLASS = 'metadataCacheInClass';
-    const ROW_CLASS        = 'rowClass';
-    const ROWSET_CLASS     = 'rowsetClass';
-    const REFERENCE_MAP    = 'referenceMap';
+    const ROW_CLASS = 'rowClass';
+    const ROWSET_CLASS = 'rowsetClass';
+    const REFERENCE_MAP = 'referenceMap';
     const DEPENDENT_TABLES = 'dependentTables';
-    const SEQUENCE         = 'sequence';
+    const SEQUENCE = 'sequence';
 
-    const COLUMNS          = 'columns';
-    const REF_TABLE_CLASS  = 'refTableClass';
-    const REF_COLUMNS      = 'refColumns';
-    const ON_DELETE        = 'onDelete';
-    const ON_UPDATE        = 'onUpdate';
+    const COLUMNS = 'columns';
+    const REF_TABLE_CLASS = 'refTableClass';
+    const REF_COLUMNS = 'refColumns';
+    const ON_DELETE = 'onDelete';
+    const ON_UPDATE = 'onUpdate';
 
-    const CASCADE          = 'cascade';
-    const RESTRICT         = 'restrict';
-    const SET_NULL         = 'setNull';
+    const CASCADE = 'cascade';
+    const RESTRICT = 'restrict';
+    const SET_NULL = 'setNull';
 
-    const DEFAULT_NONE     = 'defaultNone';
-    const DEFAULT_CLASS    = 'defaultClass';
-    const DEFAULT_DB       = 'defaultDb';
+    const DEFAULT_NONE = 'defaultNone';
+    const DEFAULT_CLASS = 'defaultClass';
+    const DEFAULT_DB = 'defaultDb';
 
-    const SELECT_WITH_FROM_PART    = true;
+    const SELECT_WITH_FROM_PART = true;
     const SELECT_WITHOUT_FROM_PART = false;
 
     /**
@@ -86,28 +86,24 @@ abstract class Zend_Db_Table_Abstract
      * @var Zend_Db_Adapter_Abstract
      */
     protected static $_defaultDb;
-
-    /**
-     * Optional Zend_Db_Table_Definition object
-     *
-     * @var unknown_type
-     */
-    protected $_definition = null;
-
-    /**
-     * Optional definition config name used in concrete implementation
-     *
-     * @var string
-     */
-    protected $_definitionConfigName = null;
-
     /**
      * Default cache for information provided by the adapter's describeTable() method.
      *
      * @var Zend_Cache_Core
      */
     protected static $_defaultMetadataCache = null;
-
+    /**
+     * Optional Zend_Db_Table_Definition object
+     *
+     * @var unknown_type
+     */
+    protected $_definition = null;
+    /**
+     * Optional definition config name used in concrete implementation
+     *
+     * @var string
+     */
+    protected $_definitionConfigName = null;
     /**
      * Zend_Db_Adapter_Abstract object.
      *
@@ -289,13 +285,13 @@ abstract class Zend_Db_Table_Abstract
                     $this->setDefinitionConfigName($value);
                     break;
                 case self::SCHEMA:
-                    $this->_schema = (string) $value;
+                    $this->_schema = (string)$value;
                     break;
                 case self::NAME:
-                    $this->_name = (string) $value;
+                    $this->_name = (string)$value;
                     break;
                 case self::PRIMARY:
-                    $this->_primary = (array) $value;
+                    $this->_primary = (array)$value;
                     break;
                 case self::ROW_CLASS:
                     $this->setRowClass($value);
@@ -328,251 +324,6 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * setDefinition()
-     *
-     * @param Zend_Db_Table_Definition $definition
-     * @return Zend_Db_Table_Abstract
-     */
-    public function setDefinition(Zend_Db_Table_Definition $definition)
-    {
-        $this->_definition = $definition;
-        return $this;
-    }
-
-    /**
-     * getDefinition()
-     *
-     * @return Zend_Db_Table_Definition|null
-     */
-    public function getDefinition()
-    {
-        return $this->_definition;
-    }
-
-    /**
-     * setDefinitionConfigName()
-     *
-     * @param string $definition
-     * @return Zend_Db_Table_Abstract
-     */
-    public function setDefinitionConfigName($definitionConfigName)
-    {
-        $this->_definitionConfigName = $definitionConfigName;
-        return $this;
-    }
-
-    /**
-     * getDefinitionConfigName()
-     *
-     * @return string
-     */
-    public function getDefinitionConfigName()
-    {
-        return $this->_definitionConfigName;
-    }
-
-    /**
-     * @param  string $classname
-     * @return Zend_Db_Table_Abstract Provides a fluent interface
-     */
-    public function setRowClass($classname)
-    {
-        $this->_rowClass = (string) $classname;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRowClass()
-    {
-        return $this->_rowClass;
-    }
-
-    /**
-     * @param  string $classname
-     * @return Zend_Db_Table_Abstract Provides a fluent interface
-     */
-    public function setRowsetClass($classname)
-    {
-        $this->_rowsetClass = (string) $classname;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRowsetClass()
-    {
-        return $this->_rowsetClass;
-    }
-
-    /**
-     * Add a reference to the reference map
-     *
-     * @param string $ruleKey
-     * @param string|array $columns
-     * @param string $refTableClass
-     * @param string|array $refColumns
-     * @param string $onDelete
-     * @param string $onUpdate
-     * @return Zend_Db_Table_Abstract
-     */
-    public function addReference($ruleKey, $columns, $refTableClass, $refColumns,
-                                 $onDelete = null, $onUpdate = null)
-    {
-        $reference = array(self::COLUMNS         => (array) $columns,
-                           self::REF_TABLE_CLASS => $refTableClass,
-                           self::REF_COLUMNS     => (array) $refColumns);
-
-        if (!empty($onDelete)) {
-            $reference[self::ON_DELETE] = $onDelete;
-        }
-
-        if (!empty($onUpdate)) {
-            $reference[self::ON_UPDATE] = $onUpdate;
-        }
-
-        $this->_referenceMap[$ruleKey] = $reference;
-
-        return $this;
-    }
-
-    /**
-     * @param array $referenceMap
-     * @return Zend_Db_Table_Abstract Provides a fluent interface
-     */
-    public function setReferences(array $referenceMap)
-    {
-        $this->_referenceMap = $referenceMap;
-
-        return $this;
-    }
-
-    /**
-     * @param string $tableClassname
-     * @param string $ruleKey OPTIONAL
-     * @return array
-     * @throws Zend_Db_Table_Exception
-     */
-    public function getReference($tableClassname, $ruleKey = null)
-    {
-        $thisClass = get_class($this);
-        if ($thisClass === 'Zend_Db_Table') {
-            $thisClass = $this->_definitionConfigName;
-        }
-        $refMap = $this->_getReferenceMapNormalized();
-        if ($ruleKey !== null) {
-            if (!isset($refMap[$ruleKey])) {
-                require_once "Zend/Db/Table/Exception.php";
-                throw new Zend_Db_Table_Exception("No reference rule \"$ruleKey\" from table $thisClass to table $tableClassname");
-            }
-            if ($refMap[$ruleKey][self::REF_TABLE_CLASS] != $tableClassname) {
-                require_once "Zend/Db/Table/Exception.php";
-                throw new Zend_Db_Table_Exception("Reference rule \"$ruleKey\" does not reference table $tableClassname");
-            }
-            return $refMap[$ruleKey];
-        }
-        foreach ($refMap as $reference) {
-            if ($reference[self::REF_TABLE_CLASS] == $tableClassname) {
-                return $reference;
-            }
-        }
-        require_once "Zend/Db/Table/Exception.php";
-        throw new Zend_Db_Table_Exception("No reference from table $thisClass to table $tableClassname");
-    }
-
-    /**
-     * @param  array $dependentTables
-     * @return Zend_Db_Table_Abstract Provides a fluent interface
-     */
-    public function setDependentTables(array $dependentTables)
-    {
-        $this->_dependentTables = $dependentTables;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getDependentTables()
-    {
-        return $this->_dependentTables;
-    }
-
-    /**
-     * set the defaultSource property - this tells the table class where to find default values
-     *
-     * @param string $defaultSource
-     * @return Zend_Db_Table_Abstract
-     */
-    public function setDefaultSource($defaultSource = self::DEFAULT_NONE)
-    {
-        if (!in_array($defaultSource, array(self::DEFAULT_CLASS, self::DEFAULT_DB, self::DEFAULT_NONE))) {
-            $defaultSource = self::DEFAULT_NONE;
-        }
-
-        $this->_defaultSource = $defaultSource;
-        return $this;
-    }
-
-    /**
-     * returns the default source flag that determines where defaultSources come from
-     *
-     * @return unknown
-     */
-    public function getDefaultSource()
-    {
-        return $this->_defaultSource;
-    }
-
-    /**
-     * set the default values for the table class
-     *
-     * @param array $defaultValues
-     * @return Zend_Db_Table_Abstract
-     */
-    public function setDefaultValues(Array $defaultValues)
-    {
-        foreach ($defaultValues as $defaultName => $defaultValue) {
-            if (array_key_exists($defaultName, $this->_metadata)) {
-                $this->_defaultValues[$defaultName] = $defaultValue;
-            }
-        }
-        return $this;
-    }
-
-    public function getDefaultValues()
-    {
-        return $this->_defaultValues;
-    }
-
-
-    /**
-     * Sets the default Zend_Db_Adapter_Abstract for all Zend_Db_Table objects.
-     *
-     * @param  mixed $db Either an Adapter object, or a string naming a Registry key
-     * @return void
-     */
-    public static function setDefaultAdapter($db = null)
-    {
-        self::$_defaultDb = self::_setupAdapter($db);
-    }
-
-    /**
-     * Gets the default Zend_Db_Adapter_Abstract for all Zend_Db_Table objects.
-     *
-     * @return Zend_Db_Adapter_Abstract or null
-     */
-    public static function getDefaultAdapter()
-    {
-        return self::$_defaultDb;
-    }
-
-    /**
      * @param  mixed $db Either an Adapter object, or a string naming a Registry key
      * @return Zend_Db_Table_Abstract Provides a fluent interface
      */
@@ -580,16 +331,6 @@ abstract class Zend_Db_Table_Abstract
     {
         $this->_db = self::_setupAdapter($db);
         return $this;
-    }
-
-    /**
-     * Gets the Zend_Db_Adapter_Abstract for this particular Zend_Db_Table object.
-     *
-     * @return Zend_Db_Adapter_Abstract
-     */
-    public function getAdapter()
-    {
-        return $this->_db;
     }
 
     /**
@@ -614,53 +355,14 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * Sets the default metadata cache for information returned by Zend_Db_Adapter_Abstract::describeTable().
-     *
-     * If $defaultMetadataCache is null, then no metadata cache is used by default.
-     *
-     * @param  mixed $metadataCache Either a Cache object, or a string naming a Registry key
-     * @return void
-     */
-    public static function setDefaultMetadataCache($metadataCache = null)
-    {
-        self::$_defaultMetadataCache = self::_setupMetadataCache($metadataCache);
-    }
-
-    /**
-     * Gets the default metadata cache for information returned by Zend_Db_Adapter_Abstract::describeTable().
-     *
-     * @return Zend_Cache_Core or null
-     */
-    public static function getDefaultMetadataCache()
-    {
-        return self::$_defaultMetadataCache;
-    }
-
-    /**
-     * Sets the metadata cache for information returned by Zend_Db_Adapter_Abstract::describeTable().
-     *
-     * If $metadataCache is null, then no metadata cache is used. Since there is no opportunity to reload metadata
-     * after instantiation, this method need not be public, particularly because that it would have no effect
-     * results in unnecessary API complexity. To configure the metadata cache, use the metadataCache configuration
-     * option for the class constructor upon instantiation.
-     *
-     * @param  mixed $metadataCache Either a Cache object, or a string naming a Registry key
+     * @param array $referenceMap
      * @return Zend_Db_Table_Abstract Provides a fluent interface
      */
-    protected function _setMetadataCache($metadataCache)
+    public function setReferences(array $referenceMap)
     {
-        $this->_metadataCache = self::_setupMetadataCache($metadataCache);
-        return $this;
-    }
+        $this->_referenceMap = $referenceMap;
 
-    /**
-     * Gets the metadata cache for information returned by Zend_Db_Adapter_Abstract::describeTable().
-     *
-     * @return Zend_Cache_Core or null
-     */
-    public function getMetadataCache()
-    {
-        return $this->_metadataCache;
+        return $this;
     }
 
     /**
@@ -672,40 +374,8 @@ abstract class Zend_Db_Table_Abstract
      */
     public function setMetadataCacheInClass($flag)
     {
-        $this->_metadataCacheInClass = (bool) $flag;
+        $this->_metadataCacheInClass = (bool)$flag;
         return $this;
-    }
-
-    /**
-     * Retrieve flag indicating if metadata should be cached for duration of
-     * instance
-     *
-     * @return bool
-     */
-    public function metadataCacheInClass()
-    {
-        return $this->_metadataCacheInClass;
-    }
-
-    /**
-     * @param mixed $metadataCache Either a Cache object, or a string naming a Registry key
-     * @return Zend_Cache_Core
-     * @throws Zend_Db_Table_Exception
-     */
-    protected static function _setupMetadataCache($metadataCache)
-    {
-        if ($metadataCache === null) {
-            return null;
-        }
-        if (is_string($metadataCache)) {
-            require_once 'Zend/Registry.php';
-            $metadataCache = Zend_Registry::get($metadataCache);
-        }
-        if (!$metadataCache instanceof Zend_Cache_Core) {
-            require_once 'Zend/Db/Table/Exception.php';
-            throw new Zend_Db_Table_Exception('Argument must be of type Zend_Cache_Core, or a Registry key where a Zend_Cache_Core object is stored');
-        }
-        return $metadataCache;
     }
 
     /**
@@ -748,13 +418,23 @@ abstract class Zend_Db_Table_Abstract
      */
     protected function _setupDatabaseAdapter()
     {
-        if (! $this->_db) {
+        if (!$this->_db) {
             $this->_db = self::getDefaultAdapter();
             if (!$this->_db instanceof Zend_Db_Adapter_Abstract) {
                 require_once 'Zend/Db/Table/Exception.php';
                 throw new Zend_Db_Table_Exception('No adapter found for ' . get_class($this));
             }
         }
+    }
+
+    /**
+     * Gets the default Zend_Db_Adapter_Abstract for all Zend_Db_Table objects.
+     *
+     * @return Zend_Db_Adapter_Abstract or null
+     */
+    public static function getDefaultAdapter()
+    {
+        return self::$_defaultDb;
     }
 
     /**
@@ -770,7 +450,7 @@ abstract class Zend_Db_Table_Abstract
      */
     protected function _setupTableName()
     {
-        if (! $this->_name) {
+        if (!$this->_name) {
             $this->_name = get_class($this);
         } else if (strpos($this->_name, '.')) {
             list($this->_schema, $this->_name) = explode('.', $this->_name);
@@ -778,145 +458,177 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * Initializes metadata.
+     * Initialize object
      *
-     * If metadata cannot be loaded from cache, adapter's describeTable() method is called to discover metadata
-     * information. Returns true if and only if the metadata are loaded from cache.
-     *
-     * @return boolean
-     * @throws Zend_Db_Table_Exception
-     */
-    protected function _setupMetadata()
-    {
-        if ($this->metadataCacheInClass() && (count($this->_metadata) > 0)) {
-            return true;
-        }
-
-        // Assume that metadata will be loaded from cache
-        $isMetadataFromCache = true;
-
-        // If $this has no metadata cache but the class has a default metadata cache
-        if (null === $this->_metadataCache && null !== self::$_defaultMetadataCache) {
-            // Make $this use the default metadata cache of the class
-            $this->_setMetadataCache(self::$_defaultMetadataCache);
-        }
-
-        // If $this has a metadata cache
-        if (null !== $this->_metadataCache) {
-            // Define the cache identifier where the metadata are saved
-
-            //get db configuration
-            $dbConfig = $this->_db->getConfig();
-
-            $port = isset($dbConfig['options']['port'])
-                  ? ':'.$dbConfig['options']['port']
-                  : (isset($dbConfig['port'])
-                  ? ':'.$dbConfig['port']
-                  : null);
-
-            $host = isset($dbConfig['options']['host'])
-                  ? ':'.$dbConfig['options']['host']
-                  : (isset($dbConfig['host'])
-                  ? ':'.$dbConfig['host']
-                  : null);
-
-            // Define the cache identifier where the metadata are saved
-            $cacheId = md5( // port:host/dbname:schema.table (based on availabilty)
-                    $port . $host . '/'. $dbConfig['dbname'] . ':'
-                  . $this->_schema. '.' . $this->_name
-            );
-        }
-
-        // If $this has no metadata cache or metadata cache misses
-        if (null === $this->_metadataCache || !($metadata = $this->_metadataCache->load($cacheId))) {
-            // Metadata are not loaded from cache
-            $isMetadataFromCache = false;
-            // Fetch metadata from the adapter's describeTable() method
-            $metadata = $this->_db->describeTable($this->_name, $this->_schema);
-            // If $this has a metadata cache, then cache the metadata
-            if (null !== $this->_metadataCache && !$this->_metadataCache->save($metadata, $cacheId)) {
-                trigger_error('Failed saving metadata to metadataCache', E_USER_NOTICE);
-            }
-        }
-
-        // Assign the metadata to $this
-        $this->_metadata = $metadata;
-
-        // Return whether the metadata were loaded from cache
-        return $isMetadataFromCache;
-    }
-
-    /**
-     * Retrieve table columns
-     *
-     * @return array
-     */
-    protected function _getCols()
-    {
-        if (null === $this->_cols) {
-            $this->_setupMetadata();
-            $this->_cols = array_keys($this->_metadata);
-        }
-        return $this->_cols;
-    }
-
-    /**
-     * Initialize primary key from metadata.
-     * If $_primary is not defined, discover primary keys
-     * from the information returned by describeTable().
+     * Called from {@link __construct()} as final step of object instantiation.
      *
      * @return void
+     */
+    public function init()
+    {
+    }
+
+    /**
+     * Sets the default Zend_Db_Adapter_Abstract for all Zend_Db_Table objects.
+     *
+     * @param  mixed $db Either an Adapter object, or a string naming a Registry key
+     * @return void
+     */
+    public static function setDefaultAdapter($db = null)
+    {
+        self::$_defaultDb = self::_setupAdapter($db);
+    }
+
+    /**
+     * Gets the default metadata cache for information returned by Zend_Db_Adapter_Abstract::describeTable().
+     *
+     * @return Zend_Cache_Core or null
+     */
+    public static function getDefaultMetadataCache()
+    {
+        return self::$_defaultMetadataCache;
+    }
+
+    /**
+     * Sets the default metadata cache for information returned by Zend_Db_Adapter_Abstract::describeTable().
+     *
+     * If $defaultMetadataCache is null, then no metadata cache is used by default.
+     *
+     * @param  mixed $metadataCache Either a Cache object, or a string naming a Registry key
+     * @return void
+     */
+    public static function setDefaultMetadataCache($metadataCache = null)
+    {
+        self::$_defaultMetadataCache = self::_setupMetadataCache($metadataCache);
+    }
+
+    /**
+     * @param mixed $metadataCache Either a Cache object, or a string naming a Registry key
+     * @return Zend_Cache_Core
      * @throws Zend_Db_Table_Exception
      */
-    protected function _setupPrimaryKey()
+    protected static function _setupMetadataCache($metadataCache)
     {
-        if (!$this->_primary) {
-            $this->_setupMetadata();
-            $this->_primary = array();
-            foreach ($this->_metadata as $col) {
-                if ($col['PRIMARY']) {
-                    $this->_primary[ $col['PRIMARY_POSITION'] ] = $col['COLUMN_NAME'];
-                    if ($col['IDENTITY']) {
-                        $this->_identity = $col['PRIMARY_POSITION'];
-                    }
-                }
-            }
-            // if no primary key was specified and none was found in the metadata
-            // then throw an exception.
-            if (empty($this->_primary)) {
-                require_once 'Zend/Db/Table/Exception.php';
-                throw new Zend_Db_Table_Exception('A table must have a primary key, but none was found');
-            }
-        } else if (!is_array($this->_primary)) {
-            $this->_primary = array(1 => $this->_primary);
-        } else if (isset($this->_primary[0])) {
-            array_unshift($this->_primary, null);
-            unset($this->_primary[0]);
+        if ($metadataCache === null) {
+            return null;
         }
-
-        $cols = $this->_getCols();
-        if (! array_intersect((array) $this->_primary, $cols) == (array) $this->_primary) {
+        if (is_string($metadataCache)) {
+            require_once 'Zend/Registry.php';
+            $metadataCache = Zend_Registry::get($metadataCache);
+        }
+        if (!$metadataCache instanceof Zend_Cache_Core) {
             require_once 'Zend/Db/Table/Exception.php';
-            throw new Zend_Db_Table_Exception("Primary key column(s) ("
-                . implode(',', (array) $this->_primary)
-                . ") are not columns in this table ("
-                . implode(',', $cols)
-                . ")");
+            throw new Zend_Db_Table_Exception('Argument must be of type Zend_Cache_Core, or a Registry key where a Zend_Cache_Core object is stored');
+        }
+        return $metadataCache;
+    }
+
+    /**
+     * getDefinition()
+     *
+     * @return Zend_Db_Table_Definition|null
+     */
+    public function getDefinition()
+    {
+        return $this->_definition;
+    }
+
+    /**
+     * setDefinition()
+     *
+     * @param Zend_Db_Table_Definition $definition
+     * @return Zend_Db_Table_Abstract
+     */
+    public function setDefinition(Zend_Db_Table_Definition $definition)
+    {
+        $this->_definition = $definition;
+        return $this;
+    }
+
+    /**
+     * getDefinitionConfigName()
+     *
+     * @return string
+     */
+    public function getDefinitionConfigName()
+    {
+        return $this->_definitionConfigName;
+    }
+
+    /**
+     * setDefinitionConfigName()
+     *
+     * @param string $definition
+     * @return Zend_Db_Table_Abstract
+     */
+    public function setDefinitionConfigName($definitionConfigName)
+    {
+        $this->_definitionConfigName = $definitionConfigName;
+        return $this;
+    }
+
+    /**
+     * Add a reference to the reference map
+     *
+     * @param string $ruleKey
+     * @param string|array $columns
+     * @param string $refTableClass
+     * @param string|array $refColumns
+     * @param string $onDelete
+     * @param string $onUpdate
+     * @return Zend_Db_Table_Abstract
+     */
+    public function addReference($ruleKey, $columns, $refTableClass, $refColumns,
+                                 $onDelete = null, $onUpdate = null)
+    {
+        $reference = array(self::COLUMNS => (array)$columns,
+            self::REF_TABLE_CLASS => $refTableClass,
+            self::REF_COLUMNS => (array)$refColumns);
+
+        if (!empty($onDelete)) {
+            $reference[self::ON_DELETE] = $onDelete;
         }
 
-        $primary    = (array) $this->_primary;
-        $pkIdentity = $primary[(int) $this->_identity];
+        if (!empty($onUpdate)) {
+            $reference[self::ON_UPDATE] = $onUpdate;
+        }
 
-        /**
-         * Special case for PostgreSQL: a SERIAL key implicitly uses a sequence
-         * object whose name is "<table>_<column>_seq".
-         */
-        if ($this->_sequence === true && $this->_db instanceof Zend_Db_Adapter_Pdo_Pgsql) {
-            $this->_sequence = $this->_db->quoteIdentifier("{$this->_name}_{$pkIdentity}_seq");
-            if ($this->_schema) {
-                $this->_sequence = $this->_db->quoteIdentifier($this->_schema) . '.' . $this->_sequence;
+        $this->_referenceMap[$ruleKey] = $reference;
+
+        return $this;
+    }
+
+    /**
+     * @param string $tableClassname
+     * @param string $ruleKey OPTIONAL
+     * @return array
+     * @throws Zend_Db_Table_Exception
+     */
+    public function getReference($tableClassname, $ruleKey = null)
+    {
+        $thisClass = get_class($this);
+        if ($thisClass === 'Zend_Db_Table') {
+            $thisClass = $this->_definitionConfigName;
+        }
+        $refMap = $this->_getReferenceMapNormalized();
+        if ($ruleKey !== null) {
+            if (!isset($refMap[$ruleKey])) {
+                require_once "Zend/Db/Table/Exception.php";
+                throw new Zend_Db_Table_Exception("No reference rule \"$ruleKey\" from table $thisClass to table $tableClassname");
+            }
+            if ($refMap[$ruleKey][self::REF_TABLE_CLASS] != $tableClassname) {
+                require_once "Zend/Db/Table/Exception.php";
+                throw new Zend_Db_Table_Exception("Reference rule \"$ruleKey\" does not reference table $tableClassname");
+            }
+            return $refMap[$ruleKey];
+        }
+        foreach ($refMap as $reference) {
+            if ($reference[self::REF_TABLE_CLASS] == $tableClassname) {
+                return $reference;
             }
         }
+        require_once "Zend/Db/Table/Exception.php";
+        throw new Zend_Db_Table_Exception("No reference from table $thisClass to table $tableClassname");
     }
 
     /**
@@ -957,75 +669,112 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * Initialize object
-     *
-     * Called from {@link __construct()} as final step of object instantiation.
-     *
-     * @return void
+     * @return array
      */
-    public function init()
+    public function getDependentTables()
     {
+        return $this->_dependentTables;
     }
 
     /**
-     * Returns table information.
-     *
-     * You can elect to return only a part of this information by supplying its key name,
-     * otherwise all information is returned as an array.
-     *
-     * @param  string $key The specific info part to return OPTIONAL
-     * @return mixed
-     * @throws Zend_Db_Table_Exception
+     * @param  array $dependentTables
+     * @return Zend_Db_Table_Abstract Provides a fluent interface
      */
-    public function info($key = null)
+    public function setDependentTables(array $dependentTables)
     {
-        $this->_setupPrimaryKey();
+        $this->_dependentTables = $dependentTables;
 
-        $info = array(
-            self::SCHEMA           => $this->_schema,
-            self::NAME             => $this->_name,
-            self::COLS             => $this->_getCols(),
-            self::PRIMARY          => (array) $this->_primary,
-            self::METADATA         => $this->_metadata,
-            self::ROW_CLASS        => $this->getRowClass(),
-            self::ROWSET_CLASS     => $this->getRowsetClass(),
-            self::REFERENCE_MAP    => $this->_referenceMap,
-            self::DEPENDENT_TABLES => $this->_dependentTables,
-            self::SEQUENCE         => $this->_sequence
-        );
-
-        if ($key === null) {
-            return $info;
-        }
-
-        if (!array_key_exists($key, $info)) {
-            require_once 'Zend/Db/Table/Exception.php';
-            throw new Zend_Db_Table_Exception('There is no table information for the key "' . $key . '"');
-        }
-
-        return $info[$key];
+        return $this;
     }
 
     /**
-     * Returns an instance of a Zend_Db_Table_Select object.
+     * returns the default source flag that determines where defaultSources come from
      *
-     * @param bool $withFromPart Whether or not to include the from part of the select based on the table
-     * @return Zend_Db_Table_Select
+     * @return unknown
      */
-    public function select($withFromPart = self::SELECT_WITHOUT_FROM_PART)
+    public function getDefaultSource()
     {
-        require_once 'Zend/Db/Table/Select.php';
-        $select = new Zend_Db_Table_Select($this);
-        if ($withFromPart == self::SELECT_WITH_FROM_PART) {
-            $select->from($this->info(self::NAME), Zend_Db_Table_Select::SQL_WILDCARD, $this->info(self::SCHEMA));
+        return $this->_defaultSource;
+    }
+
+    /**
+     * set the defaultSource property - this tells the table class where to find default values
+     *
+     * @param string $defaultSource
+     * @return Zend_Db_Table_Abstract
+     */
+    public function setDefaultSource($defaultSource = self::DEFAULT_NONE)
+    {
+        if (!in_array($defaultSource, array(self::DEFAULT_CLASS, self::DEFAULT_DB, self::DEFAULT_NONE))) {
+            $defaultSource = self::DEFAULT_NONE;
         }
-        return $select;
+
+        $this->_defaultSource = $defaultSource;
+        return $this;
+    }
+
+    public function getDefaultValues()
+    {
+        return $this->_defaultValues;
+    }
+
+    /**
+     * set the default values for the table class
+     *
+     * @param array $defaultValues
+     * @return Zend_Db_Table_Abstract
+     */
+    public function setDefaultValues(Array $defaultValues)
+    {
+        foreach ($defaultValues as $defaultName => $defaultValue) {
+            if (array_key_exists($defaultName, $this->_metadata)) {
+                $this->_defaultValues[$defaultName] = $defaultValue;
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Gets the Zend_Db_Adapter_Abstract for this particular Zend_Db_Table object.
+     *
+     * @return Zend_Db_Adapter_Abstract
+     */
+    public function getAdapter()
+    {
+        return $this->_db;
+    }
+
+    /**
+     * Gets the metadata cache for information returned by Zend_Db_Adapter_Abstract::describeTable().
+     *
+     * @return Zend_Cache_Core or null
+     */
+    public function getMetadataCache()
+    {
+        return $this->_metadataCache;
+    }
+
+    /**
+     * Sets the metadata cache for information returned by Zend_Db_Adapter_Abstract::describeTable().
+     *
+     * If $metadataCache is null, then no metadata cache is used. Since there is no opportunity to reload metadata
+     * after instantiation, this method need not be public, particularly because that it would have no effect
+     * results in unnecessary API complexity. To configure the metadata cache, use the metadataCache configuration
+     * option for the class constructor upon instantiation.
+     *
+     * @param  mixed $metadataCache Either a Cache object, or a string naming a Registry key
+     * @return Zend_Db_Table_Abstract Provides a fluent interface
+     */
+    protected function _setMetadataCache($metadataCache)
+    {
+        $this->_metadataCache = self::_setupMetadataCache($metadataCache);
+        return $this;
     }
 
     /**
      * Inserts a new row.
      *
-     * @param  array  $data  Column-value pairs.
+     * @param  array $data Column-value pairs.
      * @return mixed         The primary key of the row inserted.
      */
     public function insert(array $data)
@@ -1037,7 +786,7 @@ abstract class Zend_Db_Table_Abstract
          * and one of the columns in the key uses a sequence,
          * it's the _first_ column in the compound key.
          */
-        $primary = (array) $this->_primary;
+        $primary = (array)$this->_primary;
         $pkIdentity = $primary[(int)$this->_identity];
 
         /**
@@ -1063,7 +812,8 @@ abstract class Zend_Db_Table_Abstract
             if ($data[$pkIdentity] === null                                        // null
                 || $data[$pkIdentity] === ''                                       // empty string
                 || is_bool($data[$pkIdentity])                                     // boolean
-                || (is_array($data[$pkIdentity]) && empty($data[$pkIdentity]))) {  // empty array
+                || (is_array($data[$pkIdentity]) && empty($data[$pkIdentity]))
+            ) {  // empty array
                 unset($data[$pkIdentity]);
             }
         }
@@ -1097,6 +847,159 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
+     * Initialize primary key from metadata.
+     * If $_primary is not defined, discover primary keys
+     * from the information returned by describeTable().
+     *
+     * @return void
+     * @throws Zend_Db_Table_Exception
+     */
+    protected function _setupPrimaryKey()
+    {
+        if (!$this->_primary) {
+            $this->_setupMetadata();
+            $this->_primary = array();
+            foreach ($this->_metadata as $col) {
+                if ($col['PRIMARY']) {
+                    $this->_primary[$col['PRIMARY_POSITION']] = $col['COLUMN_NAME'];
+                    if ($col['IDENTITY']) {
+                        $this->_identity = $col['PRIMARY_POSITION'];
+                    }
+                }
+            }
+            // if no primary key was specified and none was found in the metadata
+            // then throw an exception.
+            if (empty($this->_primary)) {
+                require_once 'Zend/Db/Table/Exception.php';
+                throw new Zend_Db_Table_Exception('A table must have a primary key, but none was found');
+            }
+        } else if (!is_array($this->_primary)) {
+            $this->_primary = array(1 => $this->_primary);
+        } else if (isset($this->_primary[0])) {
+            array_unshift($this->_primary, null);
+            unset($this->_primary[0]);
+        }
+
+        $cols = $this->_getCols();
+        if (!array_intersect((array)$this->_primary, $cols) == (array)$this->_primary) {
+            require_once 'Zend/Db/Table/Exception.php';
+            throw new Zend_Db_Table_Exception("Primary key column(s) ("
+                . implode(',', (array)$this->_primary)
+                . ") are not columns in this table ("
+                . implode(',', $cols)
+                . ")");
+        }
+
+        $primary = (array)$this->_primary;
+        $pkIdentity = $primary[(int)$this->_identity];
+
+        /**
+         * Special case for PostgreSQL: a SERIAL key implicitly uses a sequence
+         * object whose name is "<table>_<column>_seq".
+         */
+        if ($this->_sequence === true && $this->_db instanceof Zend_Db_Adapter_Pdo_Pgsql) {
+            $this->_sequence = $this->_db->quoteIdentifier("{$this->_name}_{$pkIdentity}_seq");
+            if ($this->_schema) {
+                $this->_sequence = $this->_db->quoteIdentifier($this->_schema) . '.' . $this->_sequence;
+            }
+        }
+    }
+
+    /**
+     * Initializes metadata.
+     *
+     * If metadata cannot be loaded from cache, adapter's describeTable() method is called to discover metadata
+     * information. Returns true if and only if the metadata are loaded from cache.
+     *
+     * @return boolean
+     * @throws Zend_Db_Table_Exception
+     */
+    protected function _setupMetadata()
+    {
+        if ($this->metadataCacheInClass() && (count($this->_metadata) > 0)) {
+            return true;
+        }
+
+        // Assume that metadata will be loaded from cache
+        $isMetadataFromCache = true;
+
+        // If $this has no metadata cache but the class has a default metadata cache
+        if (null === $this->_metadataCache && null !== self::$_defaultMetadataCache) {
+            // Make $this use the default metadata cache of the class
+            $this->_setMetadataCache(self::$_defaultMetadataCache);
+        }
+
+        // If $this has a metadata cache
+        if (null !== $this->_metadataCache) {
+            // Define the cache identifier where the metadata are saved
+
+            //get db configuration
+            $dbConfig = $this->_db->getConfig();
+
+            $port = isset($dbConfig['options']['port'])
+                ? ':' . $dbConfig['options']['port']
+                : (isset($dbConfig['port'])
+                    ? ':' . $dbConfig['port']
+                    : null);
+
+            $host = isset($dbConfig['options']['host'])
+                ? ':' . $dbConfig['options']['host']
+                : (isset($dbConfig['host'])
+                    ? ':' . $dbConfig['host']
+                    : null);
+
+            // Define the cache identifier where the metadata are saved
+            $cacheId = md5( // port:host/dbname:schema.table (based on availabilty)
+                $port . $host . '/' . $dbConfig['dbname'] . ':'
+                . $this->_schema . '.' . $this->_name
+            );
+        }
+
+        // If $this has no metadata cache or metadata cache misses
+        if (null === $this->_metadataCache || !($metadata = $this->_metadataCache->load($cacheId))) {
+            // Metadata are not loaded from cache
+            $isMetadataFromCache = false;
+            // Fetch metadata from the adapter's describeTable() method
+            $metadata = $this->_db->describeTable($this->_name, $this->_schema);
+            // If $this has a metadata cache, then cache the metadata
+            if (null !== $this->_metadataCache && !$this->_metadataCache->save($metadata, $cacheId)) {
+                trigger_error('Failed saving metadata to metadataCache', E_USER_NOTICE);
+            }
+        }
+
+        // Assign the metadata to $this
+        $this->_metadata = $metadata;
+
+        // Return whether the metadata were loaded from cache
+        return $isMetadataFromCache;
+    }
+
+    /**
+     * Retrieve flag indicating if metadata should be cached for duration of
+     * instance
+     *
+     * @return bool
+     */
+    public function metadataCacheInClass()
+    {
+        return $this->_metadataCacheInClass;
+    }
+
+    /**
+     * Retrieve table columns
+     *
+     * @return array
+     */
+    protected function _getCols()
+    {
+        if (null === $this->_cols) {
+            $this->_setupMetadata();
+            $this->_cols = array_keys($this->_metadata);
+        }
+        return $this->_cols;
+    }
+
+    /**
      * Check if the provided column is an identity of the table
      *
      * @param  string $column
@@ -1116,28 +1019,15 @@ abstract class Zend_Db_Table_Abstract
             throw new Zend_Db_Table_Exception('Column "' . $column . '" not found in table.');
         }
 
-        return (bool) $this->_metadata[$column]['IDENTITY'];
-    }
-
-    /**
-     * Updates existing rows.
-     *
-     * @param  array        $data  Column-value pairs.
-     * @param  array|string $where An SQL WHERE clause, or an array of SQL WHERE clauses.
-     * @return int          The number of rows updated.
-     */
-    public function update(array $data, $where)
-    {
-        $tableSpec = ($this->_schema ? $this->_schema . '.' : '') . $this->_name;
-        return $this->_db->update($tableSpec, $data, $where);
+        return (bool)$this->_metadata[$column]['IDENTITY'];
     }
 
     /**
      * Called by a row object for the parent table's class during save() method.
      *
      * @param  string $parentTableClassname
-     * @param  array  $oldPrimaryKey
-     * @param  array  $newPrimaryKey
+     * @param  array $oldPrimaryKey
+     * @param  array $newPrimaryKey
      * @return int
      */
     public function _cascadeUpdate($parentTableClassname, array $oldPrimaryKey, array $newPrimaryKey)
@@ -1173,22 +1063,23 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
-     * Deletes existing rows.
+     * Updates existing rows.
      *
-     * @param  array|string $where SQL WHERE clause(s).
-     * @return int          The number of rows deleted.
+     * @param  array $data Column-value pairs.
+     * @param  array|string $where An SQL WHERE clause, or an array of SQL WHERE clauses.
+     * @return int          The number of rows updated.
      */
-    public function delete($where)
+    public function update(array $data, $where)
     {
         $tableSpec = ($this->_schema ? $this->_schema . '.' : '') . $this->_name;
-        return $this->_db->delete($tableSpec, $where);
+        return $this->_db->update($tableSpec, $data, $where);
     }
 
     /**
      * Called by parent table's class during delete() method.
      *
      * @param  string $parentTableClassname
-     * @param  array  $primaryKey
+     * @param  array $primaryKey
      * @return int    Number of affected rows
      */
     public function _cascadeDelete($parentTableClassname, array $primaryKey)
@@ -1220,6 +1111,18 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
+     * Deletes existing rows.
+     *
+     * @param  array|string $where SQL WHERE clause(s).
+     * @return int          The number of rows deleted.
+     */
+    public function delete($where)
+    {
+        $tableSpec = ($this->_schema ? $this->_schema . '.' : '') . $this->_name;
+        return $this->_db->delete($tableSpec, $where);
+    }
+
+    /**
      * Fetches rows by primary key.  The argument specifies one or more primary
      * key value(s).  To find multiple rows by primary key, the argument must
      * be an array.
@@ -1241,7 +1144,7 @@ abstract class Zend_Db_Table_Abstract
     {
         $this->_setupPrimaryKey();
         $args = func_get_args();
-        $keyNames = array_values((array) $this->_primary);
+        $keyNames = array_values((array)$this->_primary);
 
         if (count($args) < count($keyNames)) {
             require_once 'Zend/Db/Table/Exception.php';
@@ -1310,14 +1213,52 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
+     * @return string
+     */
+    public function getRowsetClass()
+    {
+        return $this->_rowsetClass;
+    }
+
+    /**
+     * @param  string $classname
+     * @return Zend_Db_Table_Abstract Provides a fluent interface
+     */
+    public function setRowsetClass($classname)
+    {
+        $this->_rowsetClass = (string)$classname;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRowClass()
+    {
+        return $this->_rowClass;
+    }
+
+    /**
+     * @param  string $classname
+     * @return Zend_Db_Table_Abstract Provides a fluent interface
+     */
+    public function setRowClass($classname)
+    {
+        $this->_rowClass = (string)$classname;
+
+        return $this;
+    }
+
+    /**
      * Fetches all rows.
      *
      * Honors the Zend_Db_Adapter fetch mode.
      *
-     * @param string|array|Zend_Db_Table_Select $where  OPTIONAL An SQL WHERE clause or Zend_Db_Table_Select object.
-     * @param string|array                      $order  OPTIONAL An SQL ORDER clause.
-     * @param int                               $count  OPTIONAL An SQL LIMIT count.
-     * @param int                               $offset OPTIONAL An SQL LIMIT offset.
+     * @param string|array|Zend_Db_Table_Select $where OPTIONAL An SQL WHERE clause or Zend_Db_Table_Select object.
+     * @param string|array $order OPTIONAL An SQL ORDER clause.
+     * @param int $count OPTIONAL An SQL LIMIT count.
+     * @param int $offset OPTIONAL An SQL LIMIT offset.
      * @return Zend_Db_Table_Rowset_Abstract The row results per the Zend_Db_Adapter fetch mode.
      */
     public function fetchAll($where = null, $order = null, $count = null, $offset = null)
@@ -1343,12 +1284,12 @@ abstract class Zend_Db_Table_Abstract
 
         $rows = $this->_fetch($select);
 
-        $data  = array(
-            'table'    => $this,
-            'data'     => $rows,
+        $data = array(
+            'table' => $this,
+            'data' => $rows,
             'readOnly' => $select->isReadOnly(),
             'rowClass' => $this->getRowClass(),
-            'stored'   => true
+            'stored' => true
         );
 
         $rowsetClass = $this->getRowsetClass();
@@ -1360,12 +1301,124 @@ abstract class Zend_Db_Table_Abstract
     }
 
     /**
+     * Returns an instance of a Zend_Db_Table_Select object.
+     *
+     * @param bool $withFromPart Whether or not to include the from part of the select based on the table
+     * @return Zend_Db_Table_Select
+     */
+    public function select($withFromPart = self::SELECT_WITHOUT_FROM_PART)
+    {
+        require_once 'Zend/Db/Table/Select.php';
+        $select = new Zend_Db_Table_Select($this);
+        if ($withFromPart == self::SELECT_WITH_FROM_PART) {
+            $select->from($this->info(self::NAME), Zend_Db_Table_Select::SQL_WILDCARD, $this->info(self::SCHEMA));
+        }
+        return $select;
+    }
+
+    /**
+     * Returns table information.
+     *
+     * You can elect to return only a part of this information by supplying its key name,
+     * otherwise all information is returned as an array.
+     *
+     * @param  string $key The specific info part to return OPTIONAL
+     * @return mixed
+     * @throws Zend_Db_Table_Exception
+     */
+    public function info($key = null)
+    {
+        $this->_setupPrimaryKey();
+
+        $info = array(
+            self::SCHEMA => $this->_schema,
+            self::NAME => $this->_name,
+            self::COLS => $this->_getCols(),
+            self::PRIMARY => (array)$this->_primary,
+            self::METADATA => $this->_metadata,
+            self::ROW_CLASS => $this->getRowClass(),
+            self::ROWSET_CLASS => $this->getRowsetClass(),
+            self::REFERENCE_MAP => $this->_referenceMap,
+            self::DEPENDENT_TABLES => $this->_dependentTables,
+            self::SEQUENCE => $this->_sequence
+        );
+
+        if ($key === null) {
+            return $info;
+        }
+
+        if (!array_key_exists($key, $info)) {
+            require_once 'Zend/Db/Table/Exception.php';
+            throw new Zend_Db_Table_Exception('There is no table information for the key "' . $key . '"');
+        }
+
+        return $info[$key];
+    }
+
+    /**
+     * Generate WHERE clause from user-supplied string or array
+     *
+     * @param  string|array $where OPTIONAL An SQL WHERE clause.
+     * @return Zend_Db_Table_Select
+     */
+    protected function _where(Zend_Db_Table_Select $select, $where)
+    {
+        $where = (array)$where;
+
+        foreach ($where as $key => $val) {
+            // is $key an int?
+            if (is_int($key)) {
+                // $val is the full condition
+                $select->where($val);
+            } else {
+                // $key is the condition with placeholder,
+                // and $val is quoted into the condition
+                $select->where($key, $val);
+            }
+        }
+
+        return $select;
+    }
+
+    /**
+     * Generate ORDER clause from user-supplied string or array
+     *
+     * @param  string|array $order OPTIONAL An SQL ORDER clause.
+     * @return Zend_Db_Table_Select
+     */
+    protected function _order(Zend_Db_Table_Select $select, $order)
+    {
+        if (!is_array($order)) {
+            $order = array($order);
+        }
+
+        foreach ($order as $val) {
+            $select->order($val);
+        }
+
+        return $select;
+    }
+
+    /**
+     * Support method for fetching rows.
+     *
+     * @param  Zend_Db_Table_Select $select query options.
+     * @return array An array containing the row results in FETCH_ASSOC mode.
+     */
+    protected function _fetch(Zend_Db_Table_Select $select)
+    {
+        $stmt = $this->_db->query($select);
+        $data = $stmt->fetchAll(Zend_Db::FETCH_ASSOC);
+        return $data;
+    }
+
+    /**
      * Fetches one row in an object of type Zend_Db_Table_Row_Abstract,
      * or returns null if no row matches the specified criteria.
      *
-     * @param string|array|Zend_Db_Table_Select $where  OPTIONAL An SQL WHERE clause or Zend_Db_Table_Select object.
-     * @param string|array                      $order  OPTIONAL An SQL ORDER clause.
-     * @param int                               $offset OPTIONAL An SQL OFFSET value.
+     * @param string|array|Zend_Db_Table_Select $where OPTIONAL An SQL WHERE clause or Zend_Db_Table_Select object.
+     * @param string|array $order OPTIONAL An SQL ORDER clause.
+     * @param int $offset OPTIONAL An SQL OFFSET value.
      * @return Zend_Db_Table_Row_Abstract|null The row results per the
      *     Zend_Db_Adapter fetch mode, or null if no row found.
      */
@@ -1382,7 +1435,7 @@ abstract class Zend_Db_Table_Abstract
                 $this->_order($select, $order);
             }
 
-            $select->limit(1, ((is_numeric($offset)) ? (int) $offset : null));
+            $select->limit(1, ((is_numeric($offset)) ? (int)$offset : null));
 
         } else {
             $select = $where->limit(1, $where->getPart(Zend_Db_Select::LIMIT_OFFSET));
@@ -1395,10 +1448,10 @@ abstract class Zend_Db_Table_Abstract
         }
 
         $data = array(
-            'table'   => $this,
-            'data'     => $rows[0],
+            'table' => $this,
+            'data' => $rows[0],
             'readOnly' => $select->isReadOnly(),
-            'stored'  => true
+            'stored' => true
         );
 
         $rowClass = $this->getRowClass();
@@ -1429,7 +1482,7 @@ abstract class Zend_Db_Table_Abstract
      */
     public function createRow(array $data = array(), $defaultSource = null)
     {
-        $cols     = $this->_getCols();
+        $cols = $this->_getCols();
         $defaults = array_combine($cols, array_fill(0, count($cols), null));
 
         // nothing provided at call-time, take the class value
@@ -1445,7 +1498,8 @@ abstract class Zend_Db_Table_Abstract
             foreach ($this->_metadata as $metadataName => $metadata) {
                 if (($metadata['DEFAULT'] != null) &&
                     ($metadata['NULLABLE'] !== true || ($metadata['NULLABLE'] === true && isset($this->_defaultValues[$metadataName]) && $this->_defaultValues[$metadataName] === true)) &&
-                    (!(isset($this->_defaultValues[$metadataName]) && $this->_defaultValues[$metadataName] === false))) {
+                    (!(isset($this->_defaultValues[$metadataName]) && $this->_defaultValues[$metadataName] === false))
+                ) {
                     $defaults[$metadataName] = $metadata['DEFAULT'];
                 }
             }
@@ -1458,10 +1512,10 @@ abstract class Zend_Db_Table_Abstract
         }
 
         $config = array(
-            'table'    => $this,
-            'data'     => $defaults,
+            'table' => $this,
+            'data' => $defaults,
             'readOnly' => false,
-            'stored'   => false
+            'stored' => false
         );
 
         $rowClass = $this->getRowClass();
@@ -1472,63 +1526,6 @@ abstract class Zend_Db_Table_Abstract
         $row = new $rowClass($config);
         $row->setFromArray($data);
         return $row;
-    }
-
-    /**
-     * Generate WHERE clause from user-supplied string or array
-     *
-     * @param  string|array $where  OPTIONAL An SQL WHERE clause.
-     * @return Zend_Db_Table_Select
-     */
-    protected function _where(Zend_Db_Table_Select $select, $where)
-    {
-        $where = (array) $where;
-
-        foreach ($where as $key => $val) {
-            // is $key an int?
-            if (is_int($key)) {
-                // $val is the full condition
-                $select->where($val);
-            } else {
-                // $key is the condition with placeholder,
-                // and $val is quoted into the condition
-                $select->where($key, $val);
-            }
-        }
-
-        return $select;
-    }
-
-    /**
-     * Generate ORDER clause from user-supplied string or array
-     *
-     * @param  string|array $order  OPTIONAL An SQL ORDER clause.
-     * @return Zend_Db_Table_Select
-     */
-    protected function _order(Zend_Db_Table_Select $select, $order)
-    {
-        if (!is_array($order)) {
-            $order = array($order);
-        }
-
-        foreach ($order as $val) {
-            $select->order($val);
-        }
-
-        return $select;
-    }
-
-    /**
-     * Support method for fetching rows.
-     *
-     * @param  Zend_Db_Table_Select $select  query options.
-     * @return array An array containing the row results in FETCH_ASSOC mode.
-     */
-    protected function _fetch(Zend_Db_Table_Select $select)
-    {
-        $stmt = $this->_db->query($select);
-        $data = $stmt->fetchAll(Zend_Db::FETCH_ASSOC);
-        return $data;
     }
 
 }

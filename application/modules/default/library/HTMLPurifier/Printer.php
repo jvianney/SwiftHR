@@ -19,13 +19,15 @@ class HTMLPurifier_Printer
     /**
      * Initialize $generator.
      */
-    public function __construct() {
+    public function __construct()
+    {
     }
 
     /**
      * Give generator necessary configuration if possible
      */
-    public function prepareGenerator($config) {
+    public function prepareGenerator($config)
+    {
         $all = $config->getAll();
         $context = new HTMLPurifier_Context();
         $this->generator = new HTMLPurifier_Generator($config, $context);
@@ -37,47 +39,15 @@ class HTMLPurifier_Printer
      */
     // function render() {}
 
-    /**
-     * Returns a start tag
-     * @param $tag Tag name
-     * @param $attr Attribute array
-     */
-    protected function start($tag, $attr = array()) {
-        return $this->generator->generateFromToken(
-                    new HTMLPurifier_Token_Start($tag, $attr ? $attr : array())
-               );
-    }
-
-    /**
-     * Returns an end teg
-     * @param $tag Tag name
-     */
-    protected function end($tag) {
-        return $this->generator->generateFromToken(
-                    new HTMLPurifier_Token_End($tag)
-               );
-    }
-
-    /**
-     * Prints a complete element with content inside
-     * @param $tag Tag name
-     * @param $contents Element contents
-     * @param $attr Tag attributes
-     * @param $escape Bool whether or not to escape contents
-     */
-    protected function element($tag, $contents, $attr = array(), $escape = true) {
-        return $this->start($tag, $attr) .
-               ($escape ? $this->escape($contents) : $contents) .
-               $this->end($tag);
-    }
-
-    protected function elementEmpty($tag, $attr = array()) {
+    protected function elementEmpty($tag, $attr = array())
+    {
         return $this->generator->generateFromToken(
             new HTMLPurifier_Token_Empty($tag, $attr)
         );
     }
 
-    protected function text($text) {
+    protected function text($text)
+    {
         return $this->generator->generateFromToken(
             new HTMLPurifier_Token_Text($text)
         );
@@ -88,24 +58,62 @@ class HTMLPurifier_Printer
      * @param $name Key
      * @param $value Value
      */
-    protected function row($name, $value) {
+    protected function row($name, $value)
+    {
         if (is_bool($value)) $value = $value ? 'On' : 'Off';
         return
             $this->start('tr') . "\n" .
-                $this->element('th', $name) . "\n" .
-                $this->element('td', $value) . "\n" .
-            $this->end('tr')
-        ;
+            $this->element('th', $name) . "\n" .
+            $this->element('td', $value) . "\n" .
+            $this->end('tr');
+    }
+
+    /**
+     * Returns a start tag
+     * @param $tag Tag name
+     * @param $attr Attribute array
+     */
+    protected function start($tag, $attr = array())
+    {
+        return $this->generator->generateFromToken(
+            new HTMLPurifier_Token_Start($tag, $attr ? $attr : array())
+        );
+    }
+
+    /**
+     * Prints a complete element with content inside
+     * @param $tag Tag name
+     * @param $contents Element contents
+     * @param $attr Tag attributes
+     * @param $escape Bool whether or not to escape contents
+     */
+    protected function element($tag, $contents, $attr = array(), $escape = true)
+    {
+        return $this->start($tag, $attr) .
+            ($escape ? $this->escape($contents) : $contents) .
+            $this->end($tag);
     }
 
     /**
      * Escapes a string for HTML output.
      * @param $string String to escape
      */
-    protected function escape($string) {
+    protected function escape($string)
+    {
         $string = HTMLPurifier_Encoder::cleanUTF8($string);
         $string = htmlspecialchars($string, ENT_COMPAT, 'UTF-8');
         return $string;
+    }
+
+    /**
+     * Returns an end teg
+     * @param $tag Tag name
+     */
+    protected function end($tag)
+    {
+        return $this->generator->generateFromToken(
+            new HTMLPurifier_Token_End($tag)
+        );
     }
 
     /**
@@ -113,7 +121,8 @@ class HTMLPurifier_Printer
      * @param $array List of strings
      * @param $polite Bool whether or not to add an end before the last
      */
-    protected function listify($array, $polite = false) {
+    protected function listify($array, $polite = false)
+    {
         if (empty($array)) return 'None';
         $ret = '';
         $i = count($array);
@@ -131,7 +140,8 @@ class HTMLPurifier_Printer
      * @param $obj Object to determine class of
      * @param $prefix Further prefix to remove
      */
-    protected function getClass($obj, $sec_prefix = '') {
+    protected function getClass($obj, $sec_prefix = '')
+    {
         static $five = null;
         if ($five === null) $five = version_compare(PHP_VERSION, '5', '>=');
         $prefix = 'HTMLPurifier_' . $sec_prefix;

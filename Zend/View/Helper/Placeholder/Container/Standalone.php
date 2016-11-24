@@ -93,18 +93,6 @@ abstract class Zend_View_Helper_Placeholder_Container_Standalone extends Zend_Vi
     }
 
     /**
-     * Set whether or not auto escaping should be used
-     *
-     * @param  bool $autoEscape whether or not to auto escape output
-     * @return Zend_View_Helper_Placeholder_Container_Standalone
-     */
-    public function setAutoEscape($autoEscape = true)
-    {
-        $this->_autoEscape = ($autoEscape) ? true : false;
-        return $this;
-    }
-
-    /**
      * Return whether autoEscaping is enabled or disabled
      *
      * return bool
@@ -115,56 +103,15 @@ abstract class Zend_View_Helper_Placeholder_Container_Standalone extends Zend_Vi
     }
 
     /**
-     * Escape a string
+     * Set whether or not auto escaping should be used
      *
-     * @param  string $string
-     * @return string
-     */
-    protected function _escape($string)
-    {
-        $enc = 'UTF-8';
-        if ($this->view instanceof Zend_View_Interface
-            && method_exists($this->view, 'getEncoding')
-        ) {
-            $enc = $this->view->getEncoding();
-        }
-
-        return htmlspecialchars((string) $string, ENT_COMPAT, $enc);
-    }
-
-    /**
-     * Set container on which to operate
-     *
-     * @param  Zend_View_Helper_Placeholder_Container_Abstract $container
+     * @param  bool $autoEscape whether or not to auto escape output
      * @return Zend_View_Helper_Placeholder_Container_Standalone
      */
-    public function setContainer(Zend_View_Helper_Placeholder_Container_Abstract $container)
+    public function setAutoEscape($autoEscape = true)
     {
-        $this->_container = $container;
+        $this->_autoEscape = ($autoEscape) ? true : false;
         return $this;
-    }
-
-    /**
-     * Retrieve placeholder container
-     *
-     * @return Zend_View_Helper_Placeholder_Container_Abstract
-     */
-    public function getContainer()
-    {
-        return $this->_container;
-    }
-
-    /**
-     * Overloading: set property value
-     *
-     * @param  string $key
-     * @param  mixed $value
-     * @return void
-     */
-    public function __set($key, $value)
-    {
-        $container = $this->getContainer();
-        $container[$key] = $value;
     }
 
     /**
@@ -181,6 +128,41 @@ abstract class Zend_View_Helper_Placeholder_Container_Standalone extends Zend_Vi
         }
 
         return null;
+    }
+
+    /**
+     * Overloading: set property value
+     *
+     * @param  string $key
+     * @param  mixed $value
+     * @return void
+     */
+    public function __set($key, $value)
+    {
+        $container = $this->getContainer();
+        $container[$key] = $value;
+    }
+
+    /**
+     * Retrieve placeholder container
+     *
+     * @return Zend_View_Helper_Placeholder_Container_Abstract
+     */
+    public function getContainer()
+    {
+        return $this->_container;
+    }
+
+    /**
+     * Set container on which to operate
+     *
+     * @param  Zend_View_Helper_Placeholder_Container_Abstract $container
+     * @return Zend_View_Helper_Placeholder_Container_Standalone
+     */
+    public function setContainer(Zend_View_Helper_Placeholder_Container_Abstract $container)
+    {
+        $this->_container = $container;
+        return $this;
     }
 
     /**
@@ -237,16 +219,6 @@ abstract class Zend_View_Helper_Placeholder_Container_Standalone extends Zend_Vi
     }
 
     /**
-     * String representation
-     *
-     * @return string
-     */
-    public function toString()
-    {
-        return $this->getContainer()->toString();
-    }
-
-    /**
      * Cast to string representation
      *
      * @return string
@@ -254,6 +226,16 @@ abstract class Zend_View_Helper_Placeholder_Container_Standalone extends Zend_Vi
     public function __toString()
     {
         return $this->toString();
+    }
+
+    /**
+     * String representation
+     *
+     * @return string
+     */
+    public function toString()
+    {
+        return $this->getContainer()->toString();
     }
 
     /**
@@ -320,5 +302,23 @@ abstract class Zend_View_Helper_Placeholder_Container_Standalone extends Zend_Vi
     public function getIterator()
     {
         return $this->getContainer()->getIterator();
+    }
+
+    /**
+     * Escape a string
+     *
+     * @param  string $string
+     * @return string
+     */
+    protected function _escape($string)
+    {
+        $enc = 'UTF-8';
+        if ($this->view instanceof Zend_View_Interface
+            && method_exists($this->view, 'getEncoding')
+        ) {
+            $enc = $this->view->getEncoding();
+        }
+
+        return htmlspecialchars((string)$string, ENT_COMPAT, $enc);
     }
 }

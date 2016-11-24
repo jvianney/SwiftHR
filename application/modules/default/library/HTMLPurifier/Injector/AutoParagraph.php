@@ -12,13 +12,8 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
     public $name = 'AutoParagraph';
     public $needed = array('p');
 
-    private function _pStart() {
-        $par = new HTMLPurifier_Token_Start('p');
-        $par->armor['MakeWellFormed_TagClosedError'] = true;
-        return $par;
-    }
-
-    public function handleText(&$token) {
+    public function handleText(&$token)
+    {
         $text = $token->data;
         // Does the current parent allow <p> tags?
         if ($this->allowsElement('p')) {
@@ -72,10 +67,10 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
                     //                   ----
                 }
             }
-        // Is the current parent a <p> tag?
+            // Is the current parent a <p> tag?
         } elseif (
             !empty($this->currentNesting) &&
-            $this->currentNesting[count($this->currentNesting)-1]->name == 'p'
+            $this->currentNesting[count($this->currentNesting) - 1]->name == 'p'
         ) {
             // State 3.1: ...<p>PAR1
             //                  ----
@@ -84,7 +79,7 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
             //                  ------------
             $token = array();
             $this->_splitText($text, $token);
-        // Abort!
+            // Abort!
         } else {
             // State 4.1: ...<b>PAR1
             //                  ----
@@ -94,108 +89,20 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
         }
     }
 
-    public function handleElement(&$token) {
-        // We don't have to check if we're already in a <p> tag for block
-        // tokens, because the tag would have been autoclosed by MakeWellFormed.
-        if ($this->allowsElement('p')) {
-            if (!empty($this->currentNesting)) {
-                if ($this->_isInline($token)) {
-                    // State 1: <div>...<b>
-                    //                  ---
+    /**
+     * Returns true if passed token is inline (and, ergo, allowed in
+     * paragraph tags)
+     */
+    private function _isInline($token)
+    {
+        return isset($this->htmlDefinition->info['p']->child->elements[$token->name]);
+    }
 
-                    // Check if this token is adjacent to the parent token
-                    // (seek backwards until token isn't whitespace)
-                    $i = null;
-                    $this->backward($i, $prev);
-
-                    if (!$prev instanceof HTMLPurifier_Token_Start) {
-                        // Token wasn't adjacent
-
-                        if (
-                            $prev instanceof HTMLPurifier_Token_Text &&
-                            substr($prev->data, -2) === "\n\n"
-                        ) {
-                            // State 1.1.4: <div><p>PAR1</p>\n\n<b>
-                            //                                  ---
-
-                            // Quite frankly, this should be handled by splitText
-                            $token = array($this->_pStart(), $token);
-                        } else {
-                            // State 1.1.1: <div><p>PAR1</p><b>
-                            //                              ---
-
-                            // State 1.1.2: <div><br /><b>
-                            //                         ---
-
-                            // State 1.1.3: <div>PAR<b>
-                            //                      ---
-                        }
-
-                    } else {
-                        // State 1.2.1: <div><b>
-                        //                   ---
-
-                        // Lookahead to see if <p> is needed.
-                        if ($this->_pLookAhead()) {
-                            // State 1.3.1: <div><b>PAR1\n\nPAR2
-                            //                   ---
-                            $token = array($this->_pStart(), $token);
-                        } else {
-                            // State 1.3.2: <div><b>PAR1</b></div>
-                            //                   ---
-
-                            // State 1.3.3: <div><b>PAR1</b><div></div>\n\n</div>
-                            //                   ---
-                        }
-                    }
-                } else {
-                    // State 2.3: ...<div>
-                    //               -----
-                }
-            } else {
-                if ($this->_isInline($token)) {
-                    // State 3.1: <b>
-                    //            ---
-                    // This is where the {p} tag is inserted, not reflected in
-                    // inputTokens yet, however.
-                    $token = array($this->_pStart(), $token);
-                } else {
-                    // State 3.2: <div>
-                    //            -----
-                }
-
-                $i = null;
-                if ($this->backward($i, $prev)) {
-                    if (
-                        !$prev instanceof HTMLPurifier_Token_Text
-                    ) {
-                        // State 3.1.1: ...</p>{p}<b>
-                        //                        ---
-
-                        // State 3.2.1: ...</p><div>
-                        //                     -----
-
-                        if (!is_array($token)) $token = array($token);
-                        array_unshift($token, new HTMLPurifier_Token_Text("\n\n"));
-                    } else {
-                        // State 3.1.2: ...</p>\n\n{p}<b>
-                        //                            ---
-
-                        // State 3.2.2: ...</p>\n\n<div>
-                        //                         -----
-
-                        // Note: PAR<ELEM> cannot occur because PAR would have been
-                        // wrapped in <p> tags.
-                    }
-                }
-            }
-        } else {
-            // State 2.2: <ul><li>
-            //                ----
-
-            // State 2.4: <p><b>
-            //               ---
-        }
+    private function _pStart()
+    {
+        $par = new HTMLPurifier_Token_Start('p');
+        $par->armor['MakeWellFormed_TagClosedError'] = true;
+        return $par;
     }
 
     /**
@@ -208,11 +115,12 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
      * @param $config Instance of HTMLPurifier_Config
      * @param $context Instance of HTMLPurifier_Context
      */
-    private function _splitText($data, &$result) {
+    private function _splitText($data, &$result)
+    {
         $raw_paragraphs = explode("\n\n", $data);
-        $paragraphs  = array(); // without empty paragraphs
+        $paragraphs = array(); // without empty paragraphs
         $needs_start = false;
-        $needs_end   = false;
+        $needs_end = false;
 
         $c = count($raw_paragraphs);
         if ($c == 1) {
@@ -289,18 +197,11 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
     }
 
     /**
-     * Returns true if passed token is inline (and, ergo, allowed in
-     * paragraph tags)
-     */
-    private function _isInline($token) {
-        return isset($this->htmlDefinition->info['p']->child->elements[$token->name]);
-    }
-
-    /**
      * Looks ahead in the token list and determines whether or not we need
      * to insert a <p> tag.
      */
-    private function _pLookAhead() {
+    private function _pLookAhead()
+    {
         $this->current($i, $current);
         if ($current instanceof HTMLPurifier_Token_Start) $nesting = 1;
         else $nesting = 0;
@@ -319,8 +220,9 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
      * Determines if a particular token requires an earlier inline token
      * to get a paragraph. This should be used with _forwardUntilEndToken
      */
-    private function _checkNeedsP($current) {
-        if ($current instanceof HTMLPurifier_Token_Start){
+    private function _checkNeedsP($current)
+    {
+        if ($current instanceof HTMLPurifier_Token_Start) {
             if (!$this->_isInline($current)) {
                 // <div>PAR1<div>
                 //      ----
@@ -338,6 +240,111 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
             }
         }
         return null;
+    }
+
+    public function handleElement(&$token)
+    {
+        // We don't have to check if we're already in a <p> tag for block
+        // tokens, because the tag would have been autoclosed by MakeWellFormed.
+        if ($this->allowsElement('p')) {
+            if (!empty($this->currentNesting)) {
+                if ($this->_isInline($token)) {
+                    // State 1: <div>...<b>
+                    //                  ---
+
+                    // Check if this token is adjacent to the parent token
+                    // (seek backwards until token isn't whitespace)
+                    $i = null;
+                    $this->backward($i, $prev);
+
+                    if (!$prev instanceof HTMLPurifier_Token_Start) {
+                        // Token wasn't adjacent
+
+                        if (
+                            $prev instanceof HTMLPurifier_Token_Text &&
+                            substr($prev->data, -2) === "\n\n"
+                        ) {
+                            // State 1.1.4: <div><p>PAR1</p>\n\n<b>
+                            //                                  ---
+
+                            // Quite frankly, this should be handled by splitText
+                            $token = array($this->_pStart(), $token);
+                        } else {
+                            // State 1.1.1: <div><p>PAR1</p><b>
+                            //                              ---
+
+                            // State 1.1.2: <div><br /><b>
+                            //                         ---
+
+                            // State 1.1.3: <div>PAR<b>
+                            //                      ---
+                        }
+
+                    } else {
+                        // State 1.2.1: <div><b>
+                        //                   ---
+
+                        // Lookahead to see if <p> is needed.
+                        if ($this->_pLookAhead()) {
+                            // State 1.3.1: <div><b>PAR1\n\nPAR2
+                            //                   ---
+                            $token = array($this->_pStart(), $token);
+                        } else {
+                            // State 1.3.2: <div><b>PAR1</b></div>
+                            //                   ---
+
+                            // State 1.3.3: <div><b>PAR1</b><div></div>\n\n</div>
+                            //                   ---
+                        }
+                    }
+                } else {
+                    // State 2.3: ...<div>
+                    //               -----
+                }
+            } else {
+                if ($this->_isInline($token)) {
+                    // State 3.1: <b>
+                    //            ---
+                    // This is where the {p} tag is inserted, not reflected in
+                    // inputTokens yet, however.
+                    $token = array($this->_pStart(), $token);
+                } else {
+                    // State 3.2: <div>
+                    //            -----
+                }
+
+                $i = null;
+                if ($this->backward($i, $prev)) {
+                    if (
+                    !$prev instanceof HTMLPurifier_Token_Text
+                    ) {
+                        // State 3.1.1: ...</p>{p}<b>
+                        //                        ---
+
+                        // State 3.2.1: ...</p><div>
+                        //                     -----
+
+                        if (!is_array($token)) $token = array($token);
+                        array_unshift($token, new HTMLPurifier_Token_Text("\n\n"));
+                    } else {
+                        // State 3.1.2: ...</p>\n\n{p}<b>
+                        //                            ---
+
+                        // State 3.2.2: ...</p>\n\n<div>
+                        //                         -----
+
+                        // Note: PAR<ELEM> cannot occur because PAR would have been
+                        // wrapped in <p> tags.
+                    }
+                }
+            }
+        } else {
+            // State 2.2: <ul><li>
+            //                ----
+
+            // State 2.4: <p><b>
+            //               ---
+        }
     }
 
 }

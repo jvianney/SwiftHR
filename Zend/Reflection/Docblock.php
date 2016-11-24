@@ -41,7 +41,7 @@ class Zend_Reflection_Docblock implements Reflector
      * @var int
      */
     protected $_startLine = null;
-    protected $_endLine   = null;
+    protected $_endLine = null;
     /**#@-*/
 
     /**
@@ -70,6 +70,89 @@ class Zend_Reflection_Docblock implements Reflector
     protected $_tags = array();
 
     /**
+     * Constructor
+     *
+     * @param Reflector|string $commentOrReflector
+     */
+    public function __construct($commentOrReflector)
+    {
+        if ($commentOrReflector instanceof Reflector) {
+            $this->_reflector = $commentOrReflector;
+            if (!method_exists($commentOrReflector, 'getDocComment')) {
+                require_once 'Zend/Reflection/Exception.php';
+                throw new Zend_Reflection_Exception('Reflector must contain method "getDocComment"');
+            }
+            $docComment = $commentOrReflector->getDocComment();
+
+            $lineCount = substr_count($docComment, "\n");
+
+            $this->_startLine = $this->_reflector->getStartLine() - $lineCount - 1;
+            $this->_endLine = $this->_reflector->getStartLine() - 1;
+
+        } elseif (is_string($commentOrReflector)) {
+            $docComment = $commentOrReflector;
+        } else {
+            require_once 'Zend/Reflection/Exception.php';
+            throw new Zend_Reflection_Exception(get_class($this) . ' must have a (string) DocComment or a Reflector in the constructor');
+        }
+
+        if ($docComment == '') {
+            require_once 'Zend/Reflection/Exception.php';
+            throw new Zend_Reflection_Exception('DocComment cannot be empty');
+        }
+
+        $this->_docComment = $docComment;
+        $this->_parse();
+    }
+
+    /**
+     * Parse the docblock
+     *
+     * @return void
+     */
+    protected function _parse()
+    {
+        $docComment = $this->_docComment;
+
+        // First remove doc block line starters
+        $docComment = preg_replace('#[ \t]*(?:\/\*\*|\*\/|\*)?[ ]{0,1}(.*)?#', '$1', $docComment);
+        $docComment = ltrim($docComment, "\r\n"); // @todo should be changed to remove first and last empty line
+
+        $this->_cleanDocComment = $docComment;
+
+        // Next parse out the tags and descriptions
+        $parsedDocComment = $docComment;
+        $lineNumber = $firstBlandLineEncountered = 0;
+        while (($newlinePos = strpos($parsedDocComment, "\n")) !== false) {
+            $lineNumber++;
+            $line = substr($parsedDocComment, 0, $newlinePos);
+
+            $matches = array();
+
+            if ((strpos($line, '@') === 0) && (preg_match('#^(@\w+.*?)(\n)(?:@|\r?\n|$)#s', $parsedDocComment, $matches))) {
+                $this->_tags[] = Zend_Reflection_Docblock_Tag::factory($matches[1]);
+                $parsedDocComment = str_replace($matches[1] . $matches[2], '', $parsedDocComment);
+            } else {
+                if ($lineNumber < 3 && !$firstBlandLineEncountered) {
+                    $this->_shortDescription .= $line . "\n";
+                } else {
+                    $this->_longDescription .= $line . "\n";
+                }
+
+                if ($line == '') {
+                    $firstBlandLineEncountered = true;
+                }
+
+                $parsedDocComment = substr($parsedDocComment, $newlinePos + 1);
+            }
+
+        }
+
+        $this->_shortDescription = rtrim($this->_shortDescription);
+        $this->_longDescription = rtrim($this->_longDescription);
+    }
+
+    /**
      * Export reflection
      *
      * Reqired by the Reflector interface.
@@ -92,53 +175,17 @@ class Zend_Reflection_Docblock implements Reflector
      */
     public function __toString()
     {
-        $str = "Docblock [ /* Docblock */ ] {".PHP_EOL.PHP_EOL;
-        $str .= "  - Tags [".count($this->_tags)."] {".PHP_EOL;
+        $str = "Docblock [ /* Docblock */ ] {" . PHP_EOL . PHP_EOL;
+        $str .= "  - Tags [" . count($this->_tags) . "] {" . PHP_EOL;
 
-        foreach($this->_tags AS $tag) {
-            $str .= "    ".$tag;
+        foreach ($this->_tags AS $tag) {
+            $str .= "    " . $tag;
         }
 
-        $str .= "  }".PHP_EOL;
-        $str .= "}".PHP_EOL;
+        $str .= "  }" . PHP_EOL;
+        $str .= "}" . PHP_EOL;
 
         return $str;
-    }
-
-    /**
-     * Constructor
-     *
-     * @param Reflector|string $commentOrReflector
-     */
-    public function __construct($commentOrReflector)
-    {
-        if ($commentOrReflector instanceof Reflector) {
-            $this->_reflector = $commentOrReflector;
-            if (!method_exists($commentOrReflector, 'getDocComment')) {
-                require_once 'Zend/Reflection/Exception.php';
-                throw new Zend_Reflection_Exception('Reflector must contain method "getDocComment"');
-            }
-            $docComment = $commentOrReflector->getDocComment();
-
-            $lineCount = substr_count($docComment, "\n");
-
-            $this->_startLine = $this->_reflector->getStartLine() - $lineCount - 1;
-            $this->_endLine   = $this->_reflector->getStartLine() - 1;
-
-        } elseif (is_string($commentOrReflector)) {
-            $docComment = $commentOrReflector;
-        } else {
-            require_once 'Zend/Reflection/Exception.php';
-            throw new Zend_Reflection_Exception(get_class($this) . ' must have a (string) DocComment or a Reflector in the constructor');
-        }
-
-        if ($docComment == '') {
-            require_once 'Zend/Reflection/Exception.php';
-            throw new Zend_Reflection_Exception('DocComment cannot be empty');
-        }
-
-        $this->_docComment = $docComment;
-        $this->_parse();
     }
 
     /**
@@ -243,52 +290,5 @@ class Zend_Reflection_Docblock implements Reflector
             }
         }
         return $returnTags;
-    }
-
-    /**
-     * Parse the docblock
-     *
-     * @return void
-     */
-    protected function _parse()
-    {
-        $docComment = $this->_docComment;
-
-        // First remove doc block line starters
-        $docComment = preg_replace('#[ \t]*(?:\/\*\*|\*\/|\*)?[ ]{0,1}(.*)?#', '$1', $docComment);
-        $docComment = ltrim($docComment, "\r\n"); // @todo should be changed to remove first and last empty line
-
-        $this->_cleanDocComment = $docComment;
-
-        // Next parse out the tags and descriptions
-        $parsedDocComment = $docComment;
-        $lineNumber = $firstBlandLineEncountered = 0;
-        while (($newlinePos = strpos($parsedDocComment, "\n")) !== false) {
-            $lineNumber++;
-            $line = substr($parsedDocComment, 0, $newlinePos);
-
-            $matches = array();
-
-            if ((strpos($line, '@') === 0) && (preg_match('#^(@\w+.*?)(\n)(?:@|\r?\n|$)#s', $parsedDocComment, $matches))) {
-                $this->_tags[] = Zend_Reflection_Docblock_Tag::factory($matches[1]);
-                $parsedDocComment = str_replace($matches[1] . $matches[2], '', $parsedDocComment);
-            } else {
-                if ($lineNumber < 3 && !$firstBlandLineEncountered) {
-                    $this->_shortDescription .= $line . "\n";
-                } else {
-                    $this->_longDescription .= $line . "\n";
-                }
-
-                if ($line == '') {
-                    $firstBlandLineEncountered = true;
-                }
-
-                $parsedDocComment = substr($parsedDocComment, $newlinePos + 1);
-            }
-
-        }
-
-        $this->_shortDescription = rtrim($this->_shortDescription);
-        $this->_longDescription  = rtrim($this->_longDescription);
     }
 }

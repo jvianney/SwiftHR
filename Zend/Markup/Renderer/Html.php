@@ -50,39 +50,36 @@ class Zend_Markup_Renderer_Html extends Zend_Markup_Renderer_RendererAbstract
 {
 
     /**
+     * Default attributes
+     *
+     * @var array
+     */
+    protected static $_defaultAttributes = array(
+        'id' => '',
+        'class' => '',
+        'style' => '',
+        'lang' => '',
+        'title' => ''
+    );
+    /**
      * Element groups
      *
      * @var array
      */
     protected $_groups = array(
-        'block'        => array('block', 'inline', 'block-empty', 'inline-empty', 'list'),
-        'inline'       => array('inline', 'inline-empty'),
-        'list'         => array('list-item'),
-        'list-item'    => array('inline', 'inline-empty', 'list'),
-        'block-empty'  => array(),
+        'block' => array('block', 'inline', 'block-empty', 'inline-empty', 'list'),
+        'inline' => array('inline', 'inline-empty'),
+        'list' => array('list-item'),
+        'list-item' => array('inline', 'inline-empty', 'list'),
+        'block-empty' => array(),
         'inline-empty' => array(),
     );
-
     /**
      * The current group
      *
      * @var string
      */
     protected $_group = 'block';
-
-    /**
-     * Default attributes
-     *
-     * @var array
-     */
-    protected static $_defaultAttributes = array(
-        'id'    => '',
-        'class' => '',
-        'style' => '',
-        'lang'  => '',
-        'title' => ''
-    );
-
 
     /**
      * Constructor
@@ -122,160 +119,160 @@ class Zend_Markup_Renderer_Html extends Zend_Markup_Renderer_RendererAbstract
     {
         $this->_markups = array(
             'b' => array(
-                'type'   => 10, // self::TYPE_REPLACE | self::TAG_NORMAL
-                'tag'    => 'strong',
-                'group'  => 'inline',
+                'type' => 10, // self::TYPE_REPLACE | self::TAG_NORMAL
+                'tag' => 'strong',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'u' => array(
-                'type'        => 10,
-                'tag'         => 'span',
-                'attributes'  => array(
+                'type' => 10,
+                'tag' => 'span',
+                'attributes' => array(
                     'style' => 'text-decoration: underline;',
                 ),
-                'group'       => 'inline',
-                'filter'      => true,
+                'group' => 'inline',
+                'filter' => true,
             ),
             'i' => array(
-                'type'   => 10,
-                'tag'    => 'em',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'em',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'cite' => array(
-                'type'   => 10,
-                'tag'    => 'cite',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'cite',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'del' => array(
-                'type'   => 10,
-                'tag'    => 'del',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'del',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'ins' => array(
-                'type'   => 10,
-                'tag'    => 'ins',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'ins',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'sub' => array(
-                'type'   => 10,
-                'tag'    => 'sub',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'sub',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'sup' => array(
-                'type'   => 10,
-                'tag'    => 'sup',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'sup',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'span' => array(
-                'type'   => 10,
-                'tag'    => 'span',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'span',
+                'group' => 'inline',
                 'filter' => true,
             ),
-            'acronym'  => array(
-                'type'   => 10,
-                'tag'    => 'acronym',
-                'group'  => 'inline',
+            'acronym' => array(
+                'type' => 10,
+                'tag' => 'acronym',
+                'group' => 'inline',
                 'filter' => true,
             ),
             // headings
             'h1' => array(
-                'type'   => 10,
-                'tag'    => 'h1',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'h1',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'h2' => array(
-                'type'   => 10,
-                'tag'    => 'h2',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'h2',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'h3' => array(
-                'type'   => 10,
-                'tag'    => 'h3',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'h3',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'h4' => array(
-                'type'   => 10,
-                'tag'    => 'h4',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'h4',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'h5' => array(
-                'type'   => 10,
-                'tag'    => 'h5',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'h5',
+                'group' => 'inline',
                 'filter' => true,
             ),
             'h6' => array(
-                'type'   => 10,
-                'tag'    => 'h6',
-                'group'  => 'inline',
+                'type' => 10,
+                'tag' => 'h6',
+                'group' => 'inline',
                 'filter' => true,
             ),
             // callback tags
             'url' => array(
-                'type'     => 6, // self::TYPE_CALLBACK | self::TAG_NORMAL
+                'type' => 6, // self::TYPE_CALLBACK | self::TAG_NORMAL
                 'callback' => null,
-                'group'    => 'inline',
-                'filter'   => true,
+                'group' => 'inline',
+                'filter' => true,
             ),
             'img' => array(
-                'type'     => 6,
+                'type' => 6,
                 'callback' => null,
-                'group'    => 'inline-empty',
-                'filter'   => true,
+                'group' => 'inline-empty',
+                'filter' => true,
             ),
             'code' => array(
-                'type'     => 6,
+                'type' => 6,
                 'callback' => null,
-                'group'    => 'block-empty',
-                'filter'   => false,
+                'group' => 'block-empty',
+                'filter' => false,
             ),
             'p' => array(
-                'type'   => 10,
-                'tag'    => 'p',
-                'group'  => 'block',
+                'type' => 10,
+                'tag' => 'p',
+                'group' => 'block',
                 'filter' => true,
             ),
             'ignore' => array(
-                'type'   => 10,
-                'start'  => '',
-                'end'    => '',
-                'group'  => 'block-empty',
+                'type' => 10,
+                'start' => '',
+                'end' => '',
+                'group' => 'block-empty',
                 'filter' => true,
             ),
             'quote' => array(
-                'type'   => 10,
-                'tag'    => 'blockquote',
-                'group'  => 'block',
+                'type' => 10,
+                'tag' => 'blockquote',
+                'group' => 'block',
                 'filter' => true,
             ),
             'list' => array(
-                'type'     => 6,
+                'type' => 6,
                 'callback' => null,
-                'group'    => 'list',
-                'filter'   => new Zend_Filter_PregReplace('/.*/is', ''),
+                'group' => 'list',
+                'filter' => new Zend_Filter_PregReplace('/.*/is', ''),
             ),
             '*' => array(
-                'type'   => 10,
-                'tag'    => 'li',
-                'group'  => 'list-item',
+                'type' => 10,
+                'tag' => 'li',
+                'group' => 'list-item',
                 'filter' => true,
             ),
             'hr' => array(
-                'type'    => 9, // self::TYPE_REPLACE | self::TAG_SINGLE
-                'tag'     => 'hr',
-                'group'   => 'block',
-                'empty'   => true,
+                'type' => 9, // self::TYPE_REPLACE | self::TAG_SINGLE
+                'tag' => 'hr',
+                'group' => 'block',
+                'empty' => true,
             ),
             // aliases
             'bold' => array(
@@ -350,6 +347,46 @@ class Zend_Markup_Renderer_Html extends Zend_Markup_Renderer_RendererAbstract
     }
 
     /**
+     * Check if the URI is valid
+     *
+     * @param string $uri
+     *
+     * @return bool
+     */
+    public static function isValidUri($uri)
+    {
+        if (!preg_match('/^([a-z][a-z+\-.]*):/i', $uri, $matches)) {
+            return false;
+        }
+
+        $scheme = strtolower($matches[1]);
+
+        switch ($scheme) {
+            case 'javascript':
+                // JavaScript scheme is not allowed for security reason
+                return false;
+
+            case 'http':
+            case 'https':
+            case 'ftp':
+                $components = @parse_url($uri);
+
+                if ($components === false) {
+                    return false;
+                }
+
+                if (!isset($components['host'])) {
+                    return false;
+                }
+
+                return true;
+
+            default:
+                return true;
+        }
+    }
+
+    /**
      * Add the default filters
      *
      * @return void
@@ -380,25 +417,6 @@ class Zend_Markup_Renderer_Html extends Zend_Markup_Renderer_RendererAbstract
         }
 
         return parent::_executeReplace($token, $markup);
-    }
-
-    /**
-     * Execute a single replace token
-     *
-     * @param  Zend_Markup_Token $token
-     * @param  array $markup
-     * @return string
-     */
-    protected function _executeSingleReplace(Zend_Markup_Token $token, $markup)
-    {
-        if (isset($markup['tag'])) {
-            if (!isset($markup['attributes'])) {
-                $markup['attributes'] = array();
-            }
-            $attrs = self::renderAttributes($token, $markup['attributes']);
-            return "<{$markup['tag']}{$attrs} />";
-        }
-        return parent::_executeSingleReplace($token, $markup);
     }
 
     /**
@@ -446,8 +464,8 @@ class Zend_Markup_Renderer_Html extends Zend_Markup_Renderer_RendererAbstract
         foreach ($attributes as $attribute => $value) {
             if (isset($tokenAttributes[$attribute]) && !empty($tokenAttributes[$attribute])) {
                 $return .= ' ' . $attribute . '="' . htmlentities($tokenAttributes[$attribute],
-                                                                  ENT_QUOTES,
-                                                                  self::getEncoding()) . '"';
+                        ENT_QUOTES,
+                        self::getEncoding()) . '"';
             } elseif (!empty($value)) {
                 $return .= ' ' . $attribute . '="' . htmlentities($value, ENT_QUOTES, self::getEncoding()) . '"';
             }
@@ -487,42 +505,21 @@ class Zend_Markup_Renderer_Html extends Zend_Markup_Renderer_RendererAbstract
     }
 
     /**
-     * Check if the URI is valid
+     * Execute a single replace token
      *
-     * @param string $uri
-     *
-     * @return bool
+     * @param  Zend_Markup_Token $token
+     * @param  array $markup
+     * @return string
      */
-    public static function isValidUri($uri)
+    protected function _executeSingleReplace(Zend_Markup_Token $token, $markup)
     {
-        if (!preg_match('/^([a-z][a-z+\-.]*):/i', $uri, $matches)) {
-            return false;
+        if (isset($markup['tag'])) {
+            if (!isset($markup['attributes'])) {
+                $markup['attributes'] = array();
+            }
+            $attrs = self::renderAttributes($token, $markup['attributes']);
+            return "<{$markup['tag']}{$attrs} />";
         }
-
-        $scheme = strtolower($matches[1]);
-
-        switch ($scheme) {
-            case 'javascript':
-                // JavaScript scheme is not allowed for security reason
-                return false;
-
-            case 'http':
-            case 'https':
-            case 'ftp':
-                $components = @parse_url($uri);
-
-                if ($components === false) {
-                    return false;
-                }
-
-                if (!isset($components['host'])) {
-                    return false;
-                }
-
-                return true;
-
-            default:
-                return true;
-        }
+        return parent::_executeSingleReplace($token, $markup);
     }
 }

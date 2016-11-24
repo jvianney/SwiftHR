@@ -17,7 +17,8 @@ class HTMLPurifier_CSSDefinition extends HTMLPurifier_Definition
     /**
      * Constructs the info array.  The meat of this class.
      */
-    protected function doSetup($config) {
+    protected function doSetup($config)
+    {
 
         $this->info['text-align'] = new HTMLPurifier_AttrDef_Enum(
             array('left', 'right', 'center', 'justify'), false);
@@ -26,9 +27,9 @@ class HTMLPurifier_CSSDefinition extends HTMLPurifier_Definition
         $this->info['border-bottom-style'] =
         $this->info['border-right-style'] =
         $this->info['border-left-style'] =
-        $this->info['border-top-style'] =  new HTMLPurifier_AttrDef_Enum(
+        $this->info['border-top-style'] = new HTMLPurifier_AttrDef_Enum(
             array('none', 'hidden', 'dotted', 'dashed', 'solid', 'double',
-            'groove', 'ridge', 'inset', 'outset'), false);
+                'groove', 'ridge', 'inset', 'outset'), false);
 
         $this->info['border-style'] = new HTMLPurifier_AttrDef_CSS_Multiple($border_style);
 
@@ -52,7 +53,7 @@ class HTMLPurifier_CSSDefinition extends HTMLPurifier_Definition
             array('inside', 'outside'), false);
         $this->info['list-style-type'] = new HTMLPurifier_AttrDef_Enum(
             array('disc', 'circle', 'square', 'decimal', 'lower-roman',
-            'upper-roman', 'lower-alpha', 'upper-alpha', 'none'), false);
+                'upper-roman', 'lower-alpha', 'upper-alpha', 'none'), false);
         $this->info['list-style-image'] = $uri_or_none;
 
         $this->info['list-style'] = new HTMLPurifier_AttrDef_CSS_ListStyle($config);
@@ -159,16 +160,16 @@ class HTMLPurifier_CSSDefinition extends HTMLPurifier_Definition
         $this->info['width'] =
         $this->info['height'] =
             $max === null ?
-            $trusted_wh :
-            new HTMLPurifier_AttrDef_Switch('img',
-                // For img tags:
-                new HTMLPurifier_AttrDef_CSS_Composite(array(
-                    new HTMLPurifier_AttrDef_CSS_Length('0', $max),
-                    new HTMLPurifier_AttrDef_Enum(array('auto'))
-                )),
-                // For everyone else:
-                $trusted_wh
-            );
+                $trusted_wh :
+                new HTMLPurifier_AttrDef_Switch('img',
+                    // For img tags:
+                    new HTMLPurifier_AttrDef_CSS_Composite(array(
+                        new HTMLPurifier_AttrDef_CSS_Length('0', $max),
+                        new HTMLPurifier_AttrDef_Enum(array('auto'))
+                    )),
+                    // For everyone else:
+                    $trusted_wh
+                );
 
         $this->info['text-decoration'] = new HTMLPurifier_AttrDef_CSS_TextDecoration();
 
@@ -177,7 +178,7 @@ class HTMLPurifier_CSSDefinition extends HTMLPurifier_Definition
         // this could use specialized code
         $this->info['font-weight'] = new HTMLPurifier_AttrDef_Enum(
             array('normal', 'bold', 'bolder', 'lighter', '100', '200', '300',
-            '400', '500', '600', '700', '800', '900'), false);
+                '400', '500', '600', '700', '800', '900'), false);
 
         // MUST be called after other font properties, as it references
         // a CSSDefinition object
@@ -232,26 +233,28 @@ class HTMLPurifier_CSSDefinition extends HTMLPurifier_Definition
         $this->setupConfigStuff($config);
     }
 
-    protected function doSetupProprietary($config) {
+    protected function doSetupProprietary($config)
+    {
         // Internet Explorer only scrollbar colors
-        $this->info['scrollbar-arrow-color']        = new HTMLPurifier_AttrDef_CSS_Color();
-        $this->info['scrollbar-base-color']         = new HTMLPurifier_AttrDef_CSS_Color();
-        $this->info['scrollbar-darkshadow-color']   = new HTMLPurifier_AttrDef_CSS_Color();
-        $this->info['scrollbar-face-color']         = new HTMLPurifier_AttrDef_CSS_Color();
-        $this->info['scrollbar-highlight-color']    = new HTMLPurifier_AttrDef_CSS_Color();
-        $this->info['scrollbar-shadow-color']       = new HTMLPurifier_AttrDef_CSS_Color();
+        $this->info['scrollbar-arrow-color'] = new HTMLPurifier_AttrDef_CSS_Color();
+        $this->info['scrollbar-base-color'] = new HTMLPurifier_AttrDef_CSS_Color();
+        $this->info['scrollbar-darkshadow-color'] = new HTMLPurifier_AttrDef_CSS_Color();
+        $this->info['scrollbar-face-color'] = new HTMLPurifier_AttrDef_CSS_Color();
+        $this->info['scrollbar-highlight-color'] = new HTMLPurifier_AttrDef_CSS_Color();
+        $this->info['scrollbar-shadow-color'] = new HTMLPurifier_AttrDef_CSS_Color();
 
         // technically not proprietary, but CSS3, and no one supports it
-        $this->info['opacity']          = new HTMLPurifier_AttrDef_CSS_AlphaValue();
-        $this->info['-moz-opacity']     = new HTMLPurifier_AttrDef_CSS_AlphaValue();
-        $this->info['-khtml-opacity']   = new HTMLPurifier_AttrDef_CSS_AlphaValue();
+        $this->info['opacity'] = new HTMLPurifier_AttrDef_CSS_AlphaValue();
+        $this->info['-moz-opacity'] = new HTMLPurifier_AttrDef_CSS_AlphaValue();
+        $this->info['-khtml-opacity'] = new HTMLPurifier_AttrDef_CSS_AlphaValue();
 
         // only opacity, for now
         $this->info['filter'] = new HTMLPurifier_AttrDef_CSS_Filter();
 
     }
 
-    protected function doSetupTricky($config) {
+    protected function doSetupTricky($config)
+    {
         $this->info['display'] = new HTMLPurifier_AttrDef_Enum(array(
             'inline', 'block', 'list-item', 'run-in', 'compact',
             'marker', 'table', 'inline-table', 'table-row-group',
@@ -264,7 +267,8 @@ class HTMLPurifier_CSSDefinition extends HTMLPurifier_Definition
         $this->info['overflow'] = new HTMLPurifier_AttrDef_Enum(array('visible', 'hidden', 'auto', 'scroll'));
     }
 
-    protected function doSetupTrusted($config) {
+    protected function doSetupTrusted($config)
+    {
         $this->info['position'] = new HTMLPurifier_AttrDef_Enum(array(
             'static', 'relative', 'absolute', 'fixed'
         ));
@@ -288,15 +292,16 @@ class HTMLPurifier_CSSDefinition extends HTMLPurifier_Definition
      * @todo Refactor duplicate elements into common class (probably using
      *       composition, not inheritance).
      */
-    protected function setupConfigStuff($config) {
+    protected function setupConfigStuff($config)
+    {
 
         // setup allowed elements
-        $support = "(for information on implementing this, see the ".
-                   "support forums) ";
+        $support = "(for information on implementing this, see the " .
+            "support forums) ";
         $allowed_properties = $config->get('CSS.AllowedProperties');
         if ($allowed_properties !== null) {
             foreach ($this->info as $name => $d) {
-                if(!isset($allowed_properties[$name])) unset($this->info[$name]);
+                if (!isset($allowed_properties[$name])) unset($this->info[$name]);
                 unset($allowed_properties[$name]);
             }
             // emit errors

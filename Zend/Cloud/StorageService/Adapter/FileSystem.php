@@ -78,13 +78,24 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
     public function fetchItem($path, $options = array())
     {
         $filepath = $this->_getFullPath($path);
-        $path     = realpath($filepath);
+        $path = realpath($filepath);
 
         if (!$path) {
             return false;
         }
 
         return file_get_contents($path);
+    }
+
+    /**
+     * Return the full path for the file.
+     *
+     * @param string $path
+     * @return string
+     */
+    private function _getFullPath($path)
+    {
+        return $this->_directory . DIRECTORY_SEPARATOR . $path;
     }
 
     /**
@@ -162,7 +173,7 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
         rename($this->_getFullPath($sourcePath), $this->_getFullPath($destinationPath));
     }
 
-        /**
+    /**
      * Rename an item in the storage service to a given name.
      *
      *
@@ -246,22 +257,11 @@ class Zend_Cloud_StorageService_Adapter_FileSystem implements Zend_Cloud_Storage
     }
 
     /**
-     * Return the full path for the file.
-     *
-     * @param string $path
-     * @return string
-     */
-    private function _getFullPath($path)
-    {
-        return $this->_directory . DIRECTORY_SEPARATOR . $path;
-    }
-
-    /**
      * Get the concrete client.
      * @return strings
      */
     public function getClient()
     {
-         return $this->_directory;
+        return $this->_directory;
     }
 }

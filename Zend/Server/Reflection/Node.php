@@ -66,24 +66,6 @@ class Zend_Server_Reflection_Node
     }
 
     /**
-     * Set parent node
-     *
-     * @param Zend_Server_Reflection_Node $node
-     * @param boolean $new Whether or not the child node is newly created
-     * and should always be attached
-     * @return void
-     */
-    public function setParent(Zend_Server_Reflection_Node $node, $new = false)
-    {
-        $this->_parent = $node;
-
-        if ($new) {
-            $node->attachChild($this);
-            return;
-        }
-    }
-
-    /**
      * Create and attach a new child node
      *
      * @param mixed $value
@@ -113,26 +95,6 @@ class Zend_Server_Reflection_Node
     }
 
     /**
-     * Return an array of all child nodes
-     *
-     * @return array
-     */
-    public function getChildren()
-    {
-        return $this->_children;
-    }
-
-    /**
-     * Does this node have children?
-     *
-     * @return boolean
-     */
-    public function hasChildren()
-    {
-        return count($this->_children) > 0;
-    }
-
-    /**
      * Return the parent node
      *
      * @return null|Zend_Server_Reflection_Node
@@ -140,6 +102,34 @@ class Zend_Server_Reflection_Node
     public function getParent()
     {
         return $this->_parent;
+    }
+
+    /**
+     * Set parent node
+     *
+     * @param Zend_Server_Reflection_Node $node
+     * @param boolean $new Whether or not the child node is newly created
+     * and should always be attached
+     * @return void
+     */
+    public function setParent(Zend_Server_Reflection_Node $node, $new = false)
+    {
+        $this->_parent = $node;
+
+        if ($new) {
+            $node->attachChild($this);
+            return;
+        }
+    }
+
+    /**
+     * Return an array of all child nodes
+     *
+     * @return array
+     */
+    public function getChildren()
+    {
+        return $this->_children;
     }
 
     /**
@@ -185,8 +175,8 @@ class Zend_Server_Reflection_Node
             if (null === $value) {
                 $endPoints[] = $this;
             } elseif ((null !== $value)
-                && $child->hasChildren())
-            {
+                && $child->hasChildren()
+            ) {
                 $childEndPoints = $child->getEndPoints();
                 if (!empty($childEndPoints)) {
                     $endPoints = array_merge($endPoints, $childEndPoints);
@@ -197,5 +187,15 @@ class Zend_Server_Reflection_Node
         }
 
         return $endPoints;
+    }
+
+    /**
+     * Does this node have children?
+     *
+     * @return boolean
+     */
+    public function hasChildren()
+    {
+        return count($this->_children) > 0;
     }
 }

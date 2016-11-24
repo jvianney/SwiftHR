@@ -41,6 +41,16 @@ class Zend_XmlRpc_Generator_DomDocument extends Zend_XmlRpc_Generator_GeneratorA
     protected $_currentElement;
 
     /**
+     * Save XML as a string
+     *
+     * @return string
+     */
+    public function saveXml()
+    {
+        return $this->_dom->saveXml();
+    }
+
+    /**
      * Start XML element
      *
      * @param string $name
@@ -76,16 +86,6 @@ class Zend_XmlRpc_Generator_DomDocument extends Zend_XmlRpc_Generator_GeneratorA
         if (isset($this->_currentElement->parentNode)) {
             $this->_currentElement = $this->_currentElement->parentNode;
         }
-    }
-
-    /**
-     * Save XML as a string
-     *
-     * @return string
-     */
-    public function saveXml()
-    {
-        return $this->_dom->saveXml();
     }
 
     /**

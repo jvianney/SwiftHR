@@ -93,6 +93,61 @@ class Zend_Feed_Writer_Renderer_RendererAbstract
     }
 
     /**
+     * Load extensions from Zend_Feed_Writer
+     *
+     * @return void
+     */
+    protected function _loadExtensions()
+    {
+        Zend_Feed_Writer::registerCoreExtensions();
+        $all = Zend_Feed_Writer::getExtensions();
+        if (stripos(get_class($this), 'entry')) {
+            $exts = $all['entryRenderer'];
+        } else {
+            $exts = $all['feedRenderer'];
+        }
+        foreach ($exts as $extension) {
+            $className = Zend_Feed_Writer::getPluginLoader()->getClassName($extension);
+            $this->_extensions[$extension] = new $className(
+                $this->getDataContainer()
+            );
+            $this->_extensions[$extension]->setEncoding($this->getEncoding());
+        }
+    }
+
+    /**
+     * Get data container of items being rendered
+     *
+     * @return mixed
+     */
+    public function getDataContainer()
+    {
+        return $this->_container;
+    }
+
+    /**
+     * Get feed encoding
+     *
+     * @return string
+     */
+    public function getEncoding()
+    {
+        return $this->_encoding;
+    }
+
+    /**
+     * Set feed encoding
+     *
+     * @param  string $enc
+     * @return Zend_Feed_Writer_Renderer_RendererAbstract
+     */
+    public function setEncoding($enc)
+    {
+        $this->_encoding = $enc;
+        return $this;
+    }
+
+    /**
      * Save XML to string
      *
      * @return string
@@ -123,38 +178,6 @@ class Zend_Feed_Writer_Renderer_RendererAbstract
     }
 
     /**
-     * Get data container of items being rendered
-     *
-     * @return mixed
-     */
-    public function getDataContainer()
-    {
-        return $this->_container;
-    }
-
-    /**
-     * Set feed encoding
-     *
-     * @param  string $enc
-     * @return Zend_Feed_Writer_Renderer_RendererAbstract
-     */
-    public function setEncoding($enc)
-    {
-        $this->_encoding = $enc;
-        return $this;
-    }
-
-    /**
-     * Get feed encoding
-     *
-     * @return string
-     */
-    public function getEncoding()
-    {
-        return $this->_encoding;
-    }
-
-    /**
      * Indicate whether or not to ignore exceptions
      *
      * @param  bool $bool
@@ -181,18 +204,6 @@ class Zend_Feed_Writer_Renderer_RendererAbstract
     }
 
     /**
-     * Set the current feed type being exported to "rss" or "atom". This allows
-     * other objects to gracefully choose whether to execute or not, depending
-     * on their appropriateness for the current type, e.g. renderers.
-     *
-     * @param string $type
-     */
-    public function setType($type)
-    {
-        $this->_type = $type;
-    }
-
-    /**
      * Retrieve the current or last feed type exported.
      *
      * @return string Value will be "rss" or "atom"
@@ -203,16 +214,15 @@ class Zend_Feed_Writer_Renderer_RendererAbstract
     }
 
     /**
-     * Sets the absolute root element for the XML feed being generated. This
-     * helps simplify the appending of namespace declarations, but also ensures
-     * namespaces are added to the root element - not scattered across the entire
-     * XML file - may assist namespace unsafe parsers and looks pretty ;).
+     * Set the current feed type being exported to "rss" or "atom". This allows
+     * other objects to gracefully choose whether to execute or not, depending
+     * on their appropriateness for the current type, e.g. renderers.
      *
-     * @param DOMElement $root
+     * @param string $type
      */
-    public function setRootElement(DOMElement $root)
+    public function setType($type)
     {
-        $this->_rootElement = $root;
+        $this->_type = $type;
     }
 
     /**
@@ -226,25 +236,15 @@ class Zend_Feed_Writer_Renderer_RendererAbstract
     }
 
     /**
-     * Load extensions from Zend_Feed_Writer
+     * Sets the absolute root element for the XML feed being generated. This
+     * helps simplify the appending of namespace declarations, but also ensures
+     * namespaces are added to the root element - not scattered across the entire
+     * XML file - may assist namespace unsafe parsers and looks pretty ;).
      *
-     * @return void
+     * @param DOMElement $root
      */
-    protected function _loadExtensions()
+    public function setRootElement(DOMElement $root)
     {
-        Zend_Feed_Writer::registerCoreExtensions();
-        $all = Zend_Feed_Writer::getExtensions();
-        if (stripos(get_class($this), 'entry')) {
-            $exts = $all['entryRenderer'];
-        } else {
-            $exts = $all['feedRenderer'];
-        }
-        foreach ($exts as $extension) {
-            $className = Zend_Feed_Writer::getPluginLoader()->getClassName($extension);
-            $this->_extensions[$extension] = new $className(
-                $this->getDataContainer()
-            );
-            $this->_extensions[$extension]->setEncoding($this->getEncoding());
-        }
+        $this->_rootElement = $root;
     }
 }

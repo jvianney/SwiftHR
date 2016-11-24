@@ -169,16 +169,19 @@ class Zend_Controller_Action_Helper_Cache
         $stats = ob_get_status(true);
         foreach ($stats as $status) {
             if ($status['name'] == 'Zend_Cache_Frontend_Page::_flush'
-            || $status['name'] == 'Zend_Cache_Frontend_Capture::_flush') {
+                || $status['name'] == 'Zend_Cache_Frontend_Capture::_flush'
+            ) {
                 $obStarted = true;
             }
         }
         if (!isset($obStarted) && isset($this->_caching[$controller]) &&
-        in_array($action, $this->_caching[$controller])) {
+            in_array($action, $this->_caching[$controller])
+        ) {
             $reqUri = $this->getRequest()->getRequestUri();
             $tags = array();
             if (isset($this->_tags[$controller][$action])
-            && !empty($this->_tags[$controller][$action])) {
+                && !empty($this->_tags[$controller][$action])
+            ) {
                 $tags = array_unique($this->_tags[$controller][$action]);
             }
             $extension = null;
@@ -201,39 +204,6 @@ class Zend_Controller_Action_Helper_Cache
     protected function _encodeCacheId($requestUri)
     {
         return bin2hex($requestUri);
-    }
-
-    /**
-     * Set an instance of the Cache Manager for this helper
-     *
-     * @param Zend_Cache_Manager $manager
-     * @return void
-     */
-    public function setManager(Zend_Cache_Manager $manager)
-    {
-        $this->_manager = $manager;
-        return $this;
-    }
-
-    /**
-     * Get the Cache Manager instance or instantiate the object if not
-     * exists. Attempts to load from bootstrap if available.
-     *
-     * @return Zend_Cache_Manager
-     */
-    public function getManager()
-    {
-        if ($this->_manager !== null) {
-            return $this->_manager;
-        }
-        $front = Zend_Controller_Front::getInstance();
-        if ($front->getParam('bootstrap')
-        && $front->getParam('bootstrap')->getResource('CacheManager')) {
-            return $front->getParam('bootstrap')
-                ->getResource('CacheManager');
-        }
-        $this->_manager = new Zend_Cache_Manager;
-        return $this->_manager;
     }
 
     /**
@@ -274,6 +244,40 @@ class Zend_Controller_Action_Helper_Cache
         }
         throw new Zend_Controller_Action_Exception('Method does not exist:'
             . $method);
+    }
+
+    /**
+     * Get the Cache Manager instance or instantiate the object if not
+     * exists. Attempts to load from bootstrap if available.
+     *
+     * @return Zend_Cache_Manager
+     */
+    public function getManager()
+    {
+        if ($this->_manager !== null) {
+            return $this->_manager;
+        }
+        $front = Zend_Controller_Front::getInstance();
+        if ($front->getParam('bootstrap')
+            && $front->getParam('bootstrap')->getResource('CacheManager')
+        ) {
+            return $front->getParam('bootstrap')
+                ->getResource('CacheManager');
+        }
+        $this->_manager = new Zend_Cache_Manager;
+        return $this->_manager;
+    }
+
+    /**
+     * Set an instance of the Cache Manager for this helper
+     *
+     * @param Zend_Cache_Manager $manager
+     * @return void
+     */
+    public function setManager(Zend_Cache_Manager $manager)
+    {
+        $this->_manager = $manager;
+        return $this;
     }
 
 }

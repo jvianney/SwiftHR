@@ -28,7 +28,7 @@ require_once "UiWidget.php";
 /**
  * jQuery Pane Base class, adds captureStart/captureEnd functionality for panes.
  *
- * @uses 	   ZendX_JQuery_View_Helper_JQuery_Container
+ * @uses       ZendX_JQuery_View_Helper_JQuery_Container
  * @package    ZendX_JQuery
  * @subpackage View
  * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
@@ -55,10 +55,10 @@ abstract class ZendX_JQuery_View_Helper_UiWidgetPane extends ZendX_JQuery_View_H
      *
      * @param  string $id
      * @param  string $name
-     * @param  array  $options
+     * @param  array $options
      * @return void
      */
-    public function captureStart($id, $name, array $options=array())
+    public function captureStart($id, $name, array $options = array())
     {
         if (array_key_exists($id, $this->_captureLock)) {
             require_once 'ZendX/JQuery/View/Exception.php';
@@ -67,7 +67,7 @@ abstract class ZendX_JQuery_View_Helper_UiWidgetPane extends ZendX_JQuery_View_H
 
         $this->_captureLock[$id] = true;
         $this->_captureInfo[$id] = array(
-            'name'  => $name,
+            'name' => $name,
             'options' => $options,
         );
 
@@ -99,7 +99,7 @@ abstract class ZendX_JQuery_View_Helper_UiWidgetPane extends ZendX_JQuery_View_H
      * @param string $id
      * @param string $name
      * @param string $content
-     * @param array  $options
+     * @param array $options
      */
-    abstract protected function _addPane($id, $name, $content, array $options=array());
+    abstract protected function _addPane($id, $name, $content, array $options = array());
 }

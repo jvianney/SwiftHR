@@ -58,7 +58,7 @@ class Zend_View extends Zend_View_Abstract
      */
     public function __construct($config = array())
     {
-        $this->_useViewStream = (bool) ini_get('short_open_tag') ? false : true;
+        $this->_useViewStream = (bool)ini_get('short_open_tag') ? false : true;
         if ($this->_useViewStream) {
             if (!in_array('zend.view', stream_get_wrappers())) {
                 require_once 'Zend/View/Stream.php';
@@ -81,18 +81,8 @@ class Zend_View extends Zend_View_Abstract
      */
     public function setUseStreamWrapper($flag)
     {
-        $this->_useStreamWrapper = (bool) $flag;
+        $this->_useStreamWrapper = (bool)$flag;
         return $this;
-    }
-
-    /**
-     * Should the stream wrapper be used if short_open_tag is off?
-     *
-     * @return bool
-     */
-    public function useStreamWrapper()
-    {
-        return $this->_useStreamWrapper;
     }
 
     /**
@@ -107,5 +97,15 @@ class Zend_View extends Zend_View_Abstract
         } else {
             include func_get_arg(0);
         }
+    }
+
+    /**
+     * Should the stream wrapper be used if short_open_tag is off?
+     *
+     * @return bool
+     */
+    public function useStreamWrapper()
+    {
+        return $this->_useStreamWrapper;
     }
 }

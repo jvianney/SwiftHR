@@ -90,18 +90,18 @@ class Zend_Pdf_Element_Reference extends Zend_Pdf_Element
      */
     public function __construct($objNum, $genNum = 0, Zend_Pdf_Element_Reference_Context $context, Zend_Pdf_ElementFactory $factory)
     {
-        if ( !(is_integer($objNum) && $objNum > 0) ) {
+        if (!(is_integer($objNum) && $objNum > 0)) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Object number must be positive integer');
         }
-        if ( !(is_integer($genNum) && $genNum >= 0) ) {
+        if (!(is_integer($genNum) && $genNum >= 0)) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Generation number must be non-negative integer');
         }
 
-        $this->_objNum  = $objNum;
-        $this->_genNum  = $genNum;
-        $this->_ref     = null;
+        $this->_objNum = $objNum;
+        $this->_genNum = $genNum;
+        $this->_ref = null;
         $this->_context = $context;
         $this->_factory = $factory;
     }
@@ -131,6 +131,36 @@ class Zend_Pdf_Element_Reference extends Zend_Pdf_Element
         return $this->_ref->getType();
     }
 
+    /**
+     * Dereference.
+     * Take inderect object, take $value member of this object (must be Zend_Pdf_Element),
+     * take reference to the $value member of this object and assign it to
+     * $value member of current PDF Reference object
+     * $obj can be null
+     *
+     * @throws Zend_Pdf_Exception
+     */
+    private function _dereference()
+    {
+        if (($obj = $this->_factory->fetchObject($this->_objNum . ' ' . $this->_genNum)) === null) {
+            $obj = $this->_context->getParser()->getObject(
+                $this->_context->getRefTable()->getOffset($this->_objNum . ' ' . $this->_genNum . ' R'),
+                $this->_context
+            );
+        }
+
+        if ($obj === null) {
+            $this->_ref = new Zend_Pdf_Element_Null();
+            return;
+        }
+
+        if ($obj->toString() != $this->_objNum . ' ' . $this->_genNum . ' R') {
+            require_once 'Zend/Pdf/Exception.php';
+            throw new Zend_Pdf_Exception('Incorrect reference to the object');
+        }
+
+        $this->_ref = $obj;
+    }
 
     /**
      * Return reference to the object
@@ -149,44 +179,12 @@ class Zend_Pdf_Element_Reference extends Zend_Pdf_Element
         return $this->_objNum + $shift . ' ' . $this->_genNum . ' R';
     }
 
-
-    /**
-     * Dereference.
-     * Take inderect object, take $value member of this object (must be Zend_Pdf_Element),
-     * take reference to the $value member of this object and assign it to
-     * $value member of current PDF Reference object
-     * $obj can be null
-     *
-     * @throws Zend_Pdf_Exception
-     */
-    private function _dereference()
-    {
-        if (($obj = $this->_factory->fetchObject($this->_objNum . ' ' . $this->_genNum)) === null) {
-            $obj = $this->_context->getParser()->getObject(
-                           $this->_context->getRefTable()->getOffset($this->_objNum . ' ' . $this->_genNum . ' R'),
-                           $this->_context
-                                                          );
-        }
-
-        if ($obj === null ) {
-            $this->_ref = new Zend_Pdf_Element_Null();
-            return;
-        }
-
-        if ($obj->toString() != $this->_objNum . ' ' . $this->_genNum . ' R') {
-            require_once 'Zend/Pdf/Exception.php';
-            throw new Zend_Pdf_Exception('Incorrect reference to the object');
-        }
-
-        $this->_ref = $obj;
-    }
-
     /**
      * Detach PDF object from the factory (if applicable), clone it and attach to new factory.
      *
-     * @param Zend_Pdf_ElementFactory $factory  The factory to attach
-     * @param array &$processed  List of already processed indirect objects, used to avoid objects duplication
-     * @param integer $mode  Cloning mode (defines filter for objects cloning)
+     * @param Zend_Pdf_ElementFactory $factory The factory to attach
+     * @param array &$processed List of already processed indirect objects, used to avoid objects duplication
+     * @param integer $mode Cloning mode (defines filter for objects cloning)
      * @returns Zend_Pdf_Element
      */
     public function makeClone(Zend_Pdf_ElementFactory $factory, array &$processed, $mode)
@@ -267,7 +265,7 @@ class Zend_Pdf_Element_Reference extends Zend_Pdf_Element
      * Call handler
      *
      * @param string $method
-     * @param array  $args
+     * @param array $args
      * @return mixed
      */
     public function __call($method, $args)

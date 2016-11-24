@@ -65,6 +65,23 @@ class Zend_Tool_Project_Context_Zf_ActionMethod implements Zend_Tool_Project_Con
     protected $_actionName = null;
 
     /**
+     * hasActionMethod()
+     *
+     * @param string $controllerPath
+     * @param string $actionName
+     * @return bool
+     */
+    public static function hasActionMethod($controllerPath, $actionName)
+    {
+        if (!file_exists($controllerPath)) {
+            return false;
+        }
+
+        $controllerCodeGenFile = Zend_CodeGenerator_Php_File::fromReflectedFileName($controllerPath, true, true);
+        return $controllerCodeGenFile->getClass()->hasMethod($actionName . 'Action');
+    }
+
+    /**
      * init()
      *
      * @return Zend_Tool_Project_Context_Zf_ActionMethod
@@ -105,7 +122,29 @@ class Zend_Tool_Project_Context_Zf_ActionMethod implements Zend_Tool_Project_Con
     {
         return array(
             'actionName' => $this->getActionName()
-            );
+        );
+    }
+
+    /**
+     * getActionName()
+     *
+     * @return string
+     */
+    public function getActionName()
+    {
+        return $this->_actionName;
+    }
+
+    /**
+     * setActionName()
+     *
+     * @param string $actionName
+     * @return Zend_Tool_Project_Context_Zf_ActionMethod
+     */
+    public function setActionName($actionName)
+    {
+        $this->_actionName = $actionName;
+        return $this;
     }
 
     /**
@@ -131,28 +170,6 @@ class Zend_Tool_Project_Context_Zf_ActionMethod implements Zend_Tool_Project_Con
     }
 
     /**
-     * setActionName()
-     *
-     * @param string $actionName
-     * @return Zend_Tool_Project_Context_Zf_ActionMethod
-     */
-    public function setActionName($actionName)
-    {
-        $this->_actionName = $actionName;
-        return $this;
-    }
-
-    /**
-     * getActionName()
-     *
-     * @return string
-     */
-    public function getActionName()
-    {
-        return $this->_actionName;
-    }
-
-    /**
      * create()
      *
      * @return Zend_Tool_Project_Context_Zf_ActionMethod
@@ -164,19 +181,8 @@ class Zend_Tool_Project_Context_Zf_ActionMethod implements Zend_Tool_Project_Con
             throw new Zend_Tool_Project_Context_Exception(
                 'Could not create action within controller ' . $this->_controllerPath
                 . ' with action name ' . $this->_actionName
-                );
+            );
         }
-        return $this;
-    }
-
-    /**
-     * delete()
-     *
-     * @return Zend_Tool_Project_Context_Zf_ActionMethod
-     */
-    public function delete()
-    {
-        // @todo do this
         return $this;
     }
 
@@ -198,27 +204,21 @@ class Zend_Tool_Project_Context_Zf_ActionMethod implements Zend_Tool_Project_Con
         $controllerCodeGenFile->getClass()->setMethod(array(
             'name' => $actionName . 'Action',
             'body' => $body
-            ));
+        ));
 
         file_put_contents($controllerPath, $controllerCodeGenFile->generate());
         return true;
     }
 
     /**
-     * hasActionMethod()
+     * delete()
      *
-     * @param string $controllerPath
-     * @param string $actionName
-     * @return bool
+     * @return Zend_Tool_Project_Context_Zf_ActionMethod
      */
-    public static function hasActionMethod($controllerPath, $actionName)
+    public function delete()
     {
-        if (!file_exists($controllerPath)) {
-            return false;
-        }
-
-        $controllerCodeGenFile = Zend_CodeGenerator_Php_File::fromReflectedFileName($controllerPath, true, true);
-        return $controllerCodeGenFile->getClass()->hasMethod($actionName . 'Action');
+        // @todo do this
+        return $this;
     }
 
 }

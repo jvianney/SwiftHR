@@ -1,9 +1,9 @@
 /* ------------------------------------------------------------------------
-	Class: prettyPhoto
-	Use: Lightbox clone for jQuery
-	Author: Stephane Caron (http://www.no-margin-for-errors.com)
-	Version: 3.1.5
-------------------------------------------------------------------------- */
+ Class: prettyPhoto
+ Use: Lightbox clone for jQuery
+ Author: Stephane Caron (http://www.no-margin-for-errors.com)
+ Version: 3.1.5
+ ------------------------------------------------------------------------- */
 (function (e) {
     function t() {
         var e = location.href;
@@ -27,6 +27,7 @@
         var i = r.exec(t);
         return i == null ? "" : i[1]
     }
+
     e.prettyPhoto = {
         version: "3.1.5"
     };
@@ -51,7 +52,8 @@
                     $pp_pic_holder.find(".pp_hoverContainer").show()
                 } else {
                     $pp_pic_holder.find(".pp_hoverContainer").hide()
-                } if (settings.allow_expand) {
+                }
+                if (settings.allow_expand) {
                     if (a["resized"]) {
                         e("a.pp_expand,a.pp_contract").show()
                     } else {
@@ -315,10 +317,12 @@
             });
             x()
         }
+
         s = jQuery.extend({
             hook: "rel",
             animation_speed: "fast",
-            ajaxcallback: function () {},
+            ajaxcallback: function () {
+            },
             slideshow: 5e3,
             autoplay_slideshow: false,
             opacity: .8,
@@ -338,8 +342,10 @@
             overlay_gallery: true,
             overlay_gallery_max: 30,
             keyboard_shortcuts: true,
-            changepicturecallback: function () {},
-            callback: function () {},
+            changepicturecallback: function () {
+            },
+            callback: function () {
+            },
             ie6_fallback: true,
             markup: '<div class="pp_pic_holder"> 						<div class="ppt"> </div> 						<div class="pp_top"> 							<div class="pp_left"></div> 							<div class="pp_middle"></div> 							<div class="pp_right"></div> 						</div> 						<div class="pp_content_container"> 							<div class="pp_left"> 							<div class="pp_right"> 								<div class="pp_content"> 									<div class="pp_loaderIcon"></div> 									<div class="pp_fade"> 										<a href="#" class="pp_expand" title="Expand the image">Expand</a> 										<div class="pp_hoverContainer"> 											<a class="pp_next" href="#">next</a> 											<a class="pp_previous" href="#">previous</a> 										</div> 										<div id="pp_full_res"></div> 										<div class="pp_details"> 											<div class="pp_nav"> 												<a href="#" class="pp_arrow_previous">Previous</a> 												<p class="currentTextHolder">0/0</p> 												<a href="#" class="pp_arrow_next">Next</a> 											</div> 											<p class="pp_description"></p> 											<div class="pp_social">{pp_social}</div> 											<a class="pp_close" href="#">Close</a> 										</div> 									</div> 								</div> 							</div> 							</div> 						</div> 						<div class="pp_bottom"> 							<div class="pp_left"></div> 							<div class="pp_middle"></div> 							<div class="pp_right"></div> 						</div> 					</div> 					<div class="pp_overlay"></div>',
             gallery_markup: '<div class="pp_gallery"> 								<a href="#" class="pp_arrow_previous">Previous</a> 								<div> 									<ul> 										{gallery} 									</ul> 								</div> 								<a href="#" class="pp_arrow_next">Next</a> 							</div>',
@@ -366,18 +372,18 @@
                 if (typeof $pp_pic_holder != "undefined") {
                     if ($pp_pic_holder.is(":visible")) {
                         switch (t.keyCode) {
-                        case 37:
-                            e.prettyPhoto.changePage("previous");
-                            t.preventDefault();
-                            break;
-                        case 39:
-                            e.prettyPhoto.changePage("next");
-                            t.preventDefault();
-                            break;
-                        case 27:
-                            if (!settings.modal) e.prettyPhoto.close();
-                            t.preventDefault();
-                            break
+                            case 37:
+                                e.prettyPhoto.changePage("previous");
+                                t.preventDefault();
+                                break;
+                            case 39:
+                                e.prettyPhoto.changePage("next");
+                                t.preventDefault();
+                                break;
+                            case 27:
+                                if (!settings.modal) e.prettyPhoto.close();
+                                t.preventDefault();
+                                break
                         }
                     }
                 }
@@ -450,96 +456,96 @@
                 imgPreloader = "";
                 skipInjection = false;
                 switch (S(pp_images[set_position])) {
-                case "image":
-                    imgPreloader = new Image;
-                    nextImage = new Image;
-                    if (isSet && set_position < e(pp_images).size() - 1) nextImage.src = pp_images[set_position + 1];
-                    prevImage = new Image;
-                    if (isSet && pp_images[set_position - 1]) prevImage.src = pp_images[set_position - 1];
-                    $pp_pic_holder.find("#pp_full_res")[0].innerHTML = settings.image_markup.replace(/{path}/g, pp_images[set_position]);
-                    imgPreloader.onload = function () {
-                        a = w(imgPreloader.width, imgPreloader.height);
-                        g()
-                    };
-                    imgPreloader.onerror = function () {
-                       BootstrapDialog.alert("Image cannot be loaded. Make sure the path is correct and image exist.");
-                        e.prettyPhoto.close()
-                    };
-                    imgPreloader.src = pp_images[set_position];
-                    break;
-                case "youtube":
-                    a = w(movie_width, movie_height);
-                    movie_id = i("v", pp_images[set_position]);
-                    if (movie_id == "") {
-                        movie_id = pp_images[set_position].split("youtu.be/");
-                        movie_id = movie_id[1];
-                        if (movie_id.indexOf("?") > 0) movie_id = movie_id.substr(0, movie_id.indexOf("?"));
-                        if (movie_id.indexOf("&") > 0) movie_id = movie_id.substr(0, movie_id.indexOf("&"))
-                    }
-                    movie = "http://www.youtube.com/embed/" + movie_id;
-                    i("rel", pp_images[set_position]) ? movie += "?rel=" + i("rel", pp_images[set_position]) : movie += "?rel=1";
-                    if (settings.autoplay) movie += "&autoplay=1";
-                    toInject = settings.iframe_markup.replace(/{width}/g, a["width"]).replace(/{height}/g, a["height"]).replace(/{wmode}/g, settings.wmode).replace(/{path}/g, movie);
-                    break;
-                case "vimeo":
-                    a = w(movie_width, movie_height);
-                    movie_id = pp_images[set_position];
-                    var t = /http(s?):\/\/(www\.)?vimeo.com\/(\d+)/;
-                    var n = movie_id.match(t);
-                    movie = "http://player.vimeo.com/video/" + n[3] + "?title=0&byline=0&portrait=0";
-                    if (settings.autoplay) movie += "&autoplay=1;";
-                    vimeo_width = a["width"] + "/embed/?moog_width=" + a["width"];
-                    toInject = settings.iframe_markup.replace(/{width}/g, vimeo_width).replace(/{height}/g, a["height"]).replace(/{path}/g, movie);
-                    break;
-                case "quicktime":
-                    a = w(movie_width, movie_height);
-                    a["height"] += 15;
-                    a["contentHeight"] += 15;
-                    a["containerHeight"] += 15;
-                    toInject = settings.quicktime_markup.replace(/{width}/g, a["width"]).replace(/{height}/g, a["height"]).replace(/{wmode}/g, settings.wmode).replace(/{path}/g, pp_images[set_position]).replace(/{autoplay}/g, settings.autoplay);
-                    break;
-                case "flash":
-                    a = w(movie_width, movie_height);
-                    flash_vars = pp_images[set_position];
-                    flash_vars = flash_vars.substring(pp_images[set_position].indexOf("flashvars") + 10, pp_images[set_position].length);
-                    filename = pp_images[set_position];
-                    filename = filename.substring(0, filename.indexOf("?"));
-                    toInject = settings.flash_markup.replace(/{width}/g, a["width"]).replace(/{height}/g, a["height"]).replace(/{wmode}/g, settings.wmode).replace(/{path}/g, filename + "?" + flash_vars);
-                    break;
-                case "iframe":
-                    a = w(movie_width, movie_height);
-                    frame_url = pp_images[set_position];
-                    frame_url = frame_url.substr(0, frame_url.indexOf("iframe") - 1);
-                    toInject = settings.iframe_markup.replace(/{width}/g, a["width"]).replace(/{height}/g, a["height"]).replace(/{path}/g, frame_url);
-                    break;
-                case "ajax":
-                    doresize = false;
-                    a = w(movie_width, movie_height);
-                    doresize = true;
-                    skipInjection = true;
-                    e.get(pp_images[set_position], function (e) {
-                        toInject = settings.inline_markup.replace(/{content}/g, e);
-                        $pp_pic_holder.find("#pp_full_res")[0].innerHTML = toInject;
-                        g()
-                    });
-                    break;
-                case "custom":
-                    a = w(movie_width, movie_height);
-                    toInject = settings.custom_markup;
-                    break;
-                case "inline":
-                    myClone = e(pp_images[set_position]).clone().append('<br clear="all" />').css({
-                        width: settings.default_width
-                    }).wrapInner('<div id="pp_full_res"><div class="pp_inline"></div></div>').appendTo(e("body")).show();
-                    doresize = false;
-                    a = w(e(myClone).width(), e(myClone).height());
-                    doresize = true;
-                    e(myClone).remove();
-                    toInject = settings.inline_markup.replace(/{content}/g, e(pp_images[set_position]).html());
-                    break
+                    case "image":
+                        imgPreloader = new Image;
+                        nextImage = new Image;
+                        if (isSet && set_position < e(pp_images).size() - 1) nextImage.src = pp_images[set_position + 1];
+                        prevImage = new Image;
+                        if (isSet && pp_images[set_position - 1]) prevImage.src = pp_images[set_position - 1];
+                        $pp_pic_holder.find("#pp_full_res")[0].innerHTML = settings.image_markup.replace(/{path}/g, pp_images[set_position]);
+                        imgPreloader.onload = function () {
+                            a = w(imgPreloader.width, imgPreloader.height);
+                            g()
+                        };
+                        imgPreloader.onerror = function () {
+                            BootstrapDialog.alert("Image cannot be loaded. Make sure the path is correct and image exist.");
+                            e.prettyPhoto.close()
+                        };
+                        imgPreloader.src = pp_images[set_position];
+                        break;
+                    case "youtube":
+                        a = w(movie_width, movie_height);
+                        movie_id = i("v", pp_images[set_position]);
+                        if (movie_id == "") {
+                            movie_id = pp_images[set_position].split("youtu.be/");
+                            movie_id = movie_id[1];
+                            if (movie_id.indexOf("?") > 0) movie_id = movie_id.substr(0, movie_id.indexOf("?"));
+                            if (movie_id.indexOf("&") > 0) movie_id = movie_id.substr(0, movie_id.indexOf("&"))
+                        }
+                        movie = "http://www.youtube.com/embed/" + movie_id;
+                        i("rel", pp_images[set_position]) ? movie += "?rel=" + i("rel", pp_images[set_position]) : movie += "?rel=1";
+                        if (settings.autoplay) movie += "&autoplay=1";
+                        toInject = settings.iframe_markup.replace(/{width}/g, a["width"]).replace(/{height}/g, a["height"]).replace(/{wmode}/g, settings.wmode).replace(/{path}/g, movie);
+                        break;
+                    case "vimeo":
+                        a = w(movie_width, movie_height);
+                        movie_id = pp_images[set_position];
+                        var t = /http(s?):\/\/(www\.)?vimeo.com\/(\d+)/;
+                        var n = movie_id.match(t);
+                        movie = "http://player.vimeo.com/video/" + n[3] + "?title=0&byline=0&portrait=0";
+                        if (settings.autoplay) movie += "&autoplay=1;";
+                        vimeo_width = a["width"] + "/embed/?moog_width=" + a["width"];
+                        toInject = settings.iframe_markup.replace(/{width}/g, vimeo_width).replace(/{height}/g, a["height"]).replace(/{path}/g, movie);
+                        break;
+                    case "quicktime":
+                        a = w(movie_width, movie_height);
+                        a["height"] += 15;
+                        a["contentHeight"] += 15;
+                        a["containerHeight"] += 15;
+                        toInject = settings.quicktime_markup.replace(/{width}/g, a["width"]).replace(/{height}/g, a["height"]).replace(/{wmode}/g, settings.wmode).replace(/{path}/g, pp_images[set_position]).replace(/{autoplay}/g, settings.autoplay);
+                        break;
+                    case "flash":
+                        a = w(movie_width, movie_height);
+                        flash_vars = pp_images[set_position];
+                        flash_vars = flash_vars.substring(pp_images[set_position].indexOf("flashvars") + 10, pp_images[set_position].length);
+                        filename = pp_images[set_position];
+                        filename = filename.substring(0, filename.indexOf("?"));
+                        toInject = settings.flash_markup.replace(/{width}/g, a["width"]).replace(/{height}/g, a["height"]).replace(/{wmode}/g, settings.wmode).replace(/{path}/g, filename + "?" + flash_vars);
+                        break;
+                    case "iframe":
+                        a = w(movie_width, movie_height);
+                        frame_url = pp_images[set_position];
+                        frame_url = frame_url.substr(0, frame_url.indexOf("iframe") - 1);
+                        toInject = settings.iframe_markup.replace(/{width}/g, a["width"]).replace(/{height}/g, a["height"]).replace(/{path}/g, frame_url);
+                        break;
+                    case "ajax":
+                        doresize = false;
+                        a = w(movie_width, movie_height);
+                        doresize = true;
+                        skipInjection = true;
+                        e.get(pp_images[set_position], function (e) {
+                            toInject = settings.inline_markup.replace(/{content}/g, e);
+                            $pp_pic_holder.find("#pp_full_res")[0].innerHTML = toInject;
+                            g()
+                        });
+                        break;
+                    case "custom":
+                        a = w(movie_width, movie_height);
+                        toInject = settings.custom_markup;
+                        break;
+                    case "inline":
+                        myClone = e(pp_images[set_position]).clone().append('<br clear="all" />').css({
+                            width: settings.default_width
+                        }).wrapInner('<div id="pp_full_res"><div class="pp_inline"></div></div>').appendTo(e("body")).show();
+                        doresize = false;
+                        a = w(e(myClone).width(), e(myClone).height());
+                        doresize = true;
+                        e(myClone).remove();
+                        toInject = settings.inline_markup.replace(/{content}/g, e(pp_images[set_position]).html());
+                        break
                 }
                 if (!imgPreloader && !skipInjection) {
-					 $pp_pic_holder.find("#pp_full_res")[0].innerHTML = toInject;
+                    $pp_pic_holder.find("#pp_full_res")[0].innerHTML = toInject;
                     g()
                 }
             });

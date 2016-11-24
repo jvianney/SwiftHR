@@ -38,10 +38,10 @@ class Zend_Search_Lucene_LockManager
     /**
      * consts for name of file to show lock status
      */
-    const WRITE_LOCK_FILE                = 'write.lock.file';
-    const READ_LOCK_FILE                 = 'read.lock.file';
+    const WRITE_LOCK_FILE = 'write.lock.file';
+    const READ_LOCK_FILE = 'read.lock.file';
     const READ_LOCK_PROCESSING_LOCK_FILE = 'read-lock-processing.lock.file';
-    const OPTIMIZATION_LOCK_FILE         = 'optimization.lock.file';
+    const OPTIMIZATION_LOCK_FILE = 'optimization.lock.file';
 
     /**
      * Obtain exclusive write lock on the index
@@ -70,55 +70,6 @@ class Zend_Search_Lucene_LockManager
         $lock = $lockDirectory->getFileObject(self::WRITE_LOCK_FILE);
         $lock->unlock();
     }
-
-    /**
-     * Obtain the exclusive "read escalation/de-escalation" lock
-     *
-     * Required to protect the escalate/de-escalate read lock process
-     * on GFS (and potentially other) mounted filesystems.
-     *
-     * Why we need this:
-     *  While GFS supports cluster-wide locking via flock(), it's
-     *  implementation isn't quite what it should be.  The locking
-     *  semantics that work consistently on a local filesystem tend to
-     *  fail on GFS mounted filesystems.  This appears to be a design defect
-     *  in the implementation of GFS.  How this manifests itself is that
-     *  conditional promotion of a shared lock to exclusive will always
-     *  fail, lock release requests are honored but not immediately
-     *  processed (causing erratic failures of subsequent conditional
-     *  requests) and the releasing of the exclusive lock before the
-     *  shared lock is set when a lock is demoted (which can open a window
-     *  of opportunity for another process to gain an exclusive lock when
-     *  it shoudln't be allowed to).
-     *
-     * @param Zend_Search_Lucene_Storage_Directory $lockDirectory
-     * @return Zend_Search_Lucene_Storage_File
-     * @throws Zend_Search_Lucene_Exception
-     */
-    private static function _startReadLockProcessing(Zend_Search_Lucene_Storage_Directory $lockDirectory)
-    {
-        $lock = $lockDirectory->createFile(self::READ_LOCK_PROCESSING_LOCK_FILE);
-        if (!$lock->lock(LOCK_EX)) {
-            require_once 'Zend/Search/Lucene/Exception.php';
-            throw new Zend_Search_Lucene_Exception('Can\'t obtain exclusive lock for the read lock processing file');
-        }
-        return $lock;
-    }
-
-    /**
-     * Release the exclusive "read escalation/de-escalation" lock
-     *
-     * Required to protect the escalate/de-escalate read lock process
-     * on GFS (and potentially other) mounted filesystems.
-     *
-     * @param Zend_Search_Lucene_Storage_Directory $lockDirectory
-     */
-    private static function _stopReadLockProcessing(Zend_Search_Lucene_Storage_Directory $lockDirectory)
-    {
-        $lock = $lockDirectory->getFileObject(self::READ_LOCK_PROCESSING_LOCK_FILE);
-        $lock->unlock();
-    }
-
 
     /**
      * Obtain shared read lock on the index
@@ -192,6 +143,54 @@ class Zend_Search_Lucene_LockManager
 
         self::_stopReadLockProcessing($lockDirectory);
         return false;
+    }
+
+    /**
+     * Obtain the exclusive "read escalation/de-escalation" lock
+     *
+     * Required to protect the escalate/de-escalate read lock process
+     * on GFS (and potentially other) mounted filesystems.
+     *
+     * Why we need this:
+     *  While GFS supports cluster-wide locking via flock(), it's
+     *  implementation isn't quite what it should be.  The locking
+     *  semantics that work consistently on a local filesystem tend to
+     *  fail on GFS mounted filesystems.  This appears to be a design defect
+     *  in the implementation of GFS.  How this manifests itself is that
+     *  conditional promotion of a shared lock to exclusive will always
+     *  fail, lock release requests are honored but not immediately
+     *  processed (causing erratic failures of subsequent conditional
+     *  requests) and the releasing of the exclusive lock before the
+     *  shared lock is set when a lock is demoted (which can open a window
+     *  of opportunity for another process to gain an exclusive lock when
+     *  it shoudln't be allowed to).
+     *
+     * @param Zend_Search_Lucene_Storage_Directory $lockDirectory
+     * @return Zend_Search_Lucene_Storage_File
+     * @throws Zend_Search_Lucene_Exception
+     */
+    private static function _startReadLockProcessing(Zend_Search_Lucene_Storage_Directory $lockDirectory)
+    {
+        $lock = $lockDirectory->createFile(self::READ_LOCK_PROCESSING_LOCK_FILE);
+        if (!$lock->lock(LOCK_EX)) {
+            require_once 'Zend/Search/Lucene/Exception.php';
+            throw new Zend_Search_Lucene_Exception('Can\'t obtain exclusive lock for the read lock processing file');
+        }
+        return $lock;
+    }
+
+    /**
+     * Release the exclusive "read escalation/de-escalation" lock
+     *
+     * Required to protect the escalate/de-escalate read lock process
+     * on GFS (and potentially other) mounted filesystems.
+     *
+     * @param Zend_Search_Lucene_Storage_Directory $lockDirectory
+     */
+    private static function _stopReadLockProcessing(Zend_Search_Lucene_Storage_Directory $lockDirectory)
+    {
+        $lock = $lockDirectory->getFileObject(self::READ_LOCK_PROCESSING_LOCK_FILE);
+        $lock->unlock();
     }
 
     /**

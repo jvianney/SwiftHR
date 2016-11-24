@@ -127,20 +127,6 @@ class Zend_Db_Profiler
     }
 
     /**
-     * Enable or disable the profiler.  If $enable is false, the profiler
-     * is disabled and will not log any queries sent to it.
-     *
-     * @param  boolean $enable
-     * @return Zend_Db_Profiler Provides a fluent interface
-     */
-    public function setEnabled($enable)
-    {
-        $this->_enabled = (boolean) $enable;
-
-        return $this;
-    }
-
-    /**
      * Get the current state of enable.  If True is returned,
      * the profiler is enabled.
      *
@@ -149,6 +135,31 @@ class Zend_Db_Profiler
     public function getEnabled()
     {
         return $this->_enabled;
+    }
+
+    /**
+     * Enable or disable the profiler.  If $enable is false, the profiler
+     * is disabled and will not log any queries sent to it.
+     *
+     * @param  boolean $enable
+     * @return Zend_Db_Profiler Provides a fluent interface
+     */
+    public function setEnabled($enable)
+    {
+        $this->_enabled = (boolean)$enable;
+
+        return $this;
+    }
+
+    /**
+     * Returns the minimum number of seconds for saving query profiles, or null if
+     * query profiles are saved regardless of elapsed time.
+     *
+     * @return integer|null
+     */
+    public function getFilterElapsedSecs()
+    {
+        return $this->_filterElapsedSecs;
     }
 
     /**
@@ -165,21 +176,10 @@ class Zend_Db_Profiler
         if (null === $minimumSeconds) {
             $this->_filterElapsedSecs = null;
         } else {
-            $this->_filterElapsedSecs = (integer) $minimumSeconds;
+            $this->_filterElapsedSecs = (integer)$minimumSeconds;
         }
 
         return $this;
-    }
-
-    /**
-     * Returns the minimum number of seconds for saving query profiles, or null if
-     * query profiles are saved regardless of elapsed time.
-     *
-     * @return integer|null
-     */
-    public function getFilterElapsedSecs()
-    {
-        return $this->_filterElapsedSecs;
     }
 
     /**
@@ -244,8 +244,8 @@ class Zend_Db_Profiler
      * record the time.  If the profiler is not enabled, this takes no
      * action and immediately returns null.
      *
-     * @param  string  $queryText   SQL statement
-     * @param  integer $queryType   OPTIONAL Type of query, one of the Zend_Db_Profiler::* constants
+     * @param  string $queryText SQL statement
+     * @param  integer $queryType OPTIONAL Type of query, one of the Zend_Db_Profiler::* constants
      * @return integer|null
      */
     public function queryStart($queryText, $queryType = null)

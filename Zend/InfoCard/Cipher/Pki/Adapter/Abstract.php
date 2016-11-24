@@ -54,6 +54,16 @@ abstract class Zend_InfoCard_Cipher_Pki_Adapter_Abstract implements Zend_InfoCar
     protected $_padding;
 
     /**
+     * Retruns the public-key padding used
+     *
+     * @return integer One of the padding constants in this class
+     */
+    public function getPadding()
+    {
+        return $this->_padding;
+    }
+
+    /**
      * Set the padding of the public key encryption
      *
      * @throws Zend_InfoCard_Cipher_Exception
@@ -62,7 +72,7 @@ abstract class Zend_InfoCard_Cipher_Pki_Adapter_Abstract implements Zend_InfoCar
      */
     public function setPadding($padding)
     {
-        switch($padding) {
+        switch ($padding) {
             case self::OAEP_PADDING:
             case self::NO_PADDING:
                 $this->_padding = $padding;
@@ -74,15 +84,5 @@ abstract class Zend_InfoCard_Cipher_Pki_Adapter_Abstract implements Zend_InfoCar
         }
 
         return $this;
-    }
-
-    /**
-     * Retruns the public-key padding used
-     *
-     * @return integer One of the padding constants in this class
-     */
-    public function getPadding()
-    {
-        return $this->_padding;
     }
 }

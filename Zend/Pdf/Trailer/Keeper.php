@@ -62,16 +62,6 @@ class Zend_Pdf_Trailer_Keeper extends Zend_Pdf_Trailer
         parent::__construct($dict);
 
         $this->_context = $context;
-        $this->_prev    = $prev;
-    }
-
-    /**
-     * Setter for $this->_prev
-     *
-     * @param Zend_Pdf_Trailer_Keeper $prev
-     */
-    public function setPrev(Zend_Pdf_Trailer_Keeper $prev)
-    {
         $this->_prev = $prev;
     }
 
@@ -83,6 +73,16 @@ class Zend_Pdf_Trailer_Keeper extends Zend_Pdf_Trailer
     public function getPrev()
     {
         return $this->_prev;
+    }
+
+    /**
+     * Setter for $this->_prev
+     *
+     * @param Zend_Pdf_Trailer_Keeper $prev
+     */
+    public function setPrev(Zend_Pdf_Trailer_Keeper $prev)
+    {
+        $this->_prev = $prev;
     }
 
     /**

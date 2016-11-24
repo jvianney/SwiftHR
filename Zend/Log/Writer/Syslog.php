@@ -38,42 +38,38 @@ require_once 'Zend/Log/Writer/Abstract.php';
 class Zend_Log_Writer_Syslog extends Zend_Log_Writer_Abstract
 {
     /**
-     * Maps Zend_Log priorities to PHP's syslog priorities
-     *
-     * @var array
-     */
-    protected $_priorities = array(
-        Zend_Log::EMERG  => LOG_EMERG,
-        Zend_Log::ALERT  => LOG_ALERT,
-        Zend_Log::CRIT   => LOG_CRIT,
-        Zend_Log::ERR    => LOG_ERR,
-        Zend_Log::WARN   => LOG_WARNING,
-        Zend_Log::NOTICE => LOG_NOTICE,
-        Zend_Log::INFO   => LOG_INFO,
-        Zend_Log::DEBUG  => LOG_DEBUG,
-    );
-
-    /**
-     * The default log priority - for unmapped custom priorities
-     *
-     * @var string
-     */
-    protected $_defaultPriority = LOG_NOTICE;
-
-    /**
      * Last application name set by a syslog-writer instance
      *
      * @var string
      */
     protected static $_lastApplication;
-
     /**
      * Last facility name set by a syslog-writer instance
      *
      * @var string
      */
     protected static $_lastFacility;
-
+    /**
+     * Maps Zend_Log priorities to PHP's syslog priorities
+     *
+     * @var array
+     */
+    protected $_priorities = array(
+        Zend_Log::EMERG => LOG_EMERG,
+        Zend_Log::ALERT => LOG_ALERT,
+        Zend_Log::CRIT => LOG_CRIT,
+        Zend_Log::ERR => LOG_ERR,
+        Zend_Log::WARN => LOG_WARNING,
+        Zend_Log::NOTICE => LOG_NOTICE,
+        Zend_Log::INFO => LOG_INFO,
+        Zend_Log::DEBUG => LOG_DEBUG,
+    );
+    /**
+     * The default log priority - for unmapped custom priorities
+     *
+     * @var string
+     */
+    protected $_defaultPriority = LOG_NOTICE;
     /**
      * Application name used by this syslog-writer instance
      *
@@ -119,14 +115,37 @@ class Zend_Log_Writer_Syslog extends Zend_Log_Writer_Abstract
     }
 
     /**
-     * Create a new instance of Zend_Log_Writer_Syslog
+     * Set syslog facility
      *
-     * @param  array|Zend_Config $config
+     * @param  int $facility Syslog facility
      * @return Zend_Log_Writer_Syslog
+     * @throws Zend_Log_Exception for invalid log facility
      */
-    static public function factory($config)
+    public function setFacility($facility)
     {
-        return new self(self::_parseConfig($config));
+        if ($this->_facility === $facility) {
+            return $this;
+        }
+
+        if (!count($this->_validFacilities)) {
+            $this->_initializeValidFacilities();
+        }
+
+        if (!in_array($facility, $this->_validFacilities)) {
+            require_once 'Zend/Log/Exception.php';
+            throw new Zend_Log_Exception('Invalid log facility provided; please see http://php.net/openlog for a list of valid facility values');
+        }
+
+        if ('WIN' == strtoupper(substr(PHP_OS, 0, 3))
+            && ($facility !== LOG_USER)
+        ) {
+            require_once 'Zend/Log/Exception.php';
+            throw new Zend_Log_Exception('Only LOG_USER is a valid log facility on Windows');
+        }
+
+        $this->_facility = $facility;
+        $this->_initializeSyslog();
+        return $this;
     }
 
     /**
@@ -173,42 +192,19 @@ class Zend_Log_Writer_Syslog extends Zend_Log_Writer_Abstract
     protected function _initializeSyslog()
     {
         self::$_lastApplication = $this->_application;
-        self::$_lastFacility    = $this->_facility;
+        self::$_lastFacility = $this->_facility;
         openlog($this->_application, LOG_PID, $this->_facility);
     }
 
     /**
-     * Set syslog facility
+     * Create a new instance of Zend_Log_Writer_Syslog
      *
-     * @param  int $facility Syslog facility
+     * @param  array|Zend_Config $config
      * @return Zend_Log_Writer_Syslog
-     * @throws Zend_Log_Exception for invalid log facility
      */
-    public function setFacility($facility)
+    static public function factory($config)
     {
-        if ($this->_facility === $facility) {
-            return $this;
-        }
-
-        if (!count($this->_validFacilities)) {
-            $this->_initializeValidFacilities();
-        }
-
-        if (!in_array($facility, $this->_validFacilities)) {
-            require_once 'Zend/Log/Exception.php';
-            throw new Zend_Log_Exception('Invalid log facility provided; please see http://php.net/openlog for a list of valid facility values');
-        }
-
-        if ('WIN' == strtoupper(substr(PHP_OS, 0, 3))
-            && ($facility !== LOG_USER)
-        ) {
-            require_once 'Zend/Log/Exception.php';
-            throw new Zend_Log_Exception('Only LOG_USER is a valid log facility on Windows');
-        }
-
-        $this->_facility = $facility;
-        $this->_initializeSyslog();
-        return $this;
+        return new self(self::_parseConfig($config));
     }
 
     /**
@@ -252,8 +248,8 @@ class Zend_Log_Writer_Syslog extends Zend_Log_Writer_Abstract
         }
 
         if ($this->_application !== self::$_lastApplication
-            || $this->_facility !== self::$_lastFacility)
-        {
+            || $this->_facility !== self::$_lastFacility
+        ) {
             $this->_initializeSyslog();
         }
 

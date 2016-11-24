@@ -8,42 +8,41 @@ class HTMLPurifier_Length
 {
 
     /**
-     * String numeric magnitude.
-     */
-    protected $n;
-
-    /**
-     * String unit. False is permitted if $n = 0.
-     */
-    protected $unit;
-
-    /**
-     * Whether or not this length is valid. Null if not calculated yet.
-     */
-    protected $isValid;
-
-    /**
      * Lookup array of units recognized by CSS 2.1
      */
     protected static $allowedUnits = array(
         'em' => true, 'ex' => true, 'px' => true, 'in' => true,
         'cm' => true, 'mm' => true, 'pt' => true, 'pc' => true
     );
+    /**
+     * String numeric magnitude.
+     */
+    protected $n;
+    /**
+     * String unit. False is permitted if $n = 0.
+     */
+    protected $unit;
+    /**
+     * Whether or not this length is valid. Null if not calculated yet.
+     */
+    protected $isValid;
 
     /**
      * @param number $n Magnitude
      * @param string $u Unit
      */
-    public function __construct($n = '0', $u = false) {
-        $this->n = (string) $n;
-        $this->unit = $u !== false ? (string) $u : false;
+    public function __construct($n = '0', $u = false)
+    {
+        $this->n = (string)$n;
+        $this->unit = $u !== false ? (string)$u : false;
     }
 
     /**
      * @param string $s Unit string, like '2em' or '3.4in'
      * @warning Does not perform validation.
      */
-    static public function make($s) {
+    static public function make($s)
+    {
         if ($s instanceof HTMLPurifier_Length) return $s;
         $n_length = strspn($s, '1234567890.+-');
         $n = substr($s, 0, $n_length);
@@ -53,9 +52,28 @@ class HTMLPurifier_Length
     }
 
     /**
+     * Returns string representation of number.
+     */
+    public function toString()
+    {
+        if (!$this->isValid()) return false;
+        return $this->n . $this->unit;
+    }
+
+    /**
+     * Returns true if this length unit is valid.
+     */
+    public function isValid()
+    {
+        if ($this->isValid === null) $this->isValid = $this->validate();
+        return $this->isValid;
+    }
+
+    /**
      * Validates the number and unit.
      */
-    protected function validate() {
+    protected function validate()
+    {
         // Special case:
         if ($this->n === '+0' || $this->n === '-0') $this->n = '0';
         if ($this->n === '0' && $this->unit === false) return true;
@@ -70,29 +88,19 @@ class HTMLPurifier_Length
     }
 
     /**
-     * Returns string representation of number.
-     */
-    public function toString() {
-        if (!$this->isValid()) return false;
-        return $this->n . $this->unit;
-    }
-
-    /**
      * Retrieves string numeric magnitude.
      */
-    public function getN() {return $this->n;}
+    public function getN()
+    {
+        return $this->n;
+    }
 
     /**
      * Retrieves string unit.
      */
-    public function getUnit() {return $this->unit;}
-
-    /**
-     * Returns true if this length unit is valid.
-     */
-    public function isValid() {
-        if ($this->isValid === null) $this->isValid = $this->validate();
-        return $this->isValid;
+    public function getUnit()
+    {
+        return $this->unit;
     }
 
     /**
@@ -100,7 +108,8 @@ class HTMLPurifier_Length
      * @warning If both values are too large or small, this calculation will
      *          not work properly
      */
-    public function compareTo($l) {
+    public function compareTo($l)
+    {
         if ($l === false) return false;
         if ($l->unit !== $this->unit) {
             $converter = new HTMLPurifier_UnitConverter();

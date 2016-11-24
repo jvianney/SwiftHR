@@ -42,21 +42,18 @@ class Zend_Dojo_View_Helper_Dojo
     const PROGRAMMATIC_SCRIPT = 1;
     const PROGRAMMATIC_NOSCRIPT = -1;
     /**#@-*/
-
-    /**
-     * @var Zend_View_Interface
-     */
-    public $view;
-
-    /**
-     * @var Zend_Dojo_View_Helper_Dojo_Container
-     */
-    protected $_container;
-
     /**
      * @var bool Whether or not dijits should be declared programmatically
      */
     protected static $_useProgrammatic = true;
+    /**
+     * @var Zend_View_Interface
+     */
+    public $view;
+    /**
+     * @var Zend_Dojo_View_Helper_Dojo_Container
+     */
+    protected $_container;
 
     /**
      * Initialize helper
@@ -75,46 +72,6 @@ class Zend_Dojo_View_Helper_Dojo
             $registry[__CLASS__] = $container;
         }
         $this->_container = $registry[__CLASS__];
-    }
-
-    /**
-     * Set view object
-     *
-     * @param  Zend_Dojo_View_Interface $view
-     * @return void
-     */
-    public function setView(Zend_View_Interface $view)
-    {
-        $this->view = $view;
-        $this->_container->setView($view);
-    }
-
-    /**
-     * Return dojo container
-     *
-     * @return Zend_Dojo_View_Helper_Dojo_Container
-     */
-    public function dojo()
-    {
-        return $this->_container;
-    }
-
-    /**
-     * Proxy to container methods
-     *
-     * @param  string $method
-     * @param  array $args
-     * @return mixed
-     * @throws Zend_Dojo_View_Exception For invalid method calls
-     */
-    public function __call($method, $args)
-    {
-        if (!method_exists($this->_container, $method)) {
-            require_once 'Zend/Dojo/View/Exception.php';
-            throw new Zend_Dojo_View_Exception(sprintf('Invalid method "%s" called on dojo view helper', $method));
-        }
-
-        return call_user_func_array(array($this->_container, $method), $args);
     }
 
     /**
@@ -172,5 +129,45 @@ class Zend_Dojo_View_Helper_Dojo
     public static function useProgrammaticNoScript()
     {
         return (self::PROGRAMMATIC_NOSCRIPT === self::$_useProgrammatic);
+    }
+
+    /**
+     * Set view object
+     *
+     * @param  Zend_Dojo_View_Interface $view
+     * @return void
+     */
+    public function setView(Zend_View_Interface $view)
+    {
+        $this->view = $view;
+        $this->_container->setView($view);
+    }
+
+    /**
+     * Return dojo container
+     *
+     * @return Zend_Dojo_View_Helper_Dojo_Container
+     */
+    public function dojo()
+    {
+        return $this->_container;
+    }
+
+    /**
+     * Proxy to container methods
+     *
+     * @param  string $method
+     * @param  array $args
+     * @return mixed
+     * @throws Zend_Dojo_View_Exception For invalid method calls
+     */
+    public function __call($method, $args)
+    {
+        if (!method_exists($this->_container, $method)) {
+            require_once 'Zend/Dojo/View/Exception.php';
+            throw new Zend_Dojo_View_Exception(sprintf('Invalid method "%s" called on dojo view helper', $method));
+        }
+
+        return call_user_func_array(array($this->_container, $method), $args);
     }
 }

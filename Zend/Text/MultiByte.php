@@ -32,16 +32,16 @@ class Zend_Text_MultiByte
     /**
      * Word wrap
      *
-     * @param  string  $string
+     * @param  string $string
      * @param  integer $width
-     * @param  string  $break
+     * @param  string $break
      * @param  boolean $cut
-     * @param  string  $charset
+     * @param  string $charset
      * @return string
      */
     public static function wordWrap($string, $width = 75, $break = "\n", $cut = false, $charset = 'UTF-8')
     {
-        $result     = array();
+        $result = array();
         $breakWidth = iconv_strlen($break, $charset);
 
         while (($stringLength = iconv_strlen($string, $charset)) > 0) {
@@ -116,16 +116,16 @@ class Zend_Text_MultiByte
     /**
      * String padding
      *
-     * @param  string  $input
+     * @param  string $input
      * @param  integer $padLength
-     * @param  string  $padString
+     * @param  string $padString
      * @param  integer $padType
-     * @param  string  $charset
+     * @param  string $charset
      * @return string
      */
     public static function strPad($input, $padLength, $padString = ' ', $padType = STR_PAD_RIGHT, $charset = 'UTF-8')
     {
-        $return          = '';
+        $return = '';
         $lengthOfPadding = $padLength - iconv_strlen($input, $charset);
         $padStringLength = iconv_strlen($padString, $charset);
 
@@ -135,20 +135,20 @@ class Zend_Text_MultiByte
             $repeatCount = floor($lengthOfPadding / $padStringLength);
 
             if ($padType === STR_PAD_BOTH) {
-                $lastStringLeft  = '';
+                $lastStringLeft = '';
                 $lastStringRight = '';
                 $repeatCountLeft = $repeatCountRight = ($repeatCount - $repeatCount % 2) / 2;
 
-                $lastStringLength       = $lengthOfPadding - 2 * $repeatCountLeft * $padStringLength;
-                $lastStringLeftLength   = $lastStringRightLength = floor($lastStringLength / 2);
+                $lastStringLength = $lengthOfPadding - 2 * $repeatCountLeft * $padStringLength;
+                $lastStringLeftLength = $lastStringRightLength = floor($lastStringLength / 2);
                 $lastStringRightLength += $lastStringLength % 2;
 
-                $lastStringLeft  = iconv_substr($padString, 0, $lastStringLeftLength, $charset);
+                $lastStringLeft = iconv_substr($padString, 0, $lastStringLeftLength, $charset);
                 $lastStringRight = iconv_substr($padString, 0, $lastStringRightLength, $charset);
 
                 $return = str_repeat($padString, $repeatCountLeft) . $lastStringLeft
-                        . $input
-                        . str_repeat($padString, $repeatCountRight) . $lastStringRight;
+                    . $input
+                    . str_repeat($padString, $repeatCountRight) . $lastStringRight;
             } else {
                 $lastString = iconv_substr($padString, 0, $lengthOfPadding % $padStringLength, $charset);
 

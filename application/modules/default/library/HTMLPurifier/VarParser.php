@@ -7,34 +7,34 @@
 class HTMLPurifier_VarParser
 {
 
-    const STRING    = 1;
-    const ISTRING   = 2;
-    const TEXT      = 3;
-    const ITEXT     = 4;
-    const INT       = 5;
-    const FLOAT     = 6;
-    const BOOL      = 7;
-    const LOOKUP    = 8;
-    const ALIST     = 9;
-    const HASH      = 10;
-    const MIXED     = 11;
+    const STRING = 1;
+    const ISTRING = 2;
+    const TEXT = 3;
+    const ITEXT = 4;
+    const INT = 5;
+    const FLOAT = 6;
+    const BOOL = 7;
+    const LOOKUP = 8;
+    const ALIST = 9;
+    const HASH = 10;
+    const MIXED = 11;
 
     /**
      * Lookup table of allowed types. Mainly for backwards compatibility, but
      * also convenient for transforming string type names to the integer constants.
      */
     static public $types = array(
-        'string'    => self::STRING,
-        'istring'   => self::ISTRING,
-        'text'      => self::TEXT,
-        'itext'     => self::ITEXT,
-        'int'       => self::INT,
-        'float'     => self::FLOAT,
-        'bool'      => self::BOOL,
-        'lookup'    => self::LOOKUP,
-        'list'      => self::ALIST,
-        'hash'      => self::HASH,
-        'mixed'     => self::MIXED
+        'string' => self::STRING,
+        'istring' => self::ISTRING,
+        'text' => self::TEXT,
+        'itext' => self::ITEXT,
+        'int' => self::INT,
+        'float' => self::FLOAT,
+        'bool' => self::BOOL,
+        'lookup' => self::LOOKUP,
+        'list' => self::ALIST,
+        'hash' => self::HASH,
+        'mixed' => self::MIXED
     );
 
     /**
@@ -42,10 +42,10 @@ class HTMLPurifier_VarParser
      * allowed value lists.
      */
     static public $stringTypes = array(
-        self::STRING    => true,
-        self::ISTRING   => true,
-        self::TEXT      => true,
-        self::ITEXT     => true,
+        self::STRING => true,
+        self::ISTRING => true,
+        self::TEXT => true,
+        self::ITEXT => true,
     );
 
     /**
@@ -58,7 +58,8 @@ class HTMLPurifier_VarParser
      * @param $allow_null Whether or not to permit null as a value
      * @return Validated and type-coerced variable
      */
-    final public function parse($var, $type, $allow_null = false) {
+    final public function parse($var, $type, $allow_null = false)
+    {
         if (is_string($type)) {
             if (!isset(HTMLPurifier_VarParser::$types[$type])) {
                 throw new HTMLPurifier_VarParserException("Invalid type '$type'");
@@ -110,14 +111,16 @@ class HTMLPurifier_VarParser
      * Actually implements the parsing. Base implementation is to not
      * do anything to $var. Subclasses should overload this!
      */
-    protected function parseImplementation($var, $type, $allow_null) {
+    protected function parseImplementation($var, $type, $allow_null)
+    {
         return $var;
     }
 
     /**
      * Throws an exception.
      */
-    protected function error($msg) {
+    protected function error($msg)
+    {
         throw new HTMLPurifier_VarParserException($msg);
     }
 
@@ -127,19 +130,13 @@ class HTMLPurifier_VarParser
      *       extend the allowed values of HTMLPurifier_VarParser without
      *       updating subclasses.
      */
-    protected function errorInconsistent($class, $type) {
-        throw new HTMLPurifier_Exception("Inconsistency in $class: ".HTMLPurifier_VarParser::getTypeName($type)." not implemented");
+    protected function errorInconsistent($class, $type)
+    {
+        throw new HTMLPurifier_Exception("Inconsistency in $class: " . HTMLPurifier_VarParser::getTypeName($type) . " not implemented");
     }
 
-    /**
-     * Generic error for if a type didn't work.
-     */
-    protected function errorGeneric($var, $type) {
-        $vtype = gettype($var);
-        $this->error("Expected type ".HTMLPurifier_VarParser::getTypeName($type).", got $vtype");
-    }
-
-    static public function getTypeName($type) {
+    static public function getTypeName($type)
+    {
         static $lookup;
         if (!$lookup) {
             // Lazy load the alternative lookup table
@@ -147,6 +144,15 @@ class HTMLPurifier_VarParser
         }
         if (!isset($lookup[$type])) return 'unknown';
         return $lookup[$type];
+    }
+
+    /**
+     * Generic error for if a type didn't work.
+     */
+    protected function errorGeneric($var, $type)
+    {
+        $vtype = gettype($var);
+        $this->error("Expected type " . HTMLPurifier_VarParser::getTypeName($type) . ", got $vtype");
     }
 
 }

@@ -69,19 +69,35 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-                        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-                        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-                        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-                        'INTEGER'            => Zend_Db::INT_TYPE,
-                        'SMALLINT'           => Zend_Db::INT_TYPE,
-                        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-                        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-                        'DEC'                => Zend_Db::FLOAT_TYPE,
-                        'REAL'               => Zend_Db::FLOAT_TYPE,
-                        'NUMERIC'            => Zend_Db::FLOAT_TYPE,
-                        'DOUBLE PRECISION'   => Zend_Db::FLOAT_TYPE,
-                        'FLOAT'              => Zend_Db::FLOAT_TYPE
-                        );
+        Zend_Db::INT_TYPE => Zend_Db::INT_TYPE,
+        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
+        Zend_Db::FLOAT_TYPE => Zend_Db::FLOAT_TYPE,
+        'INTEGER' => Zend_Db::INT_TYPE,
+        'SMALLINT' => Zend_Db::INT_TYPE,
+        'BIGINT' => Zend_Db::BIGINT_TYPE,
+        'DECIMAL' => Zend_Db::FLOAT_TYPE,
+        'DEC' => Zend_Db::FLOAT_TYPE,
+        'REAL' => Zend_Db::FLOAT_TYPE,
+        'NUMERIC' => Zend_Db::FLOAT_TYPE,
+        'DOUBLE PRECISION' => Zend_Db::FLOAT_TYPE,
+        'FLOAT' => Zend_Db::FLOAT_TYPE
+    );
+
+    /**
+     * Prepares an SQL statement.
+     *
+     * @param string $sql The SQL statement with placeholders.
+     * @param array $bind An array of data to bind to the placeholders.
+     * @return PDOStatement
+     */
+    public function prepare($sql)
+    {
+        $this->_connect();
+        $stmtClass = $this->_defaultStmtClass;
+        $stmt = new $stmtClass($this, $sql);
+        $stmt->setFetchMode($this->_fetchMode);
+        return $stmt;
+    }
 
     /**
      * Creates a PDO object and connects to the database.
@@ -112,22 +128,22 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
 
                         // Add DB2-specific numeric types
                         $this->_numericDataTypes['DECFLOAT'] = Zend_Db::FLOAT_TYPE;
-                        $this->_numericDataTypes['DOUBLE']   = Zend_Db::FLOAT_TYPE;
-                        $this->_numericDataTypes['NUM']      = Zend_Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['DOUBLE'] = Zend_Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['NUM'] = Zend_Db::FLOAT_TYPE;
 
                         break;
                     case 'IDS':
                         $this->_serverType = new Zend_Db_Adapter_Pdo_Ibm_Ids($this);
 
                         // Add IDS-specific numeric types
-                        $this->_numericDataTypes['SERIAL']       = Zend_Db::INT_TYPE;
-                        $this->_numericDataTypes['SERIAL8']      = Zend_Db::BIGINT_TYPE;
-                        $this->_numericDataTypes['INT8']         = Zend_Db::BIGINT_TYPE;
-                        $this->_numericDataTypes['SMALLFLOAT']   = Zend_Db::FLOAT_TYPE;
-                        $this->_numericDataTypes['MONEY']        = Zend_Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['SERIAL'] = Zend_Db::INT_TYPE;
+                        $this->_numericDataTypes['SERIAL8'] = Zend_Db::BIGINT_TYPE;
+                        $this->_numericDataTypes['INT8'] = Zend_Db::BIGINT_TYPE;
+                        $this->_numericDataTypes['SMALLFLOAT'] = Zend_Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['MONEY'] = Zend_Db::FLOAT_TYPE;
 
                         break;
-                    }
+                }
             }
         } catch (PDOException $e) {
             /** @see Zend_Db_Adapter_Exception */
@@ -139,64 +155,6 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
                 throw new Zend_Db_Adapter_Exception($e->getMessage(), $e->getCode(), $e);
             }
         }
-    }
-
-    /**
-     * Creates a PDO DSN for the adapter from $this->_config settings.
-     *
-     * @return string
-     */
-    protected function _dsn()
-    {
-        $this->_checkRequiredOptions($this->_config);
-
-        // check if using full connection string
-        if (array_key_exists('host', $this->_config)) {
-            $dsn = ';DATABASE=' . $this->_config['dbname']
-            . ';HOSTNAME=' . $this->_config['host']
-            . ';PORT='     . $this->_config['port']
-            // PDO_IBM supports only DB2 TCPIP protocol
-            . ';PROTOCOL=' . 'TCPIP;';
-        } else {
-            // catalogued connection
-            $dsn = $this->_config['dbname'];
-        }
-        return $this->_pdoType . ': ' . $dsn;
-    }
-
-    /**
-     * Checks required options
-     *
-     * @param  array $config
-     * @throws Zend_Db_Adapter_Exception
-     * @return void
-     */
-    protected function _checkRequiredOptions(array $config)
-    {
-        parent::_checkRequiredOptions($config);
-
-        if (array_key_exists('host', $this->_config) &&
-        !array_key_exists('port', $config)) {
-            /** @see Zend_Db_Adapter_Exception */
-            require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception("Configuration must have a key for 'port' when 'host' is specified");
-        }
-    }
-
-    /**
-     * Prepares an SQL statement.
-     *
-     * @param string $sql The SQL statement with placeholders.
-     * @param array $bind An array of data to bind to the placeholders.
-     * @return PDOStatement
-     */
-    public function prepare($sql)
-    {
-        $this->_connect();
-        $stmtClass = $this->_defaultStmtClass;
-        $stmt = new $stmtClass($this, $sql);
-        $stmt->setFetchMode($this->_fetchMode);
-        return $stmt;
     }
 
     /**
@@ -260,7 +218,7 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
         $newbind = array();
         if (is_array($bind)) {
             foreach ($bind as $name => $value) {
-                if($value !== null) {
+                if ($value !== null) {
                     $newbind[$name] = $value;
                 }
             }
@@ -279,8 +237,8 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
      */
     public function limit($sql, $count, $offset = 0)
     {
-       $this->_connect();
-       return $this->_serverType->limit($sql, $count, $offset);
+        $this->_connect();
+        return $this->_serverType->limit($sql, $count, $offset);
     }
 
     /**
@@ -295,7 +253,7 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
     {
         $this->_connect();
 
-         if ($tableName !== null) {
+        if ($tableName !== null) {
             $sequenceName = $tableName;
             if ($primaryKey) {
                 $sequenceName .= "_$primaryKey";
@@ -355,6 +313,49 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
             return null;
         } catch (PDOException $e) {
             return null;
+        }
+    }
+
+    /**
+     * Creates a PDO DSN for the adapter from $this->_config settings.
+     *
+     * @return string
+     */
+    protected function _dsn()
+    {
+        $this->_checkRequiredOptions($this->_config);
+
+        // check if using full connection string
+        if (array_key_exists('host', $this->_config)) {
+            $dsn = ';DATABASE=' . $this->_config['dbname']
+                . ';HOSTNAME=' . $this->_config['host']
+                . ';PORT=' . $this->_config['port']
+                // PDO_IBM supports only DB2 TCPIP protocol
+                . ';PROTOCOL=' . 'TCPIP;';
+        } else {
+            // catalogued connection
+            $dsn = $this->_config['dbname'];
+        }
+        return $this->_pdoType . ': ' . $dsn;
+    }
+
+    /**
+     * Checks required options
+     *
+     * @param  array $config
+     * @throws Zend_Db_Adapter_Exception
+     * @return void
+     */
+    protected function _checkRequiredOptions(array $config)
+    {
+        parent::_checkRequiredOptions($config);
+
+        if (array_key_exists('host', $this->_config) &&
+            !array_key_exists('port', $config)
+        ) {
+            /** @see Zend_Db_Adapter_Exception */
+            require_once 'Zend/Db/Adapter/Exception.php';
+            throw new Zend_Db_Adapter_Exception("Configuration must have a key for 'port' when 'host' is specified");
         }
     }
 }

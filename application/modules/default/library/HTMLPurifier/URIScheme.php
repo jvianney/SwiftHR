@@ -33,15 +33,6 @@ abstract class HTMLPurifier_URIScheme
     public $may_omit_host = false;
 
     /**
-     * Validates the components of a URI for a specific scheme.
-     * @param $uri Reference to a HTMLPurifier_URI object
-     * @param $config HTMLPurifier_Config object
-     * @param $context HTMLPurifier_Context object
-     * @return Bool success or failure
-     */
-    public abstract function doValidate(&$uri, $config, $context);
-
-    /**
      * Public interface for validating components of a URI.  Performs a
      * bunch of default actions. Don't overload this method.
      * @param $uri Reference to a HTMLPurifier_URI object
@@ -49,7 +40,8 @@ abstract class HTMLPurifier_URIScheme
      * @param $context HTMLPurifier_Context object
      * @return Bool success or failure
      */
-    public function validate(&$uri, $config, $context) {
+    public function validate(&$uri, $config, $context)
+    {
         if ($this->default_port == $uri->port) $uri->port = null;
         // kludge: browsers do funny things when the scheme but not the
         // authority is set
@@ -59,7 +51,7 @@ abstract class HTMLPurifier_URIScheme
             // if the scheme is not present, a *blank* host is in error,
             // since this translates into '///path' which most browsers
             // interpret as being 'http://path'.
-             (is_null($uri->scheme) && $uri->host === '')
+            (is_null($uri->scheme) && $uri->host === '')
         ) {
             do {
                 if (is_null($uri->scheme)) {
@@ -83,6 +75,15 @@ abstract class HTMLPurifier_URIScheme
         }
         return $this->doValidate($uri, $config, $context);
     }
+
+    /**
+     * Validates the components of a URI for a specific scheme.
+     * @param $uri Reference to a HTMLPurifier_URI object
+     * @param $config HTMLPurifier_Config object
+     * @param $context HTMLPurifier_Context object
+     * @return Bool success or failure
+     */
+    public abstract function doValidate(&$uri, $config, $context);
 
 }
 

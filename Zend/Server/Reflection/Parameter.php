@@ -139,17 +139,6 @@ class Zend_Server_Reflection_Parameter
     }
 
     /**
-     * Set parameter position
-     *
-     * @param int $index
-     * @return void
-     */
-    public function setPosition($index)
-    {
-        $this->_position = (int) $index;
-    }
-
-    /**
      * Return parameter position
      *
      * @return int
@@ -157,5 +146,16 @@ class Zend_Server_Reflection_Parameter
     public function getPosition()
     {
         return $this->_position;
+    }
+
+    /**
+     * Set parameter position
+     *
+     * @param int $index
+     * @return void
+     */
+    public function setPosition($index)
+    {
+        $this->_position = (int)$index;
     }
 }

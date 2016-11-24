@@ -92,6 +92,18 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
     }
 
     /**
+     * Set parameters to pass to action controller constructors
+     *
+     * @param array $params
+     * @return Zend_Controller_Dispatcher_Abstract
+     */
+    public function setParams(array $params)
+    {
+        $this->_invokeParams = array_merge($this->_invokeParams, $params);
+        return $this;
+    }
+
+    /**
      * Formats a string into a controller name.  This is used to take a raw
      * controller name, such as one stored inside a Zend_Controller_Request_Abstract
      * object, and reformat it to a proper class name that a class extending
@@ -106,81 +118,34 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
     }
 
     /**
-     * Formats a string into an action name.  This is used to take a raw
-     * action name, such as one that would be stored inside a Zend_Controller_Request_Abstract
-     * object, and reformat into a proper method name that would be found
-     * inside a class extending Zend_Controller_Action.
+     * Formats a string from a URI into a PHP-friendly name.
+     *
+     * By default, replaces words separated by the word separator character(s)
+     * with camelCaps. If $isAction is false, it also preserves replaces words
+     * separated by the path separation character with an underscore, making
+     * the following word Title cased. All non-alphanumeric characters are
+     * removed.
      *
      * @param string $unformatted
+     * @param boolean $isAction Defaults to false
      * @return string
      */
-    public function formatActionName($unformatted)
+    protected function _formatName($unformatted, $isAction = false)
     {
-        $formatted = $this->_formatName($unformatted, true);
-        return strtolower(substr($formatted, 0, 1)) . substr($formatted, 1) . 'Action';
-    }
-
-    /**
-     * Verify delimiter
-     *
-     * Verify a delimiter to use in controllers or actions. May be a single
-     * string or an array of strings.
-     *
-     * @param string|array $spec
-     * @return array
-     * @throws Zend_Controller_Dispatcher_Exception with invalid delimiters
-     */
-    public function _verifyDelimiter($spec)
-    {
-        if (is_string($spec)) {
-            return (array) $spec;
-        } elseif (is_array($spec)) {
-            $allStrings = true;
-            foreach ($spec as $delim) {
-                if (!is_string($delim)) {
-                    $allStrings = false;
-                    break;
-                }
-            }
-
-            if (!$allStrings) {
-                require_once 'Zend/Controller/Dispatcher/Exception.php';
-                throw new Zend_Controller_Dispatcher_Exception('Word delimiter array must contain only strings');
-            }
-
-            return $spec;
+        // preserve directories
+        if (!$isAction) {
+            $segments = explode($this->getPathDelimiter(), $unformatted);
+        } else {
+            $segments = (array)$unformatted;
         }
 
-        require_once 'Zend/Controller/Dispatcher/Exception.php';
-        throw new Zend_Controller_Dispatcher_Exception('Invalid word delimiter');
-    }
+        foreach ($segments as $key => $segment) {
+            $segment = str_replace($this->getWordDelimiter(), ' ', strtolower($segment));
+            $segment = preg_replace('/[^a-z0-9 ]/', '', $segment);
+            $segments[$key] = str_replace(' ', '', ucwords($segment));
+        }
 
-    /**
-     * Retrieve the word delimiter character(s) used in
-     * controller or action names
-     *
-     * @return array
-     */
-    public function getWordDelimiter()
-    {
-        return $this->_wordDelimiter;
-    }
-
-    /**
-     * Set word delimiter
-     *
-     * Set the word delimiter to use in controllers and actions. May be a
-     * single string or an array of strings.
-     *
-     * @param string|array $spec
-     * @return Zend_Controller_Dispatcher_Abstract
-     */
-    public function setWordDelimiter($spec)
-    {
-        $spec = $this->_verifyDelimiter($spec);
-        $this->_wordDelimiter = $spec;
-
-        return $this;
+        return implode('_', $segments);
     }
 
     /**
@@ -215,34 +180,81 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
     }
 
     /**
-     * Formats a string from a URI into a PHP-friendly name.
+     * Retrieve the word delimiter character(s) used in
+     * controller or action names
      *
-     * By default, replaces words separated by the word separator character(s)
-     * with camelCaps. If $isAction is false, it also preserves replaces words
-     * separated by the path separation character with an underscore, making
-     * the following word Title cased. All non-alphanumeric characters are
-     * removed.
+     * @return array
+     */
+    public function getWordDelimiter()
+    {
+        return $this->_wordDelimiter;
+    }
+
+    /**
+     * Set word delimiter
+     *
+     * Set the word delimiter to use in controllers and actions. May be a
+     * single string or an array of strings.
+     *
+     * @param string|array $spec
+     * @return Zend_Controller_Dispatcher_Abstract
+     */
+    public function setWordDelimiter($spec)
+    {
+        $spec = $this->_verifyDelimiter($spec);
+        $this->_wordDelimiter = $spec;
+
+        return $this;
+    }
+
+    /**
+     * Verify delimiter
+     *
+     * Verify a delimiter to use in controllers or actions. May be a single
+     * string or an array of strings.
+     *
+     * @param string|array $spec
+     * @return array
+     * @throws Zend_Controller_Dispatcher_Exception with invalid delimiters
+     */
+    public function _verifyDelimiter($spec)
+    {
+        if (is_string($spec)) {
+            return (array)$spec;
+        } elseif (is_array($spec)) {
+            $allStrings = true;
+            foreach ($spec as $delim) {
+                if (!is_string($delim)) {
+                    $allStrings = false;
+                    break;
+                }
+            }
+
+            if (!$allStrings) {
+                require_once 'Zend/Controller/Dispatcher/Exception.php';
+                throw new Zend_Controller_Dispatcher_Exception('Word delimiter array must contain only strings');
+            }
+
+            return $spec;
+        }
+
+        require_once 'Zend/Controller/Dispatcher/Exception.php';
+        throw new Zend_Controller_Dispatcher_Exception('Invalid word delimiter');
+    }
+
+    /**
+     * Formats a string into an action name.  This is used to take a raw
+     * action name, such as one that would be stored inside a Zend_Controller_Request_Abstract
+     * object, and reformat into a proper method name that would be found
+     * inside a class extending Zend_Controller_Action.
      *
      * @param string $unformatted
-     * @param boolean $isAction Defaults to false
      * @return string
      */
-    protected function _formatName($unformatted, $isAction = false)
+    public function formatActionName($unformatted)
     {
-        // preserve directories
-        if (!$isAction) {
-            $segments = explode($this->getPathDelimiter(), $unformatted);
-        } else {
-            $segments = (array) $unformatted;
-        }
-
-        foreach ($segments as $key => $segment) {
-            $segment        = str_replace($this->getWordDelimiter(), ' ', strtolower($segment));
-            $segment        = preg_replace('/[^a-z0-9 ]/', '', $segment);
-            $segments[$key] = str_replace(' ', '', ucwords($segment));
-        }
-
-        return implode('_', $segments);
+        $formatted = $this->_formatName($unformatted, true);
+        return strtolower(substr($formatted, 0, 1)) . substr($formatted, 1) . 'Action';
     }
 
     /**
@@ -281,20 +293,8 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
      */
     public function setParam($name, $value)
     {
-        $name = (string) $name;
+        $name = (string)$name;
         $this->_invokeParams[$name] = $value;
-        return $this;
-    }
-
-    /**
-     * Set parameters to pass to action controller constructors
-     *
-     * @param array $params
-     * @return Zend_Controller_Dispatcher_Abstract
-     */
-    public function setParams(array $params)
-    {
-        $this->_invokeParams = array_merge($this->_invokeParams, $params);
         return $this;
     }
 
@@ -306,7 +306,7 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
      */
     public function getParam($name)
     {
-        if(isset($this->_invokeParams[$name])) {
+        if (isset($this->_invokeParams[$name])) {
             return $this->_invokeParams[$name];
         }
 
@@ -351,6 +351,16 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
     }
 
     /**
+     * Return the registered response object
+     *
+     * @return Zend_Controller_Response_Abstract|null
+     */
+    public function getResponse()
+    {
+        return $this->_response;
+    }
+
+    /**
      * Set response object to pass to action controllers
      *
      * @param Zend_Controller_Response_Abstract|null $response
@@ -363,16 +373,6 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
     }
 
     /**
-     * Return the registered response object
-     *
-     * @return Zend_Controller_Response_Abstract|null
-     */
-    public function getResponse()
-    {
-        return $this->_response;
-    }
-
-    /**
      * Set the default controller (minus any formatting)
      *
      * @param string $controller
@@ -380,7 +380,7 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
      */
     public function setDefaultControllerName($controller)
     {
-        $this->_defaultController = (string) $controller;
+        $this->_defaultController = (string)$controller;
         return $this;
     }
 
@@ -395,18 +395,6 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
     }
 
     /**
-     * Set the default action (minus any formatting)
-     *
-     * @param string $action
-     * @return Zend_Controller_Dispatcher_Abstract
-     */
-    public function setDefaultAction($action)
-    {
-        $this->_defaultAction = (string) $action;
-        return $this;
-    }
-
-    /**
      * Retrieve the default action name (minus formatting)
      *
      * @return string
@@ -417,14 +405,14 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
     }
 
     /**
-     * Set the default module
+     * Set the default action (minus any formatting)
      *
-     * @param string $module
+     * @param string $action
      * @return Zend_Controller_Dispatcher_Abstract
      */
-    public function setDefaultModule($module)
+    public function setDefaultAction($action)
     {
-        $this->_defaultModule = (string) $module;
+        $this->_defaultAction = (string)$action;
         return $this;
     }
 
@@ -436,5 +424,17 @@ abstract class Zend_Controller_Dispatcher_Abstract implements Zend_Controller_Di
     public function getDefaultModule()
     {
         return $this->_defaultModule;
+    }
+
+    /**
+     * Set the default module
+     *
+     * @param string $module
+     * @return Zend_Controller_Dispatcher_Abstract
+     */
+    public function setDefaultModule($module)
+    {
+        $this->_defaultModule = (string)$module;
+        return $this;
     }
 }

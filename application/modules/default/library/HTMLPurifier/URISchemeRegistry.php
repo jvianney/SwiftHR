@@ -7,13 +7,19 @@ class HTMLPurifier_URISchemeRegistry
 {
 
     /**
+     * Cache of retrieved schemes.
+     */
+    protected $schemes = array();
+
+    /**
      * Retrieve sole instance of the registry.
      * @param $prototype Optional prototype to overload sole instance with,
      *                   or bool true to reset to default registry.
      * @note Pass a registry object $prototype with a compatible interface and
      *       the function will copy it and return it all further times.
      */
-    public static function instance($prototype = null) {
+    public static function instance($prototype = null)
+    {
         static $instance = null;
         if ($prototype !== null) {
             $instance = $prototype;
@@ -24,17 +30,13 @@ class HTMLPurifier_URISchemeRegistry
     }
 
     /**
-     * Cache of retrieved schemes.
-     */
-    protected $schemes = array();
-
-    /**
      * Retrieves a scheme validator object
      * @param $scheme String scheme name like http or mailto
      * @param $config HTMLPurifier_Config object
      * @param $config HTMLPurifier_Context object
      */
-    public function getScheme($scheme, $config, $context) {
+    public function getScheme($scheme, $config, $context)
+    {
         if (!$config) $config = HTMLPurifier_Config::createDefault();
 
         // important, otherwise attacker could include arbitrary file
@@ -59,7 +61,8 @@ class HTMLPurifier_URISchemeRegistry
      * @param $scheme Scheme name
      * @param $scheme_obj HTMLPurifier_URIScheme object
      */
-    public function register($scheme, $scheme_obj) {
+    public function register($scheme, $scheme_obj)
+    {
         $this->schemes[$scheme] = $scheme_obj;
     }
 

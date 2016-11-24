@@ -48,14 +48,14 @@ class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
      *
      * @var array
      */
-    protected $_priorityStyles = array(Zend_Log::EMERG  => Zend_Wildfire_Plugin_FirePhp::ERROR,
-                                       Zend_Log::ALERT  => Zend_Wildfire_Plugin_FirePhp::ERROR,
-                                       Zend_Log::CRIT   => Zend_Wildfire_Plugin_FirePhp::ERROR,
-                                       Zend_Log::ERR    => Zend_Wildfire_Plugin_FirePhp::ERROR,
-                                       Zend_Log::WARN   => Zend_Wildfire_Plugin_FirePhp::WARN,
-                                       Zend_Log::NOTICE => Zend_Wildfire_Plugin_FirePhp::INFO,
-                                       Zend_Log::INFO   => Zend_Wildfire_Plugin_FirePhp::INFO,
-                                       Zend_Log::DEBUG  => Zend_Wildfire_Plugin_FirePhp::LOG);
+    protected $_priorityStyles = array(Zend_Log::EMERG => Zend_Wildfire_Plugin_FirePhp::ERROR,
+        Zend_Log::ALERT => Zend_Wildfire_Plugin_FirePhp::ERROR,
+        Zend_Log::CRIT => Zend_Wildfire_Plugin_FirePhp::ERROR,
+        Zend_Log::ERR => Zend_Wildfire_Plugin_FirePhp::ERROR,
+        Zend_Log::WARN => Zend_Wildfire_Plugin_FirePhp::WARN,
+        Zend_Log::NOTICE => Zend_Wildfire_Plugin_FirePhp::INFO,
+        Zend_Log::INFO => Zend_Wildfire_Plugin_FirePhp::INFO,
+        Zend_Log::DEBUG => Zend_Wildfire_Plugin_FirePhp::LOG);
 
     /**
      * The default logging style for un-mapped priorities
@@ -97,26 +97,13 @@ class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
     }
 
     /**
-     * Enable or disable the log writer.
+     * Get the default display style for user-defined priorities
      *
-     * @param boolean $enabled Set to TRUE to enable the log writer
-     * @return boolean The previous value.
+     * @return string Returns the default log display style
      */
-    public function setEnabled($enabled)
+    public function getDefaultPriorityStyle()
     {
-        $previous = $this->_enabled;
-        $this->_enabled = $enabled;
-        return $previous;
-    }
-
-    /**
-     * Determine if the log writer is enabled.
-     *
-     * @return boolean Returns TRUE if the log writer is enabled.
-     */
-    public function getEnabled()
-    {
-        return $this->_enabled;
+        return $this->_defaultPriorityStyle;
     }
 
     /**
@@ -133,16 +120,6 @@ class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
     }
 
     /**
-     * Get the default display style for user-defined priorities
-     *
-     * @return string Returns the default log display style
-     */
-    public function getDefaultPriorityStyle()
-    {
-        return $this->_defaultPriorityStyle;
-    }
-
-    /**
      * Set a display style for a logging priority
      *
      * @param int $priority The logging priority
@@ -152,7 +129,7 @@ class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
     public function setPriorityStyle($priority, $style)
     {
         $previous = true;
-        if (array_key_exists($priority,$this->_priorityStyles)) {
+        if (array_key_exists($priority, $this->_priorityStyles)) {
             $previous = $this->_priorityStyles[$priority];
         }
         $this->_priorityStyles[$priority] = $style;
@@ -167,7 +144,7 @@ class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
      */
     public function getPriorityStyle($priority)
     {
-        if (array_key_exists($priority,$this->_priorityStyles)) {
+        if (array_key_exists($priority, $this->_priorityStyles)) {
             return $this->_priorityStyles[$priority];
         }
         return false;
@@ -185,7 +162,7 @@ class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
             return;
         }
 
-        if (array_key_exists($event['priority'],$this->_priorityStyles)) {
+        if (array_key_exists($event['priority'], $this->_priorityStyles)) {
             $type = $this->_priorityStyles[$event['priority']];
         } else {
             $type = $this->_defaultPriorityStyle;
@@ -193,12 +170,35 @@ class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
 
         $message = $this->_formatter->format($event);
 
-        $label = isset($event['firebugLabel'])?$event['firebugLabel']:null;
+        $label = isset($event['firebugLabel']) ? $event['firebugLabel'] : null;
 
         Zend_Wildfire_Plugin_FirePhp::getInstance()->send($message,
-                                                          $label,
-                                                          $type,
-                                                          array('traceOffset'=>4,
-                                                                'fixZendLogOffsetIfApplicable'=>true));
+            $label,
+            $type,
+            array('traceOffset' => 4,
+                'fixZendLogOffsetIfApplicable' => true));
+    }
+
+    /**
+     * Determine if the log writer is enabled.
+     *
+     * @return boolean Returns TRUE if the log writer is enabled.
+     */
+    public function getEnabled()
+    {
+        return $this->_enabled;
+    }
+
+    /**
+     * Enable or disable the log writer.
+     *
+     * @param boolean $enabled Set to TRUE to enable the log writer
+     * @return boolean The previous value.
+     */
+    public function setEnabled($enabled)
+    {
+        $previous = $this->_enabled;
+        $this->_enabled = $enabled;
+        return $previous;
     }
 }

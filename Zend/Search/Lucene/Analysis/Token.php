@@ -79,29 +79,18 @@ class Zend_Search_Lucene_Analysis_Token
     /**
      * Object constructor
      *
-     * @param string  $text
+     * @param string $text
      * @param integer $start
      * @param integer $end
-     * @param string  $type
+     * @param string $type
      */
     public function __construct($text, $start, $end)
     {
-        $this->_termText    = $text;
+        $this->_termText = $text;
         $this->_startOffset = $start;
-        $this->_endOffset   = $end;
+        $this->_endOffset = $end;
 
         $this->_positionIncrement = 1;
-    }
-
-
-    /**
-     * positionIncrement setter
-     *
-     * @param integer $positionIncrement
-     */
-    public function setPositionIncrement($positionIncrement)
-    {
-        $this->_positionIncrement = $positionIncrement;
     }
 
     /**
@@ -112,6 +101,16 @@ class Zend_Search_Lucene_Analysis_Token
     public function getPositionIncrement()
     {
         return $this->_positionIncrement;
+    }
+
+    /**
+     * positionIncrement setter
+     *
+     * @param integer $positionIncrement
+     */
+    public function setPositionIncrement($positionIncrement)
+    {
+        $this->_positionIncrement = $positionIncrement;
     }
 
     /**

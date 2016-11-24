@@ -69,7 +69,12 @@ class Zend_Tool_Project_Context_Zf_ModelFile extends Zend_Tool_Project_Context_Z
     {
         return array(
             'modelName' => $this->getModelName()
-            );
+        );
+    }
+
+    public function getModelName()
+    {
+        return $this->_modelName;
     }
 
     /**
@@ -82,11 +87,6 @@ class Zend_Tool_Project_Context_Zf_ModelFile extends Zend_Tool_Project_Context_Z
         return 'ModelFile';
     }
 
-    public function getModelName()
-    {
-        return $this->_modelName;
-    }
-
     public function getContents()
     {
 
@@ -97,9 +97,9 @@ class Zend_Tool_Project_Context_Zf_ModelFile extends Zend_Tool_Project_Context_Z
             'classes' => array(
                 new Zend_CodeGenerator_Php_Class(array(
                     'name' => $className,
-                    ))
-                )
-            ));
+                ))
+            )
+        ));
         return $codeGenFile->generate();
     }
 

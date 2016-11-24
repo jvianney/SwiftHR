@@ -36,10 +36,23 @@ require_once 'Zend/Ldap/Node/Abstract.php';
  */
 class Zend_Ldap_Node_RootDse extends Zend_Ldap_Node_Abstract
 {
-    const SERVER_TYPE_GENERIC         = 1;
-    const SERVER_TYPE_OPENLDAP        = 2;
+    const SERVER_TYPE_GENERIC = 1;
+    const SERVER_TYPE_OPENLDAP = 2;
     const SERVER_TYPE_ACTIVEDIRECTORY = 3;
-    const SERVER_TYPE_EDIRECTORY      = 4;
+    const SERVER_TYPE_EDIRECTORY = 4;
+
+    /**
+     * Constructor.
+     *
+     * Constructor is protected to enforce the use of factory methods.
+     *
+     * @param  Zend_Ldap_Dn $dn
+     * @param  array $data
+     */
+    protected function __construct(Zend_Ldap_Dn $dn, array $data)
+    {
+        parent::__construct($dn, $data, true);
+    }
 
     /**
      * Factory method to create the RootDSE.
@@ -65,7 +78,8 @@ class Zend_Ldap_Node_RootDse extends Zend_Ldap_Node_Abstract
             require_once 'Zend/Ldap/Node/RootDse/eDirectory.php';
             return new Zend_Ldap_Node_RootDse_eDirectory($dn, $data);
         } else if (isset($data['structuralobjectclass']) &&
-                $data['structuralobjectclass'][0] === 'OpenLDAProotDSE') {
+            $data['structuralobjectclass'][0] === 'OpenLDAProotDSE'
+        ) {
             /**
              * @see Zend_Ldap_Node_RootDse_OpenLdap
              */
@@ -77,19 +91,6 @@ class Zend_Ldap_Node_RootDse extends Zend_Ldap_Node_Abstract
     }
 
     /**
-     * Constructor.
-     *
-     * Constructor is protected to enforce the use of factory methods.
-     *
-     * @param  Zend_Ldap_Dn $dn
-     * @param  array        $data
-     */
-    protected function __construct(Zend_Ldap_Dn $dn, array $data)
-    {
-        parent::__construct($dn, $data, true);
-    }
-
-    /**
      * Gets the namingContexts.
      *
      * @return array
@@ -97,16 +98,6 @@ class Zend_Ldap_Node_RootDse extends Zend_Ldap_Node_Abstract
     public function getNamingContexts()
     {
         return $this->getAttribute('namingContexts', null);
-    }
-
-    /**
-     * Gets the subschemaSubentry.
-     *
-     * @return string|null
-     */
-    public function getSubschemaSubentry()
-    {
-        return $this->getAttribute('subschemaSubentry', 0);
     }
 
     /**
@@ -154,5 +145,15 @@ class Zend_Ldap_Node_RootDse extends Zend_Ldap_Node_Abstract
          */
         require_once 'Zend/Ldap/Dn.php';
         return Zend_Ldap_Dn::fromString($schemaDn);
+    }
+
+    /**
+     * Gets the subschemaSubentry.
+     *
+     * @return string|null
+     */
+    public function getSubschemaSubentry()
+    {
+        return $this->getAttribute('subschemaSubentry', 0);
     }
 }

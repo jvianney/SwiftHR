@@ -32,77 +32,6 @@ class Zend_Tool_Project_Provider_Controller
 {
 
     /**
-     * createResource will create the controllerFile resource at the appropriate location in the
-     * profile.  NOTE: it is your job to execute the create() method on the resource, as well as
-     * store the profile when done.
-     *
-     * @param Zend_Tool_Project_Profile $profile
-     * @param string $controllerName
-     * @param string $moduleName
-     * @return Zend_Tool_Project_Profile_Resource
-     */
-    public static function createResource(Zend_Tool_Project_Profile $profile, $controllerName, $moduleName = null)
-    {
-        if (!is_string($controllerName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Controller::createResource() expects \"controllerName\" is the name of a controller resource to create.');
-        }
-
-        if (!($controllersDirectory = self::_getControllersDirectoryResource($profile, $moduleName))) {
-            if ($moduleName) {
-                $exceptionMessage = 'A controller directory for module "' . $moduleName . '" was not found.';
-            } else {
-                $exceptionMessage = 'A controller directory was not found.';
-            }
-            throw new Zend_Tool_Project_Provider_Exception($exceptionMessage);
-        }
-
-        $newController = $controllersDirectory->createResource(
-            'controllerFile',
-            array('controllerName' => $controllerName, 'moduleName' => $moduleName)
-            );
-
-        return $newController;
-    }
-
-    /**
-     * hasResource()
-     *
-     * @param Zend_Tool_Project_Profile $profile
-     * @param string $controllerName
-     * @param string $moduleName
-     * @return boolean
-     */
-    public static function hasResource(Zend_Tool_Project_Profile $profile, $controllerName, $moduleName = null)
-    {
-        if (!is_string($controllerName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Controller::createResource() expects \"controllerName\" is the name of a controller resource to create.');
-        }
-
-        $controllersDirectory = self::_getControllersDirectoryResource($profile, $moduleName);
-        return ($controllersDirectory &&($controllersDirectory->search(array('controllerFile' => array('controllerName' => $controllerName)))) instanceof Zend_Tool_Project_Profile_Resource);
-    }
-
-    /**
-     * _getControllersDirectoryResource()
-     *
-     * @param Zend_Tool_Project_Profile $profile
-     * @param string $moduleName
-     * @return Zend_Tool_Project_Profile_Resource
-     */
-    protected static function _getControllersDirectoryResource(Zend_Tool_Project_Profile $profile, $moduleName = null)
-    {
-        $profileSearchParams = array();
-
-        if ($moduleName != null && is_string($moduleName)) {
-            $profileSearchParams = array('modulesDirectory', 'moduleDirectory' => array('moduleName' => $moduleName));
-        }
-
-        $profileSearchParams[] = 'controllersDirectory';
-
-        return $profile->search($profileSearchParams);
-    }
-
-    /**
      * Create a new controller
      *
      * @param string $name The name of the controller to create, in camelCase.
@@ -115,7 +44,7 @@ class Zend_Tool_Project_Provider_Controller
         // get request & response
         $request = $this->_registry->getRequest();
         $response = $this->_registry->getResponse();
-        
+
         // determine if testing is enabled in the project
         require_once 'Zend/Tool/Project/Provider/Test.php';
         $testingEnabled = Zend_Tool_Project_Provider_Test::isTestingEnabled($this->_loadedProfile);
@@ -125,12 +54,12 @@ class Zend_Tool_Project_Provider_Controller
             $response->appendContent(
                 'Note: PHPUnit is required in order to generate controller test stubs.',
                 array('color' => array('yellow'))
-                );
+            );
         }
-        
+
         $originalName = $name;
         $name = ucfirst($name);
-        
+
         if (self::hasResource($this->_loadedProfile, $name, $module)) {
             throw new Zend_Tool_Project_Provider_Exception('This project already has a controller named ' . $name);
         }
@@ -160,17 +89,17 @@ class Zend_Tool_Project_Provider_Controller
             $tense = (($request->isPretend()) ? 'would be' : 'is');
             $response->appendContent(
                 'Note: The canonical controller name that ' . $tense
-                    . ' used with other providers is "' . $name . '";'
-                    . ' not "' . $originalName . '" as supplied',
+                . ' used with other providers is "' . $name . '";'
+                . ' not "' . $originalName . '" as supplied',
                 array('color' => array('yellow'))
-                );
+            );
             unset($tense);
         }
 
         // do the creation
         if ($request->isPretend()) {
 
-            $response->appendContent('Would create a controller at '  . $controllerResource->getContext()->getPath());
+            $response->appendContent('Would create a controller at ' . $controllerResource->getContext()->getPath());
 
             if (isset($indexActionResource)) {
                 $response->appendContent('Would create an index action method in controller ' . $name);
@@ -204,6 +133,76 @@ class Zend_Tool_Project_Provider_Controller
 
     }
 
+    /**
+     * hasResource()
+     *
+     * @param Zend_Tool_Project_Profile $profile
+     * @param string $controllerName
+     * @param string $moduleName
+     * @return boolean
+     */
+    public static function hasResource(Zend_Tool_Project_Profile $profile, $controllerName, $moduleName = null)
+    {
+        if (!is_string($controllerName)) {
+            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Controller::createResource() expects \"controllerName\" is the name of a controller resource to create.');
+        }
+
+        $controllersDirectory = self::_getControllersDirectoryResource($profile, $moduleName);
+        return ($controllersDirectory && ($controllersDirectory->search(array('controllerFile' => array('controllerName' => $controllerName)))) instanceof Zend_Tool_Project_Profile_Resource);
+    }
+
+    /**
+     * _getControllersDirectoryResource()
+     *
+     * @param Zend_Tool_Project_Profile $profile
+     * @param string $moduleName
+     * @return Zend_Tool_Project_Profile_Resource
+     */
+    protected static function _getControllersDirectoryResource(Zend_Tool_Project_Profile $profile, $moduleName = null)
+    {
+        $profileSearchParams = array();
+
+        if ($moduleName != null && is_string($moduleName)) {
+            $profileSearchParams = array('modulesDirectory', 'moduleDirectory' => array('moduleName' => $moduleName));
+        }
+
+        $profileSearchParams[] = 'controllersDirectory';
+
+        return $profile->search($profileSearchParams);
+    }
+
+    /**
+     * createResource will create the controllerFile resource at the appropriate location in the
+     * profile.  NOTE: it is your job to execute the create() method on the resource, as well as
+     * store the profile when done.
+     *
+     * @param Zend_Tool_Project_Profile $profile
+     * @param string $controllerName
+     * @param string $moduleName
+     * @return Zend_Tool_Project_Profile_Resource
+     */
+    public static function createResource(Zend_Tool_Project_Profile $profile, $controllerName, $moduleName = null)
+    {
+        if (!is_string($controllerName)) {
+            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Controller::createResource() expects \"controllerName\" is the name of a controller resource to create.');
+        }
+
+        if (!($controllersDirectory = self::_getControllersDirectoryResource($profile, $moduleName))) {
+            if ($moduleName) {
+                $exceptionMessage = 'A controller directory for module "' . $moduleName . '" was not found.';
+            } else {
+                $exceptionMessage = 'A controller directory was not found.';
+            }
+            throw new Zend_Tool_Project_Provider_Exception($exceptionMessage);
+        }
+
+        $newController = $controllersDirectory->createResource(
+            'controllerFile',
+            array('controllerName' => $controllerName, 'moduleName' => $moduleName)
+        );
+
+        return $newController;
+    }
 
 
 }

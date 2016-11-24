@@ -35,6 +35,38 @@ class Zend_Tool_Project_Provider_View extends Zend_Tool_Project_Provider_Abstrac
 {
 
     /**
+     * create()
+     *
+     * @param string $controllerName
+     * @param string $actionNameOrSimpleName
+     */
+    public function create($controllerName, $actionNameOrSimpleName, $module = null)
+    {
+
+        if ($controllerName == '' || $actionNameOrSimpleName == '') {
+            require_once 'Zend/Tool/Project/Provider/Exception.php';
+            throw new Zend_Tool_Project_Provider_Exception('ControllerName and/or ActionName are empty.');
+        }
+
+        $profile = $this->_loadProfile();
+
+        $view = self::createResource($profile, $actionNameOrSimpleName, $controllerName, $module);
+
+        if ($this->_registry->getRequest()->isPretend()) {
+            $this->_registry->getResponse(
+                'Would create a view script in location ' . $view->getContext()->getPath()
+            );
+        } else {
+            $this->_registry->getResponse(
+                'Creating a view script in location ' . $view->getContext()->getPath()
+            );
+            $view->create();
+            $this->_storeProfile();
+        }
+
+    }
+
+    /**
      * createResource()
      *
      * @param Zend_Tool_Project_Profile $profile
@@ -82,37 +114,5 @@ class Zend_Tool_Project_Provider_View extends Zend_Tool_Project_Provider_Abstrac
         $newViewScriptFile = $viewControllerScriptsDirectory->createResource('ViewScriptFile', array('forActionName' => $actionName));
 
         return $newViewScriptFile;
-    }
-
-    /**
-     * create()
-     *
-     * @param string $controllerName
-     * @param string $actionNameOrSimpleName
-     */
-    public function create($controllerName, $actionNameOrSimpleName, $module = null)
-    {
-
-        if ($controllerName == '' || $actionNameOrSimpleName == '') {
-            require_once 'Zend/Tool/Project/Provider/Exception.php';
-            throw new Zend_Tool_Project_Provider_Exception('ControllerName and/or ActionName are empty.');
-        }
-
-        $profile = $this->_loadProfile();
-
-        $view = self::createResource($profile, $actionNameOrSimpleName, $controllerName, $module);
-
-        if ($this->_registry->getRequest()->isPretend()) {
-            $this->_registry->getResponse(
-                'Would create a view script in location ' . $view->getContext()->getPath()
-                );
-        } else {
-            $this->_registry->getResponse(
-                'Creating a view script in location ' . $view->getContext()->getPath()
-                );
-            $view->create();
-            $this->_storeProfile();
-        }
-
     }
 }

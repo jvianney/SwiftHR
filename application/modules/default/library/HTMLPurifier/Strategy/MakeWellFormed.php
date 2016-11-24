@@ -44,7 +44,8 @@ class HTMLPurifier_Strategy_MakeWellFormed extends HTMLPurifier_Strategy
      */
     protected $context;
 
-    public function execute($tokens, $config, $context) {
+    public function execute($tokens, $config, $context)
+    {
 
         $definition = $config->getHTMLDefinition();
 
@@ -60,22 +61,22 @@ class HTMLPurifier_Strategy_MakeWellFormed extends HTMLPurifier_Strategy
         $e = $context->get('ErrorCollector', true);
         $t = false; // token index
         $i = false; // injector index
-        $token      = false; // the current token
-        $reprocess  = false; // whether or not to reprocess the same token
+        $token = false; // the current token
+        $reprocess = false; // whether or not to reprocess the same token
         $stack = array();
 
         // member variables
-        $this->stack   =& $stack;
-        $this->t       =& $t;
-        $this->tokens  =& $tokens;
-        $this->config  = $config;
+        $this->stack =& $stack;
+        $this->t =& $t;
+        $this->tokens =& $tokens;
+        $this->config = $config;
         $this->context = $context;
 
         // context variables
         $context->register('CurrentNesting', $stack);
-        $context->register('InputIndex',     $t);
-        $context->register('InputTokens',    $tokens);
-        $context->register('CurrentToken',   $token);
+        $context->register('InputIndex', $t);
+        $context->register('InputTokens', $tokens);
+        $context->register('CurrentToken', $token);
 
         // -- begin INJECTOR --
 
@@ -476,12 +477,13 @@ class HTMLPurifier_Strategy_MakeWellFormed extends HTMLPurifier_Strategy
      * @param $injector Injector that performed the substitution; default is if
      *        this is not an injector related operation.
      */
-    protected function processToken($token, $injector = -1) {
+    protected function processToken($token, $injector = -1)
+    {
 
         // normalize forms of token
         if (is_object($token)) $token = array(1, $token);
-        if (is_int($token))    $token = array($token);
-        if ($token === false)  $token = array(1);
+        if (is_int($token)) $token = array($token);
+        if ($token === false) $token = array(1);
         if (!is_array($token)) throw new HTMLPurifier_Exception('Invalid token type from injector');
         if (!is_int($token[0])) array_unshift($token, 1);
         if ($token[0] === 0) throw new HTMLPurifier_Exception('Deleting zero tokens is not valid');
@@ -504,10 +506,20 @@ class HTMLPurifier_Strategy_MakeWellFormed extends HTMLPurifier_Strategy
     }
 
     /**
+     * Swap current token with new token. Cursor points to new token (no
+     * change).  You must reprocess after this.
+     */
+    private function swap($token)
+    {
+        $this->tokens[$this->t] = $token;
+    }
+
+    /**
      * Inserts a token before the current token. Cursor now points to
      * this token.  You must reprocess after this.
      */
-    private function insertBefore($token) {
+    private function insertBefore($token)
+    {
         array_splice($this->tokens, $this->t, 0, array($token));
     }
 
@@ -515,16 +527,9 @@ class HTMLPurifier_Strategy_MakeWellFormed extends HTMLPurifier_Strategy
      * Removes current token. Cursor now points to new token occupying previously
      * occupied space.  You must reprocess after this.
      */
-    private function remove() {
+    private function remove()
+    {
         array_splice($this->tokens, $this->t, 1);
-    }
-
-    /**
-     * Swap current token with new token. Cursor points to new token (no
-     * change).  You must reprocess after this.
-     */
-    private function swap($token) {
-        $this->tokens[$this->t] = $token;
     }
 
 }

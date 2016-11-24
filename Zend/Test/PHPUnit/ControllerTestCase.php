@@ -87,22 +87,6 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
     protected $_xpathNamespaces = array();
 
     /**
-     * Overloading: prevent overloading to special properties
-     *
-     * @param  string $name
-     * @param  mixed $value
-     * @return void
-     */
-    public function __set($name, $value)
-    {
-        if (in_array($name, array('request', 'response', 'frontController'))) {
-            require_once 'Zend/Exception.php';
-            throw new Zend_Exception(sprintf('Setting %s object manually is not allowed', $name));
-        }
-        $this->$name = $value;
-    }
-
-    /**
      * Overloading for common properties
      *
      * Provides overloading for request, response, and frontController objects.
@@ -125,47 +109,60 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
     }
 
     /**
-     * Set up MVC app
+     * Overloading: prevent overloading to special properties
      *
-     * Calls {@link bootstrap()} by default
-     *
+     * @param  string $name
+     * @param  mixed $value
      * @return void
      */
-    protected function setUp()
+    public function __set($name, $value)
     {
-        $this->bootstrap();
+        if (in_array($name, array('request', 'response', 'frontController'))) {
+            require_once 'Zend/Exception.php';
+            throw new Zend_Exception(sprintf('Setting %s object manually is not allowed', $name));
+        }
+        $this->$name = $value;
     }
 
     /**
-     * Bootstrap the front controller
+     * Retrieve test case request object
      *
-     * Resets the front controller, and then bootstraps it.
-     *
-     * If {@link $bootstrap} is a callback, executes it; if it is a file, it include's
-     * it. When done, sets the test case request and response objects into the
-     * front controller.
-     *
-     * @return void
+     * @return Zend_Controller_Request_HttpTestCase
      */
-    final public function bootstrap()
+    public function getRequest()
     {
-        $this->reset();
-        if (null !== $this->bootstrap) {
-            if ($this->bootstrap instanceof Zend_Application) {
-                $this->bootstrap->bootstrap();
-                $this->_frontController = $this->bootstrap->getBootstrap()->getResource('frontcontroller');
-            } elseif (is_callable($this->bootstrap)) {
-                call_user_func($this->bootstrap);
-            } elseif (is_string($this->bootstrap)) {
-                require_once 'Zend/Loader.php';
-                if (Zend_Loader::isReadable($this->bootstrap)) {
-                    include $this->bootstrap;
-                }
-            }
+        if (null === $this->_request) {
+            require_once 'Zend/Controller/Request/HttpTestCase.php';
+            $this->_request = new Zend_Controller_Request_HttpTestCase;
         }
-        $this->frontController
-             ->setRequest($this->getRequest())
-             ->setResponse($this->getResponse());
+        return $this->_request;
+    }
+
+    /**
+     * Retrieve test case response object
+     *
+     * @return Zend_Controller_Response_HttpTestCase
+     */
+    public function getResponse()
+    {
+        if (null === $this->_response) {
+            require_once 'Zend/Controller/Response/HttpTestCase.php';
+            $this->_response = new Zend_Controller_Response_HttpTestCase;
+        }
+        return $this->_response;
+    }
+
+    /**
+     * Retrieve front controller instance
+     *
+     * @return Zend_Controller_Front
+     */
+    public function getFrontController()
+    {
+        if (null === $this->_frontController) {
+            $this->_frontController = Zend_Controller_Front::getInstance();
+        }
+        return $this->_frontController;
     }
 
     /**
@@ -189,7 +186,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $json = Zend_Controller_Action_HelperBroker::getStaticHelper('json');
         $json->suppressExit = true;
 
-        $request    = $this->getRequest();
+        $request = $this->getRequest();
         if (null !== $url) {
             $request->setRequestUri($url);
         }
@@ -197,90 +194,16 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
 
         $controller = $this->getFrontController();
         $this->frontController
-             ->setRequest($request)
-             ->setResponse($this->getResponse())
-             ->throwExceptions(false)
-             ->returnResponse(false);
+            ->setRequest($request)
+            ->setResponse($this->getResponse())
+            ->throwExceptions(false)
+            ->returnResponse(false);
 
         if ($this->bootstrap instanceof Zend_Application) {
             $this->bootstrap->run();
         } else {
             $this->frontController->dispatch();
         }
-    }
-
-    /**
-     * Reset MVC state
-     *
-     * Creates new request/response objects, resets the front controller
-     * instance, and resets the action helper broker.
-     *
-     * @todo   Need to update Zend_Layout to add a resetInstance() method
-     * @return void
-     */
-    public function reset()
-    {
-        $_SESSION = array();
-        $_GET     = array();
-        $_POST    = array();
-        $_COOKIE  = array();
-        $this->resetRequest();
-        $this->resetResponse();
-        Zend_Layout::resetMvcInstance();
-        Zend_Controller_Action_HelperBroker::resetHelpers();
-        $this->frontController->resetInstance();
-        Zend_Session::$_unitTestEnabled = true;
-    }
-
-    /**
-     * Rest all view placeholders
-     *
-     * @return void
-     */
-    protected function _resetPlaceholders()
-    {
-        $registry = Zend_Registry::getInstance();
-        $remove   = array();
-        foreach ($registry as $key => $value) {
-            if (strstr($key, '_View_')) {
-                $remove[] = $key;
-            }
-        }
-
-        foreach ($remove as $key) {
-            unset($registry[$key]);
-        }
-    }
-
-    /**
-     * Reset the request object
-     *
-     * Useful for test cases that need to test multiple trips to the server.
-     *
-     * @return Zend_Test_PHPUnit_ControllerTestCase
-     */
-    public function resetRequest()
-    {
-        if ($this->_request instanceof Zend_Controller_Request_HttpTestCase) {
-            $this->_request->clearQuery()
-                           ->clearPost();
-        }
-        $this->_request = null;
-        return $this;
-    }
-
-    /**
-     * Reset the response object
-     *
-     * Useful for test cases that need to test multiple trips to the server.
-     *
-     * @return Zend_Test_PHPUnit_ControllerTestCase
-     */
-    public function resetResponse()
-    {
-        $this->_response = null;
-        $this->_resetPlaceholders();
-        return $this;
     }
 
     /**
@@ -295,9 +218,33 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__)) {
             $constraint->fail($path, $message);
+        }
+    }
+
+    /**
+     * Increment assertion count
+     *
+     * @return void
+     */
+    protected function _incrementAssertionCount()
+    {
+        $stack = debug_backtrace();
+        foreach (debug_backtrace() as $step) {
+            if (isset($step['object'])
+                && $step['object'] instanceof PHPUnit_Framework_TestCase
+            ) {
+                if (version_compare(PHPUnit_Runner_Version::id(), '3.3.0', 'lt')) {
+                    break;
+                } elseif (version_compare(PHPUnit_Runner_Version::id(), '3.3.3', 'lt')) {
+                    $step['object']->incrementAssertionCounter();
+                } else {
+                    $step['object']->addToAssertionCount(1);
+                }
+                break;
+            }
         }
     }
 
@@ -313,7 +260,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__)) {
             $constraint->fail($path, $message);
         }
@@ -332,7 +279,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $match)) {
             $constraint->fail($path, $message);
         }
@@ -351,7 +298,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $match)) {
             $constraint->fail($path, $message);
         }
@@ -370,7 +317,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $pattern)) {
             $constraint->fail($path, $message);
         }
@@ -389,7 +336,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $pattern)) {
             $constraint->fail($path, $message);
         }
@@ -408,7 +355,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $count)) {
             $constraint->fail($path, $message);
         }
@@ -427,7 +374,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $count)) {
             $constraint->fail($path, $message);
         }
@@ -446,7 +393,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $count)) {
             $constraint->fail($path, $message);
         }
@@ -465,7 +412,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $count)) {
             $constraint->fail($path, $message);
         }
@@ -495,7 +442,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__)) {
             $constraint->fail($path, $message);
         }
@@ -514,7 +461,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__)) {
             $constraint->fail($path, $message);
         }
@@ -534,7 +481,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $match)) {
             $constraint->fail($path, $message);
         }
@@ -554,7 +501,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $match)) {
             $constraint->fail($path, $message);
         }
@@ -574,7 +521,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $pattern)) {
             $constraint->fail($path, $message);
         }
@@ -594,7 +541,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $pattern)) {
             $constraint->fail($path, $message);
         }
@@ -614,7 +561,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $count)) {
             $constraint->fail($path, $message);
         }
@@ -634,7 +581,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $count)) {
             $constraint->fail($path, $message);
         }
@@ -654,7 +601,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $count)) {
             $constraint->fail($path, $message);
         }
@@ -674,7 +621,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/DomQuery.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_DomQuery($path);
         $constraint->registerXpathNamespaces($this->_xpathNamespaces);
-        $content    = $this->response->outputBody();
+        $content = $this->response->outputBody();
         if (!$constraint->evaluate($content, __FUNCTION__, $count)) {
             $constraint->fail($path, $message);
         }
@@ -691,7 +638,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/Redirect.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_Redirect();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__)) {
             $constraint->fail($response, $message);
         }
@@ -708,7 +655,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/Redirect.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_Redirect();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__)) {
             $constraint->fail($response, $message);
         }
@@ -726,7 +673,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/Redirect.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_Redirect();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $url)) {
             $constraint->fail($response, $message);
         }
@@ -744,7 +691,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/Redirect.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_Redirect();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $url)) {
             $constraint->fail($response, $message);
         }
@@ -762,7 +709,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/Redirect.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_Redirect();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $pattern)) {
             $constraint->fail($response, $message);
         }
@@ -780,7 +727,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/Redirect.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_Redirect();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $pattern)) {
             $constraint->fail($response, $message);
         }
@@ -798,7 +745,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/ResponseHeader.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_ResponseHeader();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $code)) {
             $constraint->fail($response, $message);
         }
@@ -817,7 +764,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/ResponseHeader.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_ResponseHeader();
         $constraint->setNegate(true);
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $code)) {
             $constraint->fail($response, $message);
         }
@@ -835,7 +782,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/ResponseHeader.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_ResponseHeader();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $header)) {
             $constraint->fail($response, $message);
         }
@@ -854,7 +801,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/ResponseHeader.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_ResponseHeader();
         $constraint->setNegate(true);
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $header)) {
             $constraint->fail($response, $message);
         }
@@ -873,7 +820,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/ResponseHeader.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_ResponseHeader();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $header, $match)) {
             $constraint->fail($response, $message);
         }
@@ -893,7 +840,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/ResponseHeader.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_ResponseHeader();
         $constraint->setNegate(true);
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $header, $match)) {
             $constraint->fail($response, $message);
         }
@@ -912,7 +859,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         $this->_incrementAssertionCount();
         require_once 'Zend/Test/PHPUnit/Constraint/ResponseHeader.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_ResponseHeader();
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $header, $pattern)) {
             $constraint->fail($response, $message);
         }
@@ -932,7 +879,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         require_once 'Zend/Test/PHPUnit/Constraint/ResponseHeader.php';
         $constraint = new Zend_Test_PHPUnit_Constraint_ResponseHeader();
         $constraint->setNegate(true);
-        $response   = $this->response;
+        $response = $this->response;
         if (!$constraint->evaluate($response, __FUNCTION__, $header, $pattern)) {
             $constraint->fail($response, $message);
         }
@@ -1105,47 +1052,6 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
     }
 
     /**
-     * Retrieve front controller instance
-     *
-     * @return Zend_Controller_Front
-     */
-    public function getFrontController()
-    {
-        if (null === $this->_frontController) {
-            $this->_frontController = Zend_Controller_Front::getInstance();
-        }
-        return $this->_frontController;
-    }
-
-    /**
-     * Retrieve test case request object
-     *
-     * @return Zend_Controller_Request_HttpTestCase
-     */
-    public function getRequest()
-    {
-        if (null === $this->_request) {
-            require_once 'Zend/Controller/Request/HttpTestCase.php';
-            $this->_request = new Zend_Controller_Request_HttpTestCase;
-        }
-        return $this->_request;
-    }
-
-    /**
-     * Retrieve test case response object
-     *
-     * @return Zend_Controller_Response_HttpTestCase
-     */
-    public function getResponse()
-    {
-        if (null === $this->_response) {
-            require_once 'Zend/Controller/Response/HttpTestCase.php';
-            $this->_response = new Zend_Controller_Response_HttpTestCase;
-        }
-        return $this->_response;
-    }
-
-    /**
      * Retrieve DOM query object
      *
      * @return Zend_Dom_Query
@@ -1158,10 +1064,10 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         }
         return $this->_query;
     }
-    
+
     /**
      * URL Helper
-     * 
+     *
      * @param array $urlOptions
      * @param string $name
      * @param bool $reset
@@ -1179,7 +1085,7 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
         }
         return $router->assemble($urlOptions, $name, $reset, $encode);
     }
-    
+
     public function urlizeOptions($urlOptions, $actionControllerModuleOnly = true)
     {
         $ccToDash = new Zend_Filter_Word_CamelCaseToDash();
@@ -1192,26 +1098,120 @@ abstract class Zend_Test_PHPUnit_ControllerTestCase extends PHPUnit_Framework_Te
     }
 
     /**
-     * Increment assertion count
+     * Set up MVC app
+     *
+     * Calls {@link bootstrap()} by default
      *
      * @return void
      */
-    protected function _incrementAssertionCount()
+    protected function setUp()
     {
-        $stack = debug_backtrace();
-        foreach (debug_backtrace() as $step) {
-            if (isset($step['object'])
-                && $step['object'] instanceof PHPUnit_Framework_TestCase
-            ) {
-                if (version_compare(PHPUnit_Runner_Version::id(), '3.3.0', 'lt')) {
-                    break;
-                } elseif (version_compare(PHPUnit_Runner_Version::id(), '3.3.3', 'lt')) {
-                    $step['object']->incrementAssertionCounter();
-                } else {
-                    $step['object']->addToAssertionCount(1);
+        $this->bootstrap();
+    }
+
+    /**
+     * Bootstrap the front controller
+     *
+     * Resets the front controller, and then bootstraps it.
+     *
+     * If {@link $bootstrap} is a callback, executes it; if it is a file, it include's
+     * it. When done, sets the test case request and response objects into the
+     * front controller.
+     *
+     * @return void
+     */
+    final public function bootstrap()
+    {
+        $this->reset();
+        if (null !== $this->bootstrap) {
+            if ($this->bootstrap instanceof Zend_Application) {
+                $this->bootstrap->bootstrap();
+                $this->_frontController = $this->bootstrap->getBootstrap()->getResource('frontcontroller');
+            } elseif (is_callable($this->bootstrap)) {
+                call_user_func($this->bootstrap);
+            } elseif (is_string($this->bootstrap)) {
+                require_once 'Zend/Loader.php';
+                if (Zend_Loader::isReadable($this->bootstrap)) {
+                    include $this->bootstrap;
                 }
-                break;
             }
+        }
+        $this->frontController
+            ->setRequest($this->getRequest())
+            ->setResponse($this->getResponse());
+    }
+
+    /**
+     * Reset MVC state
+     *
+     * Creates new request/response objects, resets the front controller
+     * instance, and resets the action helper broker.
+     *
+     * @todo   Need to update Zend_Layout to add a resetInstance() method
+     * @return void
+     */
+    public function reset()
+    {
+        $_SESSION = array();
+        $_GET = array();
+        $_POST = array();
+        $_COOKIE = array();
+        $this->resetRequest();
+        $this->resetResponse();
+        Zend_Layout::resetMvcInstance();
+        Zend_Controller_Action_HelperBroker::resetHelpers();
+        $this->frontController->resetInstance();
+        Zend_Session::$_unitTestEnabled = true;
+    }
+
+    /**
+     * Reset the request object
+     *
+     * Useful for test cases that need to test multiple trips to the server.
+     *
+     * @return Zend_Test_PHPUnit_ControllerTestCase
+     */
+    public function resetRequest()
+    {
+        if ($this->_request instanceof Zend_Controller_Request_HttpTestCase) {
+            $this->_request->clearQuery()
+                ->clearPost();
+        }
+        $this->_request = null;
+        return $this;
+    }
+
+    /**
+     * Reset the response object
+     *
+     * Useful for test cases that need to test multiple trips to the server.
+     *
+     * @return Zend_Test_PHPUnit_ControllerTestCase
+     */
+    public function resetResponse()
+    {
+        $this->_response = null;
+        $this->_resetPlaceholders();
+        return $this;
+    }
+
+    /**
+     * Rest all view placeholders
+     *
+     * @return void
+     */
+    protected function _resetPlaceholders()
+    {
+        $registry = Zend_Registry::getInstance();
+        $remove = array();
+        foreach ($registry as $key => $value) {
+            if (strstr($key, '_View_')) {
+                $remove[] = $key;
+            }
+        }
+
+        foreach ($remove as $key) {
+            unset($registry[$key]);
         }
     }
 }

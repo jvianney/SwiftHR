@@ -72,32 +72,23 @@ class Zend_Application_Bootstrap_Bootstrap
     }
 
     /**
-     * Run the application
+     * Retrieve module resource loader
      *
-     * Checks to see that we have a default controller directory. If not, an
-     * exception is thrown.
-     *
-     * If so, it registers the bootstrap with the 'bootstrap' parameter of
-     * the front controller, and dispatches the front controller.
-     *
-     * @return mixed
-     * @throws Zend_Application_Bootstrap_Exception
+     * @return Zend_Loader_Autoloader_Resource
      */
-    public function run()
+    public function getResourceLoader()
     {
-        $front   = $this->getResource('FrontController');
-        $default = $front->getDefaultModule();
-        if (null === $front->getControllerDirectory($default)) {
-            throw new Zend_Application_Bootstrap_Exception(
-                'No default controller directory registered with front controller'
-            );
+        if ((null === $this->_resourceLoader)
+            && (false !== ($namespace = $this->getAppNamespace()))
+        ) {
+            $r = new ReflectionClass($this);
+            $path = $r->getFileName();
+            $this->setResourceLoader(new Zend_Application_Module_Autoloader(array(
+                'namespace' => $namespace,
+                'basePath' => dirname($path),
+            )));
         }
-
-        $front->setParam('bootstrap', $this);
-        $response = $front->dispatch();
-        if ($front->returnResponse()) {
-            return $response;
-        }
+        return $this->_resourceLoader;
     }
 
     /**
@@ -110,26 +101,6 @@ class Zend_Application_Bootstrap_Bootstrap
     {
         $this->_resourceLoader = $loader;
         return $this;
-    }
-
-    /**
-     * Retrieve module resource loader
-     *
-     * @return Zend_Loader_Autoloader_Resource
-     */
-    public function getResourceLoader()
-    {
-        if ((null === $this->_resourceLoader)
-            && (false !== ($namespace = $this->getAppNamespace()))
-        ) {
-            $r    = new ReflectionClass($this);
-            $path = $r->getFileName();
-            $this->setResourceLoader(new Zend_Application_Module_Autoloader(array(
-                'namespace' => $namespace,
-                'basePath'  => dirname($path),
-            )));
-        }
-        return $this->_resourceLoader;
     }
 
     /**
@@ -150,7 +121,36 @@ class Zend_Application_Bootstrap_Bootstrap
      */
     public function setAppNamespace($value)
     {
-        $this->_appNamespace = (string) $value;
+        $this->_appNamespace = (string)$value;
         return $this;
+    }
+
+    /**
+     * Run the application
+     *
+     * Checks to see that we have a default controller directory. If not, an
+     * exception is thrown.
+     *
+     * If so, it registers the bootstrap with the 'bootstrap' parameter of
+     * the front controller, and dispatches the front controller.
+     *
+     * @return mixed
+     * @throws Zend_Application_Bootstrap_Exception
+     */
+    public function run()
+    {
+        $front = $this->getResource('FrontController');
+        $default = $front->getDefaultModule();
+        if (null === $front->getControllerDirectory($default)) {
+            throw new Zend_Application_Bootstrap_Exception(
+                'No default controller directory registered with front controller'
+            );
+        }
+
+        $front->setParam('bootstrap', $this);
+        $response = $front->dispatch();
+        if ($front->returnResponse()) {
+            return $response;
+        }
     }
 }

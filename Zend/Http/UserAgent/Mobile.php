@@ -269,6 +269,21 @@ class Zend_Http_UserAgent_Mobile extends Zend_Http_UserAgent_AbstractDevice
     );
 
     /**
+     * Constructor
+     *
+     * @return void
+     */
+    public function __construct($userAgent = null, array $server = array(), array $config = array())
+    {
+        // For mobile detection, an adapter must be defined
+        if (empty($config['mobile']['features'])) {
+            $config['mobile']['features']['path'] = self::DEFAULT_FEATURES_ADAPTER_PATH;
+            $config['mobile']['features']['classname'] = self::DEFAULT_FEATURES_ADAPTER_CLASSNAME;
+        }
+        parent::__construct($userAgent, $server, $config);
+    }
+
+    /**
      * Comparison of the UserAgent chain and User Agent signatures
      *
      * @param  string $userAgent User Agent chain
@@ -321,21 +336,6 @@ class Zend_Http_UserAgent_Mobile extends Zend_Http_UserAgent_AbstractDevice
     }
 
     /**
-     * Constructor
-     *
-     * @return void
-     */
-    public function __construct($userAgent = null, array $server = array(), array $config = array())
-    {
-        // For mobile detection, an adapter must be defined
-        if (empty($config['mobile']['features'])) {
-            $config['mobile']['features']['path']      = self::DEFAULT_FEATURES_ADAPTER_PATH;
-            $config['mobile']['features']['classname'] = self::DEFAULT_FEATURES_ADAPTER_CLASSNAME;
-        }
-        parent::__construct($userAgent, $server, $config);
-    }
-
-    /**
      * Gives the current browser type
      *
      * @return string
@@ -343,85 +343,6 @@ class Zend_Http_UserAgent_Mobile extends Zend_Http_UserAgent_AbstractDevice
     public function getType()
     {
         return 'mobile';
-    }
-
-    /**
-     * Look for features
-     *
-     * @return string
-     */
-    protected function _defineFeatures()
-    {
-        $this->setFeature('is_wireless_device', false, 'product_info');
-
-        parent::_defineFeatures();
-
-        if (isset($this->_aFeatures["mobile_browser"])) {
-            $this->setFeature("browser_name", $this->_aFeatures["mobile_browser"]);
-            $this->_browser = $this->_aFeatures["mobile_browser"];
-        }
-        if (isset($this->_aFeatures["mobile_browser_version"])) {
-            $this->setFeature("browser_version", $this->_aFeatures["mobile_browser_version"]);
-            $this->_browserVersion = $this->_aFeatures["mobile_browser_version"];
-        }
-
-        // markup
-        if ($this->getFeature('device_os') == 'iPhone OS'
-            || $this->getFeature('device_os_token') == 'iPhone OS'
-        ) {
-            $this->setFeature('markup', 'iphone');
-        } else {
-            $this->setFeature('markup', $this->getMarkupLanguage($this->getFeature('preferred_markup')));
-        }
-
-        // image format
-        $this->_images = array();
-
-        if ($this->getFeature('png')) {
-            $this->_images[] = 'png';
-        }
-        if ($this->getFeature('jpg')) {
-            $this->_images[] = 'jpg';
-        }
-        if ($this->getFeature('gif')) {
-            $this->_images[] = 'gif';
-        }
-        if ($this->getFeature('wbmp')) {
-            $this->_images[] = 'wbmp';
-        }
-
-        return $this->_aFeatures;
-    }
-
-    /**
-     * Determine markup language expected
-     *
-     * @access public
-     * @return __TYPE__
-     */
-    public function getMarkupLanguage($preferredMarkup = null)
-    {
-        $return = '';
-        switch ($preferredMarkup) {
-            case 'wml_1_1':
-            case 'wml_1_2':
-            case 'wml_1_3':
-                $return = 'wml'; //text/vnd.wap.wml encoding="ISO-8859-15"
-            case 'html_wi_imode_compact_generic':
-            case 'html_wi_imode_html_1':
-            case 'html_wi_imode_html_2':
-            case 'html_wi_imode_html_3':
-            case 'html_wi_imode_html_4':
-            case 'html_wi_imode_html_5':
-                $return = 'chtml'; //text/html
-            case 'html_wi_oma_xhtmlmp_1_0': //application/vnd.wap.xhtml+xml
-            case 'html_wi_w3_xhtmlbasic': //application/xhtml+xml DTD XHTML Basic 1.0
-                $return = 'xhtml';
-            case 'html_web_3_2': //text/html DTD Html 3.2 Final
-            case 'html_web_4_0': //text/html DTD Html 4.01 Transitional
-                $return = '';
-        }
-        return $return;
     }
 
     /**
@@ -532,5 +453,84 @@ class Zend_Http_UserAgent_Mobile extends Zend_Http_UserAgent_AbstractDevice
     public function httpsSupport()
     {
         return ($this->getFeature('https_support') == 'supported');
+    }
+
+    /**
+     * Look for features
+     *
+     * @return string
+     */
+    protected function _defineFeatures()
+    {
+        $this->setFeature('is_wireless_device', false, 'product_info');
+
+        parent::_defineFeatures();
+
+        if (isset($this->_aFeatures["mobile_browser"])) {
+            $this->setFeature("browser_name", $this->_aFeatures["mobile_browser"]);
+            $this->_browser = $this->_aFeatures["mobile_browser"];
+        }
+        if (isset($this->_aFeatures["mobile_browser_version"])) {
+            $this->setFeature("browser_version", $this->_aFeatures["mobile_browser_version"]);
+            $this->_browserVersion = $this->_aFeatures["mobile_browser_version"];
+        }
+
+        // markup
+        if ($this->getFeature('device_os') == 'iPhone OS'
+            || $this->getFeature('device_os_token') == 'iPhone OS'
+        ) {
+            $this->setFeature('markup', 'iphone');
+        } else {
+            $this->setFeature('markup', $this->getMarkupLanguage($this->getFeature('preferred_markup')));
+        }
+
+        // image format
+        $this->_images = array();
+
+        if ($this->getFeature('png')) {
+            $this->_images[] = 'png';
+        }
+        if ($this->getFeature('jpg')) {
+            $this->_images[] = 'jpg';
+        }
+        if ($this->getFeature('gif')) {
+            $this->_images[] = 'gif';
+        }
+        if ($this->getFeature('wbmp')) {
+            $this->_images[] = 'wbmp';
+        }
+
+        return $this->_aFeatures;
+    }
+
+    /**
+     * Determine markup language expected
+     *
+     * @access public
+     * @return __TYPE__
+     */
+    public function getMarkupLanguage($preferredMarkup = null)
+    {
+        $return = '';
+        switch ($preferredMarkup) {
+            case 'wml_1_1':
+            case 'wml_1_2':
+            case 'wml_1_3':
+                $return = 'wml'; //text/vnd.wap.wml encoding="ISO-8859-15"
+            case 'html_wi_imode_compact_generic':
+            case 'html_wi_imode_html_1':
+            case 'html_wi_imode_html_2':
+            case 'html_wi_imode_html_3':
+            case 'html_wi_imode_html_4':
+            case 'html_wi_imode_html_5':
+                $return = 'chtml'; //text/html
+            case 'html_wi_oma_xhtmlmp_1_0': //application/vnd.wap.xhtml+xml
+            case 'html_wi_w3_xhtmlbasic': //application/xhtml+xml DTD XHTML Basic 1.0
+                $return = 'xhtml';
+            case 'html_web_3_2': //text/html DTD Html 3.2 Final
+            case 'html_web_4_0': //text/html DTD Html 4.01 Transitional
+                $return = '';
+        }
+        return $return;
     }
 }

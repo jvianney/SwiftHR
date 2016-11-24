@@ -57,19 +57,8 @@ class Zend_Search_Lucene_Index_Term
      */
     public function __construct($text, $field = null)
     {
-        $this->field = ($field === null)?  Zend_Search_Lucene::getDefaultSearchField() : $field;
-        $this->text  = $text;
-    }
-
-
-    /**
-     * Returns term key
-     *
-     * @return string
-     */
-    public function key()
-    {
-        return $this->field . chr(0) . $this->text;
+        $this->field = ($field === null) ? Zend_Search_Lucene::getDefaultSearchField() : $field;
+        $this->text = $text;
     }
 
     /**
@@ -83,13 +72,13 @@ class Zend_Search_Lucene_Index_Term
     {
         $prefixBytes = 0;
         $prefixChars = 0;
-        while ($prefixBytes < strlen($str)  &&  $prefixChars < $length) {
+        while ($prefixBytes < strlen($str) && $prefixChars < $length) {
             $charBytes = 1;
             if ((ord($str[$prefixBytes]) & 0xC0) == 0xC0) {
                 $charBytes++;
-                if (ord($str[$prefixBytes]) & 0x20 ) {
+                if (ord($str[$prefixBytes]) & 0x20) {
                     $charBytes++;
-                    if (ord($str[$prefixBytes]) & 0x10 ) {
+                    if (ord($str[$prefixBytes]) & 0x10) {
                         $charBytes++;
                     }
                 }
@@ -121,9 +110,9 @@ class Zend_Search_Lucene_Index_Term
             $charBytes = 1;
             if ((ord($str[$bytes]) & 0xC0) == 0xC0) {
                 $charBytes++;
-                if (ord($str[$bytes]) & 0x20 ) {
+                if (ord($str[$bytes]) & 0x20) {
                     $charBytes++;
-                    if (ord($str[$bytes]) & 0x10 ) {
+                    if (ord($str[$bytes]) & 0x10) {
                         $charBytes++;
                     }
                 }
@@ -139,6 +128,16 @@ class Zend_Search_Lucene_Index_Term
         }
 
         return $chars;
+    }
+
+    /**
+     * Returns term key
+     *
+     * @return string
+     */
+    public function key()
+    {
+        return $this->field . chr(0) . $this->text;
     }
 }
 

@@ -81,36 +81,15 @@ class Zend_Search_Lucene_Search_Query_Preprocessing_Phrase extends Zend_Search_L
     /**
      * Class constructor.  Create a new preprocessing object for prase query.
      *
-     * @param string $phrase          Phrase to search.
-     * @param string $phraseEncoding  Phrase encoding.
-     * @param string $fieldName       Field name.
+     * @param string $phrase Phrase to search.
+     * @param string $phraseEncoding Phrase encoding.
+     * @param string $fieldName Field name.
      */
     public function __construct($phrase, $phraseEncoding, $fieldName)
     {
-        $this->_phrase         = $phrase;
+        $this->_phrase = $phrase;
         $this->_phraseEncoding = $phraseEncoding;
-        $this->_field          = $fieldName;
-    }
-
-    /**
-     * Set slop
-     *
-     * @param integer $slop
-     */
-    public function setSlop($slop)
-    {
-        $this->_slop = $slop;
-    }
-
-
-    /**
-     * Get slop
-     *
-     * @return integer
-     */
-    public function getSlop()
-    {
-        return $this->_slop;
+        $this->_field = $fieldName;
     }
 
     /**
@@ -144,8 +123,8 @@ class Zend_Search_Lucene_Search_Query_Preprocessing_Phrase extends Zend_Search_L
 
             foreach ($searchFields as $fieldName) {
                 $subquery = new Zend_Search_Lucene_Search_Query_Preprocessing_Phrase($this->_phrase,
-                                                                                     $this->_phraseEncoding,
-                                                                                     $fieldName);
+                    $this->_phraseEncoding,
+                    $fieldName);
                 $subquery->setSlop($this->getSlop());
 
                 $query->addSubquery($subquery->rewrite($index));
@@ -181,7 +160,7 @@ class Zend_Search_Lucene_Search_Query_Preprocessing_Phrase extends Zend_Search_L
 
         if (count($tokens) == 1) {
             require_once 'Zend/Search/Lucene/Index/Term.php';
-            $term  = new Zend_Search_Lucene_Index_Term($tokens[0]->getTermText(), $this->_field);
+            $term = new Zend_Search_Lucene_Index_Term($tokens[0]->getTermText(), $this->_field);
             require_once 'Zend/Search/Lucene/Search/Query/Term.php';
             $query = new Zend_Search_Lucene_Search_Query_Term($term);
             $query->setBoost($this->getBoost());
@@ -206,9 +185,56 @@ class Zend_Search_Lucene_Search_Query_Preprocessing_Phrase extends Zend_Search_L
     }
 
     /**
+     * Get slop
+     *
+     * @return integer
+     */
+    public function getSlop()
+    {
+        return $this->_slop;
+    }
+
+    /**
+     * Set slop
+     *
+     * @param integer $slop
+     */
+    public function setSlop($slop)
+    {
+        $this->_slop = $slop;
+    }
+
+    /**
+     * Print a query
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        // It's used only for query visualisation, so we don't care about characters escaping
+        if ($this->_field !== null) {
+            $query = $this->_field . ':';
+        } else {
+            $query = '';
+        }
+
+        $query .= '"' . $this->_phrase . '"';
+
+        if ($this->_slop != 0) {
+            $query .= '~' . $this->_slop;
+        }
+
+        if ($this->getBoost() != 1) {
+            $query .= '^' . round($this->getBoost(), 4);
+        }
+
+        return $query;
+    }
+
+    /**
      * Query specific matches highlighting
      *
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter  Highlighter object (also contains doc for highlighting)
+     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter Highlighter object (also contains doc for highlighting)
      */
     protected function _highlightMatches(Zend_Search_Lucene_Search_Highlighter_Interface $highlighter)
     {
@@ -239,32 +265,5 @@ class Zend_Search_Lucene_Search_Query_Preprocessing_Phrase extends Zend_Search_L
             $words[] = $token->getTermText();
         }
         $highlighter->highlight($words);
-    }
-
-    /**
-     * Print a query
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        // It's used only for query visualisation, so we don't care about characters escaping
-        if ($this->_field !== null) {
-            $query = $this->_field . ':';
-        } else {
-            $query = '';
-        }
-
-        $query .= '"' . $this->_phrase . '"';
-
-        if ($this->_slop != 0) {
-            $query .= '~' . $this->_slop;
-        }
-
-        if ($this->getBoost() != 1) {
-            $query .= '^' . round($this->getBoost(), 4);
-        }
-
-        return $query;
     }
 }

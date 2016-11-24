@@ -148,16 +148,6 @@ class Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
     }
 
     /**
-     * Get Azure select query
-     *
-     * @return Zend_Service_WindowsAzure_Storage_TableEntityQuery
-     */
-    public function getAzureSelect()
-    {
-        return  $this->_azureSelect;
-    }
-
-    /**
      * Assemble query
      *
      * Simply return the WindowsAzure table entity query object
@@ -167,5 +157,15 @@ class Zend_Cloud_DocumentService_Adapter_WindowsAzure_Query
     public function assemble()
     {
         return $this->getAzureSelect();
+    }
+
+    /**
+     * Get Azure select query
+     *
+     * @return Zend_Service_WindowsAzure_Storage_TableEntityQuery
+     */
+    public function getAzureSelect()
+    {
+        return $this->_azureSelect;
     }
 }

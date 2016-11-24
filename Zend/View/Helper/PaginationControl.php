@@ -28,6 +28,12 @@
 class Zend_View_Helper_PaginationControl
 {
     /**
+     * Default view partial
+     *
+     * @var string|array
+     */
+    protected static $_defaultViewPartial = null;
+    /**
      * View instance
      *
      * @var Zend_View_Instance
@@ -35,22 +41,13 @@ class Zend_View_Helper_PaginationControl
     public $view = null;
 
     /**
-     * Default view partial
+     * Gets the default view partial
      *
-     * @var string|array
+     * @return string|array
      */
-    protected static $_defaultViewPartial = null;
-
-    /**
-     * Sets the view instance.
-     *
-     * @param  Zend_View_Interface $view View instance
-     * @return Zend_View_Helper_PaginationControl
-     */
-    public function setView(Zend_View_Interface $view)
+    public static function getDefaultViewPartial()
     {
-        $this->view = $view;
-        return $this;
+        return self::$_defaultViewPartial;
     }
 
     /**
@@ -64,13 +61,15 @@ class Zend_View_Helper_PaginationControl
     }
 
     /**
-     * Gets the default view partial
+     * Sets the view instance.
      *
-     * @return string|array
+     * @param  Zend_View_Interface $view View instance
+     * @return Zend_View_Helper_PaginationControl
      */
-    public static function getDefaultViewPartial()
+    public function setView(Zend_View_Interface $view)
     {
-        return self::$_defaultViewPartial;
+        $this->view = $view;
+        return $this;
     }
 
     /**
@@ -119,7 +118,7 @@ class Zend_View_Helper_PaginationControl
         $pages = get_object_vars($paginator->getPages($scrollingStyle));
 
         if ($params !== null) {
-            $pages = array_merge($pages, (array) $params);
+            $pages = array_merge($pages, (array)$params);
         }
 
         if (is_array($partial)) {

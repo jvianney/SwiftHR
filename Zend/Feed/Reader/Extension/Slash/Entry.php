@@ -49,6 +49,30 @@ class Zend_Feed_Reader_Extension_Slash_Entry
     }
 
     /**
+     * Get the entry data specified by name
+     * @param string $name
+     * @param string $type
+     *
+     * @return mixed|null
+     */
+    protected function _getData($name, $type = 'string')
+    {
+        if (array_key_exists($name, $this->_data)) {
+            return $this->_data[$name];
+        }
+
+        $data = $this->_xpath->evaluate($type . '(' . $this->getXpathPrefix() . '/slash10:' . $name . ')');
+
+        if (!$data) {
+            $data = null;
+        }
+
+        $this->_data[$name] = $data;
+
+        return $data;
+    }
+
+    /**
      * Get the entry department
      *
      * @return string|null
@@ -72,7 +96,7 @@ class Zend_Feed_Reader_Extension_Slash_Entry
         }
 
         $stringParade = $this->_getData($name);
-        $hitParade    = array();
+        $hitParade = array();
 
         if (!empty($stringParade)) {
             $stringParade = explode(',', $stringParade);
@@ -106,30 +130,6 @@ class Zend_Feed_Reader_Extension_Slash_Entry
         }
 
         return $comments;
-    }
-
-    /**
-     * Get the entry data specified by name
-     * @param string $name
-     * @param string $type
-     *
-     * @return mixed|null
-     */
-    protected function _getData($name, $type = 'string')
-    {
-        if (array_key_exists($name, $this->_data)) {
-            return $this->_data[$name];
-        }
-
-        $data = $this->_xpath->evaluate($type . '(' . $this->getXpathPrefix() . '/slash10:' . $name . ')');
-
-        if (!$data) {
-            $data = null;
-        }
-
-        $this->_data[$name] = $data;
-
-        return $data;
     }
 
     /**

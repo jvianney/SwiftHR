@@ -13,16 +13,17 @@ class HTMLPurifier_HTMLModule_Forms extends HTMLPurifier_HTMLModule
         'Inline' => 'Formctrl',
     );
 
-    public function setup($config) {
+    public function setup($config)
+    {
         $form = $this->addElement('form', 'Form',
-          'Required: Heading | List | Block | fieldset', 'Common', array(
-            'accept' => 'ContentTypes',
-            'accept-charset' => 'Charsets',
-            'action*' => 'URI',
-            'method' => 'Enum#get,post',
-            // really ContentType, but these two are the only ones used today
-            'enctype' => 'Enum#application/x-www-form-urlencoded,multipart/form-data',
-        ));
+            'Required: Heading | List | Block | fieldset', 'Common', array(
+                'accept' => 'ContentTypes',
+                'accept-charset' => 'Charsets',
+                'action*' => 'URI',
+                'method' => 'Enum#get,post',
+                // really ContentType, but these two are the only ones used today
+                'enctype' => 'Enum#application/x-www-form-urlencoded,multipart/form-data',
+            ));
         $form->excludes = array('form' => true);
 
         $input = $this->addElement('input', 'Formctrl', 'Empty', 'Common', array(

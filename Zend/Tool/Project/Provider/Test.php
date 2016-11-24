@@ -41,35 +41,21 @@ class Zend_Tool_Project_Provider_Test extends Zend_Tool_Project_Provider_Abstrac
 
     protected $_specialties = array('Application', 'Library');
 
-    /**
-     * isTestingEnabled()
-     *
-     * @param Zend_Tool_Project_Profile $profile
-     * @return bool
-     */
-    public static function isTestingEnabled(Zend_Tool_Project_Profile $profile)
-    {
-        $profileSearchParams = array('testsDirectory');
-        $testsDirectory = $profile->search($profileSearchParams);
-
-        return $testsDirectory->isEnabled();
-    }
-
     public static function isPHPUnitAvailable()
     {
         if (class_exists('PHPUnit_Runner_Version', false)) {
             return true;
         }
-        
+
         $included = @include 'PHPUnit/Runner/Version.php';
-        
+
         if ($included === false) {
             return false;
         } else {
             return true;
         }
     }
-    
+
     /**
      * createApplicationResource()
      *
@@ -100,11 +86,11 @@ class Zend_Tool_Project_Provider_Test extends Zend_Tool_Project_Provider_Abstrac
             if (($testAppModulesDirectoryResource = $testParentOfControllerDirectoryResource->search('testApplicationModulesDirectory')) === false) {
                 $testAppModulesDirectoryResource = $testParentOfControllerDirectoryResource->createResource('testApplicationModulesDirectory');
             }
-            
+
             if (($testAppModuleDirectoryResource = $testAppModulesDirectoryResource->search(array('testApplicationModuleDirectory' => array('forModuleName' => $moduleName)))) === false) {
                 $testAppModuleDirectoryResource = $testAppModulesDirectoryResource->createResource('testApplicationModuleDirectory', array('forModuleName' => $moduleName));
             }
-            
+
             $testParentOfControllerDirectoryResource = $testAppModuleDirectoryResource;
         }
 
@@ -115,8 +101,59 @@ class Zend_Tool_Project_Provider_Test extends Zend_Tool_Project_Provider_Abstrac
         if (($testAppControllerFileResource = $testAppControllerDirectoryResource->search(array('testApplicationControllerFile' => array('forControllerName' => $controllerName)))) === false) {
             $testAppControllerFileResource = $testAppControllerDirectoryResource->createResource('testApplicationControllerFile', array('forControllerName' => $controllerName));
         }
-        
+
         return $testAppControllerFileResource->createResource('testApplicationActionMethod', array('forActionName' => $actionName));
+    }
+
+    public function enable()
+    {
+
+    }
+
+    public function disable()
+    {
+
+    }
+
+    /**
+     * create()
+     *
+     * @param string $libraryClassName
+     */
+    public function create($libraryClassName)
+    {
+        $profile = $this->_loadProfile();
+
+        if (!self::isTestingEnabled($profile)) {
+            $this->_registry->getResponse()->appendContent('Testing is not enabled for this project.');
+        }
+
+        $testLibraryResource = self::createLibraryResource($profile, $libraryClassName);
+
+        $response = $this->_registry->getResponse();
+
+        if ($this->_registry->getRequest()->isPretend()) {
+            $response->appendContent('Would create a library stub in location ' . $testLibraryResource->getContext()->getPath());
+        } else {
+            $response->appendContent('Creating a library stub in location ' . $testLibraryResource->getContext()->getPath());
+            $testLibraryResource->create();
+            $this->_storeProfile();
+        }
+
+    }
+
+    /**
+     * isTestingEnabled()
+     *
+     * @param Zend_Tool_Project_Profile $profile
+     * @return bool
+     */
+    public static function isTestingEnabled(Zend_Tool_Project_Profile $profile)
+    {
+        $profileSearchParams = array('testsDirectory');
+        $testsDirectory = $profile->search($profileSearchParams);
+
+        return $testsDirectory->isEnabled();
     }
 
     /**
@@ -156,43 +193,6 @@ class Zend_Tool_Project_Provider_Test extends Zend_Tool_Project_Provider_Abstrac
         }
 
         return $libraryFileResource;
-    }
-
-    public function enable()
-    {
-
-    }
-
-    public function disable()
-    {
-
-    }
-
-    /**
-     * create()
-     *
-     * @param string $libraryClassName
-     */
-    public function create($libraryClassName)
-    {
-        $profile = $this->_loadProfile();
-
-        if (!self::isTestingEnabled($profile)) {
-            $this->_registry->getResponse()->appendContent('Testing is not enabled for this project.');
-        }
-
-        $testLibraryResource = self::createLibraryResource($profile, $libraryClassName);
-
-        $response = $this->_registry->getResponse();
-
-        if ($this->_registry->getRequest()->isPretend()) {
-            $response->appendContent('Would create a library stub in location ' . $testLibraryResource->getContext()->getPath());
-        } else {
-            $response->appendContent('Creating a library stub in location ' . $testLibraryResource->getContext()->getPath());
-            $testLibraryResource->create();
-            $this->_storeProfile();
-        }
-
     }
 
 }

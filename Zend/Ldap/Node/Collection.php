@@ -38,6 +38,17 @@ require_once 'Zend/Ldap/Collection.php';
 class Zend_Ldap_Node_Collection extends Zend_Ldap_Collection
 {
     /**
+     * Return the child key (DN).
+     * Implements Iterator and RecursiveIterator
+     *
+     * @return string
+     */
+    public function key()
+    {
+        return $this->_iterator->key();
+    }
+
+    /**
      * Creates the data structure for the given entry data
      *
      * @param  array $data
@@ -52,16 +63,5 @@ class Zend_Ldap_Node_Collection extends Zend_Ldap_Collection
         $node = Zend_Ldap_Node::fromArray($data, true);
         $node->attachLdap($this->_iterator->getLdap());
         return $node;
-    }
-
-    /**
-     * Return the child key (DN).
-     * Implements Iterator and RecursiveIterator
-     *
-     * @return string
-     */
-    public function key()
-    {
-        return $this->_iterator->key();
     }
 }

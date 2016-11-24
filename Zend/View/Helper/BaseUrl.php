@@ -62,18 +62,6 @@ class Zend_View_Helper_BaseUrl extends Zend_View_Helper_Abstract
     }
 
     /**
-     * Set BaseUrl
-     *
-     * @param  string $base
-     * @return Zend_View_Helper_BaseUrl
-     */
-    public function setBaseUrl($base)
-    {
-        $this->_baseUrl = rtrim($base, '/\\');
-        return $this;
-    }
-
-    /**
      * Get BaseUrl
      *
      * @return string
@@ -92,6 +80,18 @@ class Zend_View_Helper_BaseUrl extends Zend_View_Helper_Abstract
         }
 
         return $this->_baseUrl;
+    }
+
+    /**
+     * Set BaseUrl
+     *
+     * @param  string $base
+     * @return Zend_View_Helper_BaseUrl
+     */
+    public function setBaseUrl($base)
+    {
+        $this->_baseUrl = rtrim($base, '/\\');
+        return $this;
     }
 
     /**

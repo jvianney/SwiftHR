@@ -155,10 +155,10 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     /**
      * Add a Certificate Pair to the list of certificates searched by the component
      *
-     * @param  string $private_key_file    The path to the private key file for the pair
-     * @param  string $public_key_file     The path to the certificate / public key for the pair
-     * @param  string $type                (optional) The URI for the type of key pair this is (default RSA with OAEP padding)
-     * @param  string $password            (optional) The password for the private key file if necessary
+     * @param  string $private_key_file The path to the private key file for the pair
+     * @param  string $public_key_file The path to the certificate / public key for the pair
+     * @param  string $type (optional) The URI for the type of key pair this is (default RSA with OAEP padding)
+     * @param  string $password (optional) The password for the private key file if necessary
      * @throws Zend_InfoCard_Exception
      * @return string A key ID representing this key pair in the component
      */
@@ -181,28 +181,6 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     }
 
     /**
-     * Set the XML Token to be processed
-     *
-     * @param  string $strXmlToken The XML token to process
-     * @return Zend_Auth_Adapter_InfoCard Provides a fluent interface
-     */
-    public function setXmlToken($strXmlToken)
-    {
-        $this->_xmlToken = $strXmlToken;
-        return $this;
-    }
-
-    /**
-     * Get the XML Token being processed
-     *
-     * @return string The XML token to be processed
-     */
-    public function getXmlToken()
-    {
-        return $this->_xmlToken;
-    }
-
-    /**
      * Authenticates the XML token
      *
      * @return Zend_Auth_Result The result of the authentication
@@ -211,15 +189,15 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
     {
         try {
             $claims = $this->_infoCard->process($this->getXmlToken());
-        } catch(Exception $e) {
-            return new Zend_Auth_Result(Zend_Auth_Result::FAILURE , null, array('Exception Thrown',
-                                                                                $e->getMessage(),
-                                                                                $e->getTraceAsString(),
-                                                                                serialize($e)));
+        } catch (Exception $e) {
+            return new Zend_Auth_Result(Zend_Auth_Result::FAILURE, null, array('Exception Thrown',
+                $e->getMessage(),
+                $e->getTraceAsString(),
+                serialize($e)));
         }
 
-        if(!$claims->isValid()) {
-            switch($claims->getCode()) {
+        if (!$claims->isValid()) {
+            switch ($claims->getCode()) {
                 case Zend_infoCard_Claims::RESULT_PROCESSING_FAILURE:
                     return new Zend_Auth_Result(
                         Zend_Auth_Result::FAILURE,
@@ -257,5 +235,27 @@ class Zend_Auth_Adapter_InfoCard implements Zend_Auth_Adapter_Interface
             Zend_Auth_Result::SUCCESS,
             $claims
         );
+    }
+
+    /**
+     * Get the XML Token being processed
+     *
+     * @return string The XML token to be processed
+     */
+    public function getXmlToken()
+    {
+        return $this->_xmlToken;
+    }
+
+    /**
+     * Set the XML Token to be processed
+     *
+     * @param  string $strXmlToken The XML token to process
+     * @return Zend_Auth_Adapter_InfoCard Provides a fluent interface
+     */
+    public function setXmlToken($strXmlToken)
+    {
+        $this->_xmlToken = $strXmlToken;
+        return $this;
     }
 }

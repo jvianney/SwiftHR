@@ -60,17 +60,6 @@ class Zend_Feed_Writer_Extension_WellFormedWeb_Renderer_Entry
     }
 
     /**
-     * Append entry namespaces
-     *
-     * @return void
-     */
-    protected function _appendNamespaces()
-    {
-        $this->getRootElement()->setAttribute('xmlns:wfw',
-            'http://wellformedweb.org/CommentAPI/');
-    }
-
-    /**
      * Set entry comment feed links
      *
      * @param  DOMDocument $dom
@@ -92,5 +81,16 @@ class Zend_Feed_Writer_Extension_WellFormedWeb_Renderer_Entry
             }
         }
         $this->_called = true;
+    }
+
+    /**
+     * Append entry namespaces
+     *
+     * @return void
+     */
+    protected function _appendNamespaces()
+    {
+        $this->getRootElement()->setAttribute('xmlns:wfw',
+            'http://wellformedweb.org/CommentAPI/');
     }
 }

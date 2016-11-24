@@ -72,7 +72,7 @@ class Zend_Db_Profiler_Query
      * Class constructor.  A query is about to be started, save the query text ($query) and its
      * type (one of the Zend_Db_Profiler::* constants).
      *
-     * @param  string  $query
+     * @param  string $query
      * @param  integer $queryType
      * @return void
      */
@@ -81,17 +81,6 @@ class Zend_Db_Profiler_Query
         $this->_query = $query;
         $this->_queryType = $queryType;
         // by default, and for backward-compatibility, start the click ticking
-        $this->start();
-    }
-
-    /**
-     * Clone handler for the query object.
-     * @return void
-     */
-    public function __clone()
-    {
-        $this->_boundParams = array();
-        $this->_endedMicrotime = null;
         $this->start();
     }
 
@@ -106,6 +95,17 @@ class Zend_Db_Profiler_Query
     public function start()
     {
         $this->_startedMicrotime = microtime(true);
+    }
+
+    /**
+     * Clone handler for the query object.
+     * @return void
+     */
+    public function __clone()
+    {
+        $this->_boundParams = array();
+        $this->_endedMicrotime = null;
+        $this->start();
     }
 
     /**
@@ -149,16 +149,6 @@ class Zend_Db_Profiler_Query
     }
 
     /**
-     * @param string $param
-     * @param mixed $variable
-     * @return void
-     */
-    public function bindParam($param, $variable)
-    {
-        $this->_boundParams[$param] = $variable;
-    }
-
-    /**
      * @param array $param
      * @return void
      */
@@ -171,6 +161,16 @@ class Zend_Db_Profiler_Query
         foreach ($params as $param => $value) {
             $this->bindParam($param, $value);
         }
+    }
+
+    /**
+     * @param string $param
+     * @param mixed $variable
+     * @return void
+     */
+    public function bindParam($param, $variable)
+    {
+        $this->_boundParams[$param] = $variable;
     }
 
     /**
@@ -203,7 +203,7 @@ class Zend_Db_Profiler_Query
      */
     public function getStartedMicrotime()
     {
-        if(null === $this->_startedMicrotime) {
+        if (null === $this->_startedMicrotime) {
             return false;
         }
 

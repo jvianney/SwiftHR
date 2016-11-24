@@ -98,14 +98,9 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
     }
 
     /**
-     * Get the DOM
-     *
-     * @return DOMDocument
+     * Register the default namespaces for the current feed format
      */
-    public function getDomDocument()
-    {
-        return $this->_domDocument;
-    }
+    abstract protected function _registerNamespaces();
 
     /**
      * Get the Feed's encoding
@@ -119,6 +114,16 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
     }
 
     /**
+     * Get the DOM
+     *
+     * @return DOMDocument
+     */
+    public function getDomDocument()
+    {
+        return $this->_domDocument;
+    }
+
+    /**
      * Get the feed type
      *
      * @return string
@@ -128,7 +133,6 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
         return $this->_data['type'];
     }
 
-
     /**
      * Return the feed as an array
      *
@@ -137,6 +141,16 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
     public function toArray() // untested
     {
         return $this->_data;
+    }
+
+    /**
+     * Get the DOMXPath object
+     *
+     * @return string
+     */
+    public function getXpath()
+    {
+        return $this->_xpath;
     }
 
     /**
@@ -150,16 +164,6 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
         $this->_xpath = $xpath;
         $this->_registerNamespaces();
         return $this;
-    }
-
-    /**
-     * Get the DOMXPath object
-     *
-     * @return string
-     */
-    public function getXpath()
-    {
-        return $this->_xpath;
     }
 
     /**
@@ -181,9 +185,4 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
     {
         $this->_xpathPrefix = $prefix;
     }
-
-    /**
-     * Register the default namespaces for the current feed format
-     */
-    abstract protected function _registerNamespaces();
 }

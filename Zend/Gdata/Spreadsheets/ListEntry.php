@@ -80,20 +80,6 @@ class Zend_Gdata_Spreadsheets_ListEntry extends Zend_Gdata_Entry
         return $element;
     }
 
-    protected function takeChildFromDOM($child)
-    {
-        switch ($child->namespaceURI) {
-        case $this->lookupNamespace('gsx');
-            $custom = new Zend_Gdata_Spreadsheets_Extension_Custom($child->localName);
-            $custom->transferFromDOM($child);
-            $this->addCustom($custom);
-            break;
-        default:
-            parent::takeChildFromDOM($child);
-            break;
-        }
-    }
-
     /**
      * Gets the row elements contained by this list entry.
      * @return array The custom row elements in this list entry
@@ -101,30 +87,6 @@ class Zend_Gdata_Spreadsheets_ListEntry extends Zend_Gdata_Entry
     public function getCustom()
     {
         return $this->_custom;
-    }
-
-    /**
-     * Gets a single row element contained by this list entry using its name.
-     * @param string $name The name of a custom element to return. If null
-     *          or not defined, an array containing all custom elements
-     *          indexed by name will be returned.
-     * @return mixed If a name is specified, the
-     *          Zend_Gdata_Spreadsheets_Extension_Custom element requested,
-     *          is returned or null if not found. Otherwise, an array of all
-     *          Zend_Gdata_Spreadsheets_Extension_Custom elements is returned
-     *          indexed by name.
-     */
-    public function getCustomByName($name = null)
-    {
-        if ($name === null) {
-            return $this->_customByName;
-        } else {
-            if (array_key_exists($name, $this->customByName)) {
-                return $this->_customByName[$name];
-            } else {
-                return null;
-            }
-        }
     }
 
     /**
@@ -154,6 +116,30 @@ class Zend_Gdata_Spreadsheets_ListEntry extends Zend_Gdata_Entry
         $this->_custom[] = $custom;
         $this->_customByName[$custom->getColumnName()] = $custom;
         return $this;
+    }
+
+    /**
+     * Gets a single row element contained by this list entry using its name.
+     * @param string $name The name of a custom element to return. If null
+     *          or not defined, an array containing all custom elements
+     *          indexed by name will be returned.
+     * @return mixed If a name is specified, the
+     *          Zend_Gdata_Spreadsheets_Extension_Custom element requested,
+     *          is returned or null if not found. Otherwise, an array of all
+     *          Zend_Gdata_Spreadsheets_Extension_Custom elements is returned
+     *          indexed by name.
+     */
+    public function getCustomByName($name = null)
+    {
+        if ($name === null) {
+            return $this->_customByName;
+        } else {
+            if (array_key_exists($name, $this->customByName)) {
+                return $this->_customByName[$name];
+            } else {
+                return null;
+            }
+        }
     }
 
     /**
@@ -203,6 +189,20 @@ class Zend_Gdata_Spreadsheets_ListEntry extends Zend_Gdata_Entry
                 'Element does not exist.');
         }
         return $this;
+    }
+
+    protected function takeChildFromDOM($child)
+    {
+        switch ($child->namespaceURI) {
+            case $this->lookupNamespace('gsx');
+                $custom = new Zend_Gdata_Spreadsheets_Extension_Custom($child->localName);
+                $custom->transferFromDOM($child);
+                $this->addCustom($custom);
+                break;
+            default:
+                parent::takeChildFromDOM($child);
+                break;
+        }
     }
 
 }

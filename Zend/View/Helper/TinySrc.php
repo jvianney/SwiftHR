@@ -80,10 +80,10 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
      * @var array
      */
     protected $_defaultOptions = array(
-        'base_url'   => null,
-        'format'     => null,
-        'width'      => false,
-        'height'     => false,
+        'base_url' => null,
+        'format' => null,
+        'width' => false,
+        'height' => false,
         'create_tag' => true,
     );
 
@@ -112,9 +112,9 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
         $url = '/' . $this->_mergeBaseUrl($options) . ltrim($image, '/');
 
         $src = self::TINYSRC_BASE
-             . $this->_mergeFormat($options)
-             . $this->_mergeDimensions($options)
-             . $url;
+            . $this->_mergeFormat($options)
+            . $this->_mergeDimensions($options)
+            . $url;
 
         if (!$options['create_tag']) {
             return $src;
@@ -141,15 +141,27 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
     }
 
     /**
-     * Set base URL for images
+     * Should the helper create an image tag?
      *
-     * @param  string $url
-     * @return Zend_View_Helper_TinySrc
+     * @return bool
      */
-    public function setBaseUrl($url)
+    public function createTag()
     {
-        $this->_baseUrl = rtrim($url, '/') . '/';
-        return $this;
+        return $this->_createTagFlag;
+    }
+
+    /**
+     * Determine whether to use default base URL, or base URL from options
+     *
+     * @param  array $options
+     * @return string
+     */
+    protected function _mergeBaseUrl(array $options)
+    {
+        if (null === $options['base_url']) {
+            return $this->getBaseUrl();
+        }
+        return rtrim($options['base_url'], '/') . '/';
     }
 
     /**
@@ -166,6 +178,67 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
             $this->setBaseUrl($this->view->serverUrl($this->view->baseUrl()));
         }
         return $this->_baseUrl;
+    }
+
+    /**
+     * Set base URL for images
+     *
+     * @param  string $url
+     * @return Zend_View_Helper_TinySrc
+     */
+    public function setBaseUrl($url)
+    {
+        $this->_baseUrl = rtrim($url, '/') . '/';
+        return $this;
+    }
+
+    /**
+     * Determine whether to use default format or format provided in options.
+     *
+     * @param  array $options
+     * @return string
+     */
+    protected function _mergeFormat(array $options)
+    {
+        if (in_array($options['format'], array('png', 'jpeg'))) {
+            return '/' . $options['format'];
+        }
+        return $this->_format;
+    }
+
+    /**
+     * Determine whether to use default dimensions, or those passed in options.
+     *
+     * @param  array $options
+     * @return string
+     */
+    protected function _mergeDimensions(array $options)
+    {
+        if (!$this->_validateDimension($options['width'])) {
+            return $this->_dimensions;
+        }
+        $dimensions = '/' . $options['width'];
+        if (!$this->_validateDimension($options['height'])) {
+            return $dimensions;
+        }
+        $dimensions .= '/' . $options['height'];
+        return $dimensions;
+    }
+
+    /**
+     * Validate a dimension
+     *
+     * Dimensions may be integers, optionally preceded by '-' or 'x'.
+     *
+     * @param  string $dim
+     * @return bool
+     */
+    protected function _validateDimension($dim)
+    {
+        if (!is_scalar($dim) || is_bool($dim)) {
+            return false;
+        }
+        return preg_match('/^(-|x)?\d+$/', (string)$dim);
     }
 
     /**
@@ -238,80 +311,7 @@ class Zend_View_Helper_TinySrc extends Zend_View_Helper_HtmlElement
      */
     public function setCreateTag($flag)
     {
-        $this->_createTagFlag = (bool) $flag;
+        $this->_createTagFlag = (bool)$flag;
         return $this;
-    }
-
-    /**
-     * Should the helper create an image tag?
-     *
-     * @return bool
-     */
-    public function createTag()
-    {
-        return $this->_createTagFlag;
-    }
-
-    /**
-     * Validate a dimension
-     *
-     * Dimensions may be integers, optionally preceded by '-' or 'x'.
-     *
-     * @param  string $dim
-     * @return bool
-     */
-    protected function _validateDimension($dim)
-    {
-        if (!is_scalar($dim) || is_bool($dim)) {
-            return false;
-        }
-        return preg_match('/^(-|x)?\d+$/', (string) $dim);
-    }
-
-    /**
-     * Determine whether to use default base URL, or base URL from options
-     *
-     * @param  array $options
-     * @return string
-     */
-    protected function _mergeBaseUrl(array $options)
-    {
-        if (null === $options['base_url']) {
-            return $this->getBaseUrl();
-        }
-        return rtrim($options['base_url'], '/') . '/';
-    }
-
-    /**
-     * Determine whether to use default format or format provided in options.
-     *
-     * @param  array $options
-     * @return string
-     */
-    protected function _mergeFormat(array $options)
-    {
-        if (in_array($options['format'], array('png', 'jpeg'))) {
-            return '/' . $options['format'];
-        }
-        return $this->_format;
-    }
-
-    /**
-     * Determine whether to use default dimensions, or those passed in options.
-     *
-     * @param  array $options
-     * @return string
-     */
-    protected function _mergeDimensions(array $options)
-    {
-        if (!$this->_validateDimension($options['width'])) {
-            return $this->_dimensions;
-        }
-        $dimensions = '/' . $options['width'];
-        if (!$this->_validateDimension($options['height'])) {
-            return $dimensions;
-        }
-        $dimensions .= '/' . $options['height'];
-        return $dimensions;
     }
 }

@@ -51,7 +51,7 @@ final class Zend_InfoCard_Xml_EncryptedData
     static public function getInstance($xmlData)
     {
 
-        if($xmlData instanceof Zend_InfoCard_Xml_Element) {
+        if ($xmlData instanceof Zend_InfoCard_Xml_Element) {
             $strXmlData = $xmlData->asXML();
         } else if (is_string($xmlData)) {
             $strXmlData = $xmlData;
@@ -62,7 +62,7 @@ final class Zend_InfoCard_Xml_EncryptedData
 
         $sxe = simplexml_load_string($strXmlData);
 
-        switch($sxe['Type']) {
+        switch ($sxe['Type']) {
             case 'http://www.w3.org/2001/04/xmlenc#Element':
                 include_once 'Zend/InfoCard/Xml/EncryptedData/XmlEnc.php';
                 return simplexml_load_string($strXmlData, 'Zend_InfoCard_Xml_EncryptedData_XmlEnc');

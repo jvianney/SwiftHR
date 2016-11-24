@@ -54,18 +54,6 @@ class Zend_Search_Lucene_Proxy implements Zend_Search_Lucene_Interface
     }
 
     /**
-     * Object destructor
-     */
-    public function __destruct()
-    {
-        if ($this->_index !== null) {
-            // This code is invoked if Zend_Search_Lucene_Interface object constructor throws an exception
-            $this->_index->removeReference();
-        }
-        $this->_index = null;
-    }
-
-    /**
      * Get current generation number
      *
      * Returns generation number
@@ -90,6 +78,68 @@ class Zend_Search_Lucene_Proxy implements Zend_Search_Lucene_Interface
     public static function getSegmentFileName($generation)
     {
         Zend_Search_Lucene::getSegmentFileName($generation);
+    }
+
+    /**
+     * Set default search field.
+     *
+     * Null means, that search is performed through all fields by default
+     *
+     * Default value is null
+     *
+     * @param string $fieldName
+     */
+    public static function setDefaultSearchField($fieldName)
+    {
+        Zend_Search_Lucene::setDefaultSearchField($fieldName);
+    }
+
+    /**
+     * Get default search field.
+     *
+     * Null means, that search is performed through all fields by default
+     *
+     * @return string
+     */
+    public static function getDefaultSearchField()
+    {
+        return Zend_Search_Lucene::getDefaultSearchField();
+    }
+
+    /**
+     * Set result set limit.
+     *
+     * 0 (default) means no limit
+     *
+     * @param integer $limit
+     */
+    public static function setResultSetLimit($limit)
+    {
+        Zend_Search_Lucene::setResultSetLimit($limit);
+    }
+
+    /**
+     * Set result set limit.
+     *
+     * 0 means no limit
+     *
+     * @return integer
+     */
+    public static function getResultSetLimit()
+    {
+        return Zend_Search_Lucene::getResultSetLimit();
+    }
+
+    /**
+     * Object destructor
+     */
+    public function __destruct()
+    {
+        if ($this->_index !== null) {
+            // This code is invoked if Zend_Search_Lucene_Interface object constructor throws an exception
+            $this->_index->removeReference();
+        }
+        $this->_index = null;
     }
 
     /**
@@ -166,56 +216,6 @@ class Zend_Search_Lucene_Proxy implements Zend_Search_Lucene_Interface
     public function isDeleted($id)
     {
         return $this->_index->isDeleted($id);
-    }
-
-    /**
-     * Set default search field.
-     *
-     * Null means, that search is performed through all fields by default
-     *
-     * Default value is null
-     *
-     * @param string $fieldName
-     */
-    public static function setDefaultSearchField($fieldName)
-    {
-        Zend_Search_Lucene::setDefaultSearchField($fieldName);
-    }
-
-    /**
-     * Get default search field.
-     *
-     * Null means, that search is performed through all fields by default
-     *
-     * @return string
-     */
-    public static function getDefaultSearchField()
-    {
-        return Zend_Search_Lucene::getDefaultSearchField();
-    }
-
-    /**
-     * Set result set limit.
-     *
-     * 0 (default) means no limit
-     *
-     * @param integer $limit
-     */
-    public static function setResultSetLimit($limit)
-    {
-        Zend_Search_Lucene::setResultSetLimit($limit);
-    }
-
-    /**
-     * Set result set limit.
-     *
-     * 0 means no limit
-     *
-     * @return integer
-     */
-    public static function getResultSetLimit()
-    {
-        return Zend_Search_Lucene::getResultSetLimit();
     }
 
     /**

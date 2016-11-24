@@ -94,11 +94,11 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
                  */
                 require_once 'Zend/Feed/Exception.php';
                 throw new Zend_Feed_Exception('No root <feed> or <' . $this->_entryElementName
-                                              . '> element found, cannot parse feed.');
+                    . '> element found, cannot parse feed.');
             }
 
             $doc = new DOMDocument($this->_element->version,
-                                   $this->_element->actualEncoding);
+                $this->_element->actualEncoding);
             $feed = $doc->appendChild($doc->createElement('feed'));
             $feed->appendChild($doc->importNode($element, true));
             $element = $feed;
@@ -178,6 +178,43 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
             default:
                 return parent::__get($var);
         }
+    }
+
+    /**
+     * Send feed to a http client with the correct header
+     *
+     * @return void
+     * @throws Zend_Feed_Exception if headers have already been sent
+     */
+    public function send()
+    {
+        if (headers_sent()) {
+            /**
+             * @see Zend_Feed_Exception
+             */
+            require_once 'Zend/Feed/Exception.php';
+            throw new Zend_Feed_Exception('Cannot send ATOM because headers have already been sent.');
+        }
+
+        header('Content-Type: application/atom+xml; charset=' . $this->_element->ownerDocument->actualEncoding);
+
+        echo $this->saveXML();
+    }
+
+    /**
+     * Override Zend_Feed_Element to allow formated feeds
+     *
+     * @return string
+     */
+    public function saveXml()
+    {
+        // Return a complete document including XML prologue.
+        $doc = new DOMDocument($this->_element->ownerDocument->version,
+            $this->_element->ownerDocument->actualEncoding);
+        $doc->appendChild($doc->importNode($this->_element, true));
+        $doc->formatOutput = true;
+
+        return $doc->saveXML();
     }
 
     /**
@@ -262,8 +299,8 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
      *    <content>long version, can contain html</content>
      * </entry>
      *
-     * @param  array      $array the data to use
-     * @param  DOMElement $root  the root node to use
+     * @param  array $array the data to use
+     * @param  DOMElement $root the root node to use
      * @return void
      */
     protected function _mapFeedEntries(DOMElement $root, $array)
@@ -336,55 +373,18 @@ class Zend_Feed_Atom extends Zend_Feed_Abstract
 
             if (isset($dataentry->comments)) {
                 $comments = $this->_element->createElementNS('http://wellformedweb.org/CommentAPI/',
-                                                             'wfw:comment',
-                                                             $dataentry->comments);
+                    'wfw:comment',
+                    $dataentry->comments);
                 $entry->appendChild($comments);
             }
             if (isset($dataentry->commentRss)) {
                 $comments = $this->_element->createElementNS('http://wellformedweb.org/CommentAPI/',
-                                                             'wfw:commentRss',
-                                                             $dataentry->commentRss);
+                    'wfw:commentRss',
+                    $dataentry->commentRss);
                 $entry->appendChild($comments);
             }
 
             $root->appendChild($entry);
         }
-    }
-
-    /**
-     * Override Zend_Feed_Element to allow formated feeds
-     *
-     * @return string
-     */
-    public function saveXml()
-    {
-        // Return a complete document including XML prologue.
-        $doc = new DOMDocument($this->_element->ownerDocument->version,
-                               $this->_element->ownerDocument->actualEncoding);
-        $doc->appendChild($doc->importNode($this->_element, true));
-        $doc->formatOutput = true;
-
-        return $doc->saveXML();
-    }
-
-    /**
-     * Send feed to a http client with the correct header
-     *
-     * @return void
-     * @throws Zend_Feed_Exception if headers have already been sent
-     */
-    public function send()
-    {
-        if (headers_sent()) {
-            /**
-             * @see Zend_Feed_Exception
-             */
-            require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception('Cannot send ATOM because headers have already been sent.');
-        }
-
-        header('Content-Type: application/atom+xml; charset=' . $this->_element->ownerDocument->actualEncoding);
-
-        echo $this->saveXML();
     }
 }

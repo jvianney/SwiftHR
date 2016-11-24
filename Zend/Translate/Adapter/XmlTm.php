@@ -33,22 +33,33 @@ require_once 'Zend/Translate/Adapter.php';
  * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Translate_Adapter_XmlTm extends Zend_Translate_Adapter {
+class Zend_Translate_Adapter_XmlTm extends Zend_Translate_Adapter
+{
     // Internal variables
-    private $_file        = false;
-    private $_cleared     = array();
-    private $_lang        = null;
-    private $_content     = null;
-    private $_tag         = null;
-    private $_data        = array();
+    private $_file = false;
+    private $_cleared = array();
+    private $_lang = null;
+    private $_content = null;
+    private $_tag = null;
+    private $_data = array();
+
+    /**
+     * Returns the adapter name
+     *
+     * @return string
+     */
+    public function toString()
+    {
+        return "XmlTm";
+    }
 
     /**
      * Load translation data (XMLTM file reader)
      *
-     * @param  string  $locale    Locale/Language to add data for, identical with locale identifier,
+     * @param  string $locale Locale/Language to add data for, identical with locale identifier,
      *                            see Zend_Locale for more information
-     * @param  string  $filename  XMLTM file to add, full path must be given for access
-     * @param  array   $option    OPTIONAL Options to use
+     * @param  string $filename XMLTM file to add, full path must be given for access
+     * @param  array $option OPTIONAL Options to use
      * @throws Zend_Translation_Exception
      * @return array
      */
@@ -61,7 +72,7 @@ class Zend_Translate_Adapter_XmlTm extends Zend_Translate_Adapter {
             throw new Zend_Translate_Exception('Translation file \'' . $filename . '\' is not readable.');
         }
 
-        $encoding    = $this->_findEncoding($filename);
+        $encoding = $this->_findEncoding($filename);
         $this->_file = xml_parser_create($encoding);
         xml_set_object($this->_file, $this);
         xml_parser_set_option($this->_file, XML_OPTION_CASE_FOLDING, 0);
@@ -70,50 +81,14 @@ class Zend_Translate_Adapter_XmlTm extends Zend_Translate_Adapter {
 
         if (!xml_parse($this->_file, file_get_contents($filename))) {
             $ex = sprintf('XML error: %s at line %d',
-                          xml_error_string(xml_get_error_code($this->_file)),
-                          xml_get_current_line_number($this->_file));
+                xml_error_string(xml_get_error_code($this->_file)),
+                xml_get_current_line_number($this->_file));
             xml_parser_free($this->_file);
             require_once 'Zend/Translate/Exception.php';
             throw new Zend_Translate_Exception($ex);
         }
 
         return $this->_data;
-    }
-
-    private function _startElement($file, $name, $attrib)
-    {
-        switch(strtolower($name)) {
-            case 'tm:tu':
-                $this->_tag     = $attrib['id'];
-                $this->_content = null;
-                break;
-            default:
-                break;
-        }
-    }
-
-    private function _endElement($file, $name)
-    {
-        switch (strtolower($name)) {
-            case 'tm:tu':
-                if (!empty($this->_tag) and !empty($this->_content) or
-                    (isset($this->_data[$this->_lang][$this->_tag]) === false)) {
-                    $this->_data[$this->_lang][$this->_tag] = $this->_content;
-                }
-                $this->_tag     = null;
-                $this->_content = null;
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    private function _contentElement($file, $data)
-    {
-        if (($this->_tag !== null)) {
-            $this->_content .= $data;
-        }
     }
 
     private function _findEncoding($filename)
@@ -127,13 +102,40 @@ class Zend_Translate_Adapter_XmlTm extends Zend_Translate_Adapter {
         return 'UTF-8';
     }
 
-    /**
-     * Returns the adapter name
-     *
-     * @return string
-     */
-    public function toString()
+    private function _startElement($file, $name, $attrib)
     {
-        return "XmlTm";
+        switch (strtolower($name)) {
+            case 'tm:tu':
+                $this->_tag = $attrib['id'];
+                $this->_content = null;
+                break;
+            default:
+                break;
+        }
+    }
+
+    private function _endElement($file, $name)
+    {
+        switch (strtolower($name)) {
+            case 'tm:tu':
+                if (!empty($this->_tag) and !empty($this->_content) or
+                    (isset($this->_data[$this->_lang][$this->_tag]) === false)
+                ) {
+                    $this->_data[$this->_lang][$this->_tag] = $this->_content;
+                }
+                $this->_tag = null;
+                $this->_content = null;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private function _contentElement($file, $data)
+    {
+        if (($this->_tag !== null)) {
+            $this->_content .= $data;
+        }
     }
 }

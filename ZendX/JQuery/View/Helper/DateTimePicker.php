@@ -24,15 +24,15 @@ class ZendX_JQuery_View_Helper_DateTimePicker extends ZendX_JQuery_View_Helper_U
         $params2 = ZendX_JQuery::encodeJson($params);
 
         $pr = array();
-        foreach ($params as $key => $val){
-            $pr[] = '"'.$key.'":'.ZendX_JQuery::encodeJson ( $val );
+        foreach ($params as $key => $val) {
+            $pr[] = '"' . $key . '":' . ZendX_JQuery::encodeJson($val);
         }
-        $pr = '{'.implode(",", $pr).'}';
+        $pr = '{' . implode(",", $pr) . '}';
 
         $js = sprintf('%s("#%s").datetimepicker(%s);',
-                ZendX_JQuery_View_Helper_JQuery::getJQueryHandler(),
-                $attribs['id'],
-                $pr
+            ZendX_JQuery_View_Helper_JQuery::getJQueryHandler(),
+            $attribs['id'],
+            $pr
         );
 
         $this->jquery->addOnLoad($js);

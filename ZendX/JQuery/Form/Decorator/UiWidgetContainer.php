@@ -51,20 +51,6 @@ abstract class ZendX_JQuery_Form_Decorator_UiWidgetContainer extends Zend_Form_D
     protected $_jQueryParams;
 
     /**
-     * Get view helper for rendering container
-     *
-     * @return string
-     */
-    public function getHelper()
-    {
-        if (null === $this->_helper) {
-            require_once 'Zend/Form/Decorator/Exception.php';
-            throw new Zend_Form_Decorator_Exception('No view helper specified fo DijitContainer decorator');
-        }
-        return $this->_helper;
-    }
-
-    /**
      * Get element attributes
      *
      * @return array
@@ -91,13 +77,13 @@ abstract class ZendX_JQuery_Form_Decorator_UiWidgetContainer extends Zend_Form_D
     {
         if (null === $this->_jQueryParams) {
             $this->_jQueryParams = array();
-            if($attribs = $this->getElement()->getAttribs()) {
+            if ($attribs = $this->getElement()->getAttribs()) {
                 if (array_key_exists('jQueryParams', $attribs)) {
                     $this->_jQueryParams = $attribs['jQueryParams'];
                 }
             }
 
-            if($options = $this->getOptions()) {
+            if ($options = $this->getOptions()) {
                 if (array_key_exists('jQueryParams', $options)) {
                     $this->_jQueryParams = array_merge($this->_jQueryParams, $options['jQueryParams']);
                     $this->removeOption('jQueryParams');
@@ -122,17 +108,31 @@ abstract class ZendX_JQuery_Form_Decorator_UiWidgetContainer extends Zend_Form_D
     public function render($content)
     {
         $element = $this->getElement();
-        $view    = $element->getView();
+        $view = $element->getView();
         if (null === $view) {
             return $content;
         }
 
         $jQueryParams = $this->getJQueryParams();
-        $attribs     = $this->getOptions();
+        $attribs = $this->getOptions();
 
-        $helper      = $this->getHelper();
-        $id          = $element->getId() . '-container';
+        $helper = $this->getHelper();
+        $id = $element->getId() . '-container';
 
         return $view->$helper($id, $jQueryParams, $attribs);
+    }
+
+    /**
+     * Get view helper for rendering container
+     *
+     * @return string
+     */
+    public function getHelper()
+    {
+        if (null === $this->_helper) {
+            require_once 'Zend/Form/Decorator/Exception.php';
+            throw new Zend_Form_Decorator_Exception('No view helper specified fo DijitContainer decorator');
+        }
+        return $this->_helper;
     }
 }

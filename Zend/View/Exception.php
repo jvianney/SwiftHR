@@ -38,14 +38,14 @@ class Zend_View_Exception extends Zend_Exception
 {
     protected $view = null;
 
+    public function getView()
+    {
+        return $this->view;
+    }
+
     public function setView(Zend_View_Interface $view = null)
     {
         $this->view = $view;
         return $this;
-    }
-
-    public function getView()
-    {
-        return $this->view;
     }
 }

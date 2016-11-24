@@ -38,16 +38,16 @@ class Zend_Validate_File_Crc32 extends Zend_Validate_File_Hash
      * @const string Error constants
      */
     const DOES_NOT_MATCH = 'fileCrc32DoesNotMatch';
-    const NOT_DETECTED   = 'fileCrc32NotDetected';
-    const NOT_FOUND      = 'fileCrc32NotFound';
+    const NOT_DETECTED = 'fileCrc32NotDetected';
+    const NOT_FOUND = 'fileCrc32NotFound';
 
     /**
      * @var array Error message templates
      */
     protected $_messageTemplates = array(
         self::DOES_NOT_MATCH => "File '%value%' does not match the given crc32 hashes",
-        self::NOT_DETECTED   => "A crc32 hash could not be evaluated for the given file",
-        self::NOT_FOUND      => "File '%value%' is not readable or does not exist",
+        self::NOT_DETECTED => "A crc32 hash could not be evaluated for the given file",
+        self::NOT_FOUND => "File '%value%' is not readable or does not exist",
     );
 
     /**
@@ -78,13 +78,15 @@ class Zend_Validate_File_Crc32 extends Zend_Validate_File_Hash
     }
 
     /**
-     * Returns all set crc32 hashes
+     * Sets the crc32 hash for one or multiple files
      *
-     * @return array
+     * @param  string|array $options
+     * @return Zend_Validate_File_Hash Provides a fluent interface
      */
-    public function getCrc32()
+    public function setCrc32($options)
     {
-        return $this->getHash();
+        $this->setHash($options);
+        return $this;
     }
 
     /**
@@ -105,14 +107,24 @@ class Zend_Validate_File_Crc32 extends Zend_Validate_File_Hash
     }
 
     /**
-     * Sets the crc32 hash for one or multiple files
+     * Returns all set crc32 hashes
+     *
+     * @return array
+     */
+    public function getCrc32()
+    {
+        return $this->getHash();
+    }
+
+    /**
+     * Adds the crc32 hash for one or multiple files
      *
      * @param  string|array $options
      * @return Zend_Validate_File_Hash Provides a fluent interface
      */
-    public function setCrc32($options)
+    public function addCrc32($options)
     {
-        $this->setHash($options);
+        $this->addHash($options);
         return $this;
     }
 
@@ -134,24 +146,12 @@ class Zend_Validate_File_Crc32 extends Zend_Validate_File_Hash
     }
 
     /**
-     * Adds the crc32 hash for one or multiple files
-     *
-     * @param  string|array $options
-     * @return Zend_Validate_File_Hash Provides a fluent interface
-     */
-    public function addCrc32($options)
-    {
-        $this->addHash($options);
-        return $this;
-    }
-
-    /**
      * Defined by Zend_Validate_Interface
      *
      * Returns true if and only if the given file confirms the set hash
      *
      * @param  string $value Filename to check for hash
-     * @param  array  $file  File data from Zend_File_Transfer
+     * @param  array $file File data from Zend_File_Transfer
      * @return boolean
      */
     public function isValid($value, $file = null)
@@ -168,7 +168,7 @@ class Zend_Validate_File_Crc32 extends Zend_Validate_File_Hash
             return $this->_throw($file, self::NOT_DETECTED);
         }
 
-        foreach($hashes as $hash) {
+        foreach ($hashes as $hash) {
             if ($filehash === $hash) {
                 return true;
             }

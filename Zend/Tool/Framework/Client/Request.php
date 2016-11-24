@@ -75,6 +75,16 @@ class Zend_Tool_Framework_Client_Request
     protected $_isDispatchable = true;
 
     /**
+     * getProviderName()
+     *
+     * @return string
+     */
+    public function getProviderName()
+    {
+        return $this->_providerName;
+    }
+
+    /**
      * setProviderName()
      *
      * @param string $providerName
@@ -87,13 +97,13 @@ class Zend_Tool_Framework_Client_Request
     }
 
     /**
-     * getProviderName()
+     * getSpecialtyName()
      *
      * @return string
      */
-    public function getProviderName()
+    public function getSpecialtyName()
     {
-        return $this->_providerName;
+        return $this->_specialtyName;
     }
 
     /**
@@ -109,13 +119,13 @@ class Zend_Tool_Framework_Client_Request
     }
 
     /**
-     * getSpecialtyName()
+     * getActionName()
      *
      * @return string
      */
-    public function getSpecialtyName()
+    public function getActionName()
     {
-        return $this->_specialtyName;
+        return $this->_actionName;
     }
 
     /**
@@ -128,16 +138,6 @@ class Zend_Tool_Framework_Client_Request
     {
         $this->_actionName = $actionName;
         return $this;
-    }
-
-    /**
-     * getActionName()
-     *
-     * @return string
-     */
-    public function getActionName()
-    {
-        return $this->_actionName;
     }
 
     /**
@@ -216,7 +216,7 @@ class Zend_Tool_Framework_Client_Request
      */
     public function setPretend($pretend)
     {
-        $this->_isPretend = (bool) $pretend;
+        $this->_isPretend = (bool)$pretend;
         return $this;
     }
 
@@ -238,7 +238,7 @@ class Zend_Tool_Framework_Client_Request
      */
     public function setDebug($debug)
     {
-        $this->_isDebug = (bool) $debug;
+        $this->_isDebug = (bool)$debug;
         return $this;
     }
 
@@ -260,7 +260,7 @@ class Zend_Tool_Framework_Client_Request
      */
     public function setVerbose($verbose)
     {
-        $this->_isVerbose = (bool) $verbose;
+        $this->_isVerbose = (bool)$verbose;
         return $this;
     }
 
@@ -282,7 +282,7 @@ class Zend_Tool_Framework_Client_Request
      */
     public function setDispatchable($dispatchable)
     {
-        $this->_isDispatchable = (bool) $dispatchable;
+        $this->_isDispatchable = (bool)$dispatchable;
         return $this;
     }
 

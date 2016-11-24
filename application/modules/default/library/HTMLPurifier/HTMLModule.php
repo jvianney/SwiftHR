@@ -14,7 +14,6 @@
  *       objects (include it anyway if that's the correspondence though).
  * @todo Consider making some member functions protected
  */
-
 class HTMLPurifier_HTMLModule
 {
 
@@ -109,7 +108,10 @@ class HTMLPurifier_HTMLModule
      * @param $def HTMLPurifier_ElementDef instance
      * @return HTMLPurifier_ChildDef subclass
      */
-    public function getChildDef($def) {return false;}
+    public function getChildDef($def)
+    {
+        return false;
+    }
 
     // -- Convenience -----------------------------------------------------
 
@@ -127,7 +129,8 @@ class HTMLPurifier_HTMLModule
      * @return Created element definition object, so you
      *         can set advanced parameters
      */
-    public function addElement($element, $type, $contents, $attr_includes = array(), $attr = array()) {
+    public function addElement($element, $type, $contents, $attr_includes = array(), $attr = array())
+    {
         $this->elements[] = $element;
         // parse content_model
         list($content_model_type, $content_model) = $this->parseContents($contents);
@@ -145,35 +148,6 @@ class HTMLPurifier_HTMLModule
     }
 
     /**
-     * Convenience function that creates a totally blank, non-standalone
-     * element.
-     * @param $element Name of element to create
-     * @return Created element
-     */
-    public function addBlankElement($element) {
-        if (!isset($this->info[$element])) {
-            $this->elements[] = $element;
-            $this->info[$element] = new HTMLPurifier_ElementDef();
-            $this->info[$element]->standalone = false;
-        } else {
-            trigger_error("Definition for $element already exists in module, cannot redefine");
-        }
-        return $this->info[$element];
-    }
-
-    /**
-     * Convenience function that registers an element to a content set
-     * @param Element to register
-     * @param Name content set (warning: case sensitive, usually upper-case
-     *        first letter)
-     */
-    public function addElementToContentSet($element, $type) {
-        if (!isset($this->content_sets[$type])) $this->content_sets[$type] = '';
-        else $this->content_sets[$type] .= ' | ';
-        $this->content_sets[$type] .= $element;
-    }
-
-    /**
      * Convenience function that transforms single-string contents
      * into separate content model and content model type
      * @param $contents Allowed children in form of:
@@ -182,7 +156,8 @@ class HTMLPurifier_HTMLModule
      *       returned, and the callee needs to take the original $contents
      *       and use it directly.
      */
-    public function parseContents($contents) {
+    public function parseContents($contents)
+    {
         if (!is_string($contents)) return array(null, null); // defer
         switch ($contents) {
             // check for shorthand content model forms
@@ -205,12 +180,44 @@ class HTMLPurifier_HTMLModule
      * @param $attr Reference to attr array to modify
      * @param $attr_includes Array of includes / string include to merge in
      */
-    public function mergeInAttrIncludes(&$attr, $attr_includes) {
+    public function mergeInAttrIncludes(&$attr, $attr_includes)
+    {
         if (!is_array($attr_includes)) {
             if (empty($attr_includes)) $attr_includes = array();
             else $attr_includes = array($attr_includes);
         }
         $attr[0] = $attr_includes;
+    }
+
+    /**
+     * Convenience function that registers an element to a content set
+     * @param Element to register
+     * @param Name content set (warning: case sensitive, usually upper-case
+     *        first letter)
+     */
+    public function addElementToContentSet($element, $type)
+    {
+        if (!isset($this->content_sets[$type])) $this->content_sets[$type] = '';
+        else $this->content_sets[$type] .= ' | ';
+        $this->content_sets[$type] .= $element;
+    }
+
+    /**
+     * Convenience function that creates a totally blank, non-standalone
+     * element.
+     * @param $element Name of element to create
+     * @return Created element
+     */
+    public function addBlankElement($element)
+    {
+        if (!isset($this->info[$element])) {
+            $this->elements[] = $element;
+            $this->info[$element] = new HTMLPurifier_ElementDef();
+            $this->info[$element]->standalone = false;
+        } else {
+            trigger_error("Definition for $element already exists in module, cannot redefine");
+        }
+        return $this->info[$element];
     }
 
     /**
@@ -221,7 +228,8 @@ class HTMLPurifier_HTMLModule
      *       place of the regular argument
      * @return Lookup array equivalent of list
      */
-    public function makeLookup($list) {
+    public function makeLookup($list)
+    {
         if (is_string($list)) $list = func_get_args();
         $ret = array();
         foreach ($list as $value) {
@@ -237,7 +245,9 @@ class HTMLPurifier_HTMLModule
      * is available.
      * @param $config Instance of HTMLPurifier_Config
      */
-    public function setup($config) {}
+    public function setup($config)
+    {
+    }
 
 }
 

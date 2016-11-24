@@ -1,8 +1,9 @@
 <?php
-/********************************************************************************* 
+
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,16 +19,15 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
 class Default_Model_Empreporting extends Zend_Db_Table_Abstract
 {
     protected $_name = 'main_emp_reporting';
     protected $_primary = 'id';
-    
-    
+
+
     /**
      * This function is used to get reporting managers for drop down.
-     * 
+     *
      * @return Array Array of reporting managers id's and names.
      */
     public function getReportingManagersOptions()
@@ -39,11 +39,10 @@ class Default_Model_Empreporting extends Zend_Db_Table_Abstract
                    where er.isactive = 1";
         $result = $db->query($query);
         $emp_options = array();
-        while($row = $result->fetch())
-        {
+        while ($row = $result->fetch()) {
             $emp_options[$row['id']] = $row['name'];
         }
         return $emp_options;
     }
-    
+
 }//end of class

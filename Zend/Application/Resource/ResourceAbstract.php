@@ -76,6 +76,16 @@ abstract class Zend_Application_Resource_ResourceAbstract implements Zend_Applic
     }
 
     /**
+     * Retrieve resource options
+     *
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->_options;
+    }
+
+    /**
      * Set options from array
      *
      * @param  array $options Configuration for resource
@@ -105,16 +115,6 @@ abstract class Zend_Application_Resource_ResourceAbstract implements Zend_Applic
     }
 
     /**
-     * Retrieve resource options
-     *
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->_options;
-    }
-
-    /**
      * Merge options recursively
      *
      * @param  array $array1
@@ -127,14 +127,24 @@ abstract class Zend_Application_Resource_ResourceAbstract implements Zend_Applic
             foreach ($array2 as $key => $val) {
                 if (is_array($array2[$key])) {
                     $array1[$key] = (array_key_exists($key, $array1) && is_array($array1[$key]))
-                                  ? $this->mergeOptions($array1[$key], $array2[$key])
-                                  : $array2[$key];
+                        ? $this->mergeOptions($array1[$key], $array2[$key])
+                        : $array2[$key];
                 } else {
                     $array1[$key] = $val;
                 }
             }
         }
         return $array1;
+    }
+
+    /**
+     * Retrieve the bootstrap to which the resource is attached
+     *
+     * @return null|Zend_Application_Bootstrap_Bootstrapper
+     */
+    public function getBootstrap()
+    {
+        return $this->_bootstrap;
     }
 
     /**
@@ -147,15 +157,5 @@ abstract class Zend_Application_Resource_ResourceAbstract implements Zend_Applic
     {
         $this->_bootstrap = $bootstrap;
         return $this;
-    }
-
-    /**
-     * Retrieve the bootstrap to which the resource is attached
-     *
-     * @return null|Zend_Application_Bootstrap_Bootstrapper
-     */
-    public function getBootstrap()
-    {
-        return $this->_bootstrap;
     }
 }

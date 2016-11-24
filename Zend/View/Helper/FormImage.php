@@ -83,18 +83,18 @@ class Zend_View_Helper_FormImage extends Zend_View_Helper_FormElement
         // XHTML or HTML end tag?
         $endTag = ' />';
         if (($this->view instanceof Zend_View_Abstract) && !$this->view->doctype()->isXhtml()) {
-            $endTag= '>';
+            $endTag = '>';
         }
 
         // build the element
         $xhtml = '<input type="image"'
-                . ' name="' . $this->view->escape($name) . '"'
-                . ' id="' . $this->view->escape($id) . '"'
-                . $src
-                . $value
-                . $disabled
-                . $this->_htmlAttribs($attribs)
-                . $endTag;
+            . ' name="' . $this->view->escape($name) . '"'
+            . ' id="' . $this->view->escape($id) . '"'
+            . $src
+            . $value
+            . $disabled
+            . $this->_htmlAttribs($attribs)
+            . $endTag;
 
         return $xhtml;
     }

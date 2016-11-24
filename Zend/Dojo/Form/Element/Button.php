@@ -57,6 +57,25 @@ class Zend_Dojo_Form_Element_Button extends Zend_Dojo_Form_Element_Dijit
     }
 
     /**
+     * Has this submit button been selected?
+     *
+     * @return bool
+     */
+    public function isChecked()
+    {
+        $value = $this->getValue();
+
+        if (empty($value)) {
+            return false;
+        }
+        if ($value != $this->getLabel()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Return label
      *
      * If no label is present, returns the currently set name.
@@ -81,25 +100,6 @@ class Zend_Dojo_Form_Element_Button extends Zend_Dojo_Form_Element_Dijit
     }
 
     /**
-     * Has this submit button been selected?
-     *
-     * @return bool
-     */
-    public function isChecked()
-    {
-        $value = $this->getValue();
-
-        if (empty($value)) {
-            return false;
-        }
-        if ($value != $this->getLabel()) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Default decorators
      *
      * Uses only 'DijitElement' and 'DtDdWrapper' decorators by default.
@@ -115,7 +115,7 @@ class Zend_Dojo_Form_Element_Button extends Zend_Dojo_Form_Element_Dijit
         $decorators = $this->getDecorators();
         if (empty($decorators)) {
             $this->addDecorator('DijitElement')
-                 ->addDecorator('DtDdWrapper');
+                ->addDecorator('DtDdWrapper');
         }
     }
 }

@@ -172,10 +172,10 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
-            throw new Zend_Auth_Adapter_Exception(__CLASS__  . ' requires the \'hash\' extension');
+            throw new Zend_Auth_Adapter_Exception(__CLASS__ . ' requires the \'hash\' extension');
         }
 
-        $this->_request  = null;
+        $this->_request = null;
         $this->_response = null;
         $this->_ieNoOpaque = false;
 
@@ -196,7 +196,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
             throw new Zend_Auth_Adapter_Exception('No supported schemes given in \'accept_schemes\'. Valid values: '
-                                                . implode(', ', $this->_supportedSchemes));
+                . implode(', ', $this->_supportedSchemes));
         }
 
         // Double-quotes are used to delimit the realm string in the HTTP header,
@@ -204,13 +204,14 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         if (empty($config['realm']) ||
             !ctype_print($config['realm']) ||
             strpos($config['realm'], ':') !== false ||
-            strpos($config['realm'], '"') !== false) {
+            strpos($config['realm'], '"') !== false
+        ) {
             /**
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
             throw new Zend_Auth_Adapter_Exception('Config key \'realm\' is required, and must contain only printable '
-                                                . 'characters, excluding quotation marks and colons');
+                . 'characters, excluding quotation marks and colons');
         } else {
             $this->_realm = $config['realm'];
         }
@@ -218,31 +219,33 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         if (in_array('digest', $this->_acceptSchemes)) {
             if (empty($config['digest_domains']) ||
                 !ctype_print($config['digest_domains']) ||
-                strpos($config['digest_domains'], '"') !== false) {
+                strpos($config['digest_domains'], '"') !== false
+            ) {
                 /**
                  * @see Zend_Auth_Adapter_Exception
                  */
                 require_once 'Zend/Auth/Adapter/Exception.php';
                 throw new Zend_Auth_Adapter_Exception('Config key \'digest_domains\' is required, and must contain '
-                                                    . 'only printable characters, excluding quotation marks');
+                    . 'only printable characters, excluding quotation marks');
             } else {
                 $this->_domains = $config['digest_domains'];
             }
 
             if (empty($config['nonce_timeout']) ||
-                !is_numeric($config['nonce_timeout'])) {
+                !is_numeric($config['nonce_timeout'])
+            ) {
                 /**
                  * @see Zend_Auth_Adapter_Exception
                  */
                 require_once 'Zend/Auth/Adapter/Exception.php';
                 throw new Zend_Auth_Adapter_Exception('Config key \'nonce_timeout\' is required, and must be an '
-                                                    . 'integer');
+                    . 'integer');
             } else {
-                $this->_nonceTimeout = (int) $config['nonce_timeout'];
+                $this->_nonceTimeout = (int)$config['nonce_timeout'];
             }
 
             // We use the opaque value unless explicitly told not to
-            if (isset($config['use_opaque']) && false == (bool) $config['use_opaque']) {
+            if (isset($config['use_opaque']) && false == (bool)$config['use_opaque']) {
                 $this->_useOpaque = false;
             } else {
                 $this->_useOpaque = true;
@@ -256,11 +259,21 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         }
 
         // Don't be a proxy unless explicitly told to do so
-        if (isset($config['proxy_auth']) && true == (bool) $config['proxy_auth']) {
+        if (isset($config['proxy_auth']) && true == (bool)$config['proxy_auth']) {
             $this->_imaProxy = true;  // I'm a Proxy
         } else {
             $this->_imaProxy = false;
         }
+    }
+
+    /**
+     * Getter for the _basicResolver property
+     *
+     * @return Zend_Auth_Adapter_Http_Resolver_Interface
+     */
+    public function getBasicResolver()
+    {
+        return $this->_basicResolver;
     }
 
     /**
@@ -277,13 +290,13 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     }
 
     /**
-     * Getter for the _basicResolver property
+     * Getter for the _digestResolver property
      *
      * @return Zend_Auth_Adapter_Http_Resolver_Interface
      */
-    public function getBasicResolver()
+    public function getDigestResolver()
     {
-        return $this->_basicResolver;
+        return $this->_digestResolver;
     }
 
     /**
@@ -300,13 +313,13 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     }
 
     /**
-     * Getter for the _digestResolver property
+     * Getter for the Request object
      *
-     * @return Zend_Auth_Adapter_Http_Resolver_Interface
+     * @return Zend_Controller_Request_Http
      */
-    public function getDigestResolver()
+    public function getRequest()
     {
-        return $this->_digestResolver;
+        return $this->_request;
     }
 
     /**
@@ -323,13 +336,13 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     }
 
     /**
-     * Getter for the Request object
+     * Getter for the Response object
      *
-     * @return Zend_Controller_Request_Http
+     * @return Zend_Controller_Response_Http
      */
-    public function getRequest()
+    public function getResponse()
     {
-        return $this->_request;
+        return $this->_response;
     }
 
     /**
@@ -346,16 +359,6 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     }
 
     /**
-     * Getter for the Response object
-     *
-     * @return Zend_Controller_Response_Http
-     */
-    public function getResponse()
-    {
-        return $this->_response;
-    }
-
-    /**
      * Authenticate
      *
      * @throws Zend_Auth_Adapter_Exception
@@ -364,13 +367,14 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     public function authenticate()
     {
         if (empty($this->_request) ||
-            empty($this->_response)) {
+            empty($this->_response)
+        ) {
             /**
              * @see Zend_Auth_Adapter_Exception
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
             throw new Zend_Auth_Adapter_Exception('Request and Response objects must be set before calling '
-                                                . 'authenticate()');
+                . 'authenticate()');
         }
 
         if ($this->_imaProxy) {
@@ -410,7 +414,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
                 break;
             case 'digest':
                 $result = $this->_digestAuth($authHeader);
-            break;
+                break;
             default:
                 /**
                  * @see Zend_Auth_Adapter_Exception
@@ -480,13 +484,52 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
     protected function _digestHeader()
     {
         $wwwauth = 'Digest realm="' . $this->_realm . '", '
-                 . 'domain="' . $this->_domains . '", '
-                 . 'nonce="' . $this->_calcNonce() . '", '
-                 . ($this->_useOpaque ? 'opaque="' . $this->_calcOpaque() . '", ' : '')
-                 . 'algorithm="' . $this->_algo . '", '
-                 . 'qop="' . implode(',', $this->_supportedQops) . '"';
+            . 'domain="' . $this->_domains . '", '
+            . 'nonce="' . $this->_calcNonce() . '", '
+            . ($this->_useOpaque ? 'opaque="' . $this->_calcOpaque() . '", ' : '')
+            . 'algorithm="' . $this->_algo . '", '
+            . 'qop="' . implode(',', $this->_supportedQops) . '"';
 
         return $wwwauth;
+    }
+
+    /**
+     * Calculate Nonce
+     *
+     * @return string The nonce value
+     */
+    protected function _calcNonce()
+    {
+        // Once subtle consequence of this timeout calculation is that it
+        // actually divides all of time into _nonceTimeout-sized sections, such
+        // that the value of timeout is the point in time of the next
+        // approaching "boundary" of a section. This allows the server to
+        // consistently generate the same timeout (and hence the same nonce
+        // value) across requests, but only as long as one of those
+        // "boundaries" is not crossed between requests. If that happens, the
+        // nonce will change on its own, and effectively log the user out. This
+        // would be surprising if the user just logged in.
+        $timeout = ceil(time() / $this->_nonceTimeout) * $this->_nonceTimeout;
+
+        $nonce = hash('md5', $timeout . ':' . $this->_request->getServer('HTTP_USER_AGENT') . ':' . __CLASS__);
+        return $nonce;
+    }
+
+    /**
+     * Calculate Opaque
+     *
+     * The opaque string can be anything; the client must return it exactly as
+     * it was sent. It may be useful to store data in this string in some
+     * applications. Ideally, a new value for this would be generated each time
+     * a WWW-Authenticate header is sent (in order to reduce predictability),
+     * but we would have to be able to create the same exact value across at
+     * least two separate requests from the same client.
+     *
+     * @return string The opaque value
+     */
+    protected function _calcOpaque()
+    {
+        return hash('md5', 'Opaque Data:' . __CLASS__);
     }
 
     /**
@@ -511,7 +554,7 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
              */
             require_once 'Zend/Auth/Adapter/Exception.php';
             throw new Zend_Auth_Adapter_Exception('A basicResolver object must be set before doing Basic '
-                                                . 'authentication');
+                . 'authentication');
         }
 
         // Decode the Authorization header
@@ -539,11 +582,33 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
 
         $password = $this->_basicResolver->resolve($creds[0], $this->_realm);
         if ($password && $this->_secureStringCompare($password, $creds[1])) {
-            $identity = array('username'=>$creds[0], 'realm'=>$this->_realm);
+            $identity = array('username' => $creds[0], 'realm' => $this->_realm);
             return new Zend_Auth_Result(Zend_Auth_Result::SUCCESS, $identity);
         } else {
             return $this->_challengeClient();
         }
+    }
+
+    /**
+     * Securely compare two strings for equality while avoided C level memcmp()
+     * optimisations capable of leaking timing information useful to an attacker
+     * attempting to iteratively guess the unknown string (e.g. password) being
+     * compared against.
+     *
+     * @param string $a
+     * @param string $b
+     * @return bool
+     */
+    protected function _secureStringCompare($a, $b)
+    {
+        if (strlen($a) !== strlen($b)) {
+            return false;
+        }
+        $result = 0;
+        for ($i = 0; $i < strlen($a); $i++) {
+            $result |= ord($a[$i]) ^ ord($b[$i]);
+        }
+        return $result == 0;
     }
 
     /**
@@ -636,55 +701,16 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         // Calculate the server's version of the request-digest. This must
         // match $data['response']. See RFC 2617, section 3.2.2.1
         $message = $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $ha2;
-        $digest  = hash('md5', $ha1 . ':' . $message);
+        $digest = hash('md5', $ha1 . ':' . $message);
 
         // If our digest matches the client's let them in, otherwise return
         // a 401 code and exit to prevent access to the protected resource.
         if ($this->_secureStringCompare($digest, $data['response'])) {
-            $identity = array('username'=>$data['username'], 'realm'=>$data['realm']);
+            $identity = array('username' => $data['username'], 'realm' => $data['realm']);
             return new Zend_Auth_Result(Zend_Auth_Result::SUCCESS, $identity);
         } else {
             return $this->_challengeClient();
         }
-    }
-
-    /**
-     * Calculate Nonce
-     *
-     * @return string The nonce value
-     */
-    protected function _calcNonce()
-    {
-        // Once subtle consequence of this timeout calculation is that it
-        // actually divides all of time into _nonceTimeout-sized sections, such
-        // that the value of timeout is the point in time of the next
-        // approaching "boundary" of a section. This allows the server to
-        // consistently generate the same timeout (and hence the same nonce
-        // value) across requests, but only as long as one of those
-        // "boundaries" is not crossed between requests. If that happens, the
-        // nonce will change on its own, and effectively log the user out. This
-        // would be surprising if the user just logged in.
-        $timeout = ceil(time() / $this->_nonceTimeout) * $this->_nonceTimeout;
-
-        $nonce = hash('md5', $timeout . ':' . $this->_request->getServer('HTTP_USER_AGENT') . ':' . __CLASS__);
-        return $nonce;
-    }
-
-    /**
-     * Calculate Opaque
-     *
-     * The opaque string can be anything; the client must return it exactly as
-     * it was sent. It may be useful to store data in this string in some
-     * applications. Ideally, a new value for this would be generated each time
-     * a WWW-Authenticate header is sent (in order to reduce predictability),
-     * but we would have to be able to create the same exact value across at
-     * least two separate requests from the same client.
-     *
-     * @return string The opaque value
-     */
-    protected function _calcOpaque()
-    {
-        return hash('md5', 'Opaque Data:' . __CLASS__);
     }
 
     /**
@@ -703,8 +729,9 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         // 400 code.
         $ret = preg_match('/username="([^"]+)"/', $header, $temp);
         if (!$ret || empty($temp[1])
-                  || !ctype_print($temp[1])
-                  || strpos($temp[1], ':') !== false) {
+            || !ctype_print($temp[1])
+            || strpos($temp[1], ':') !== false
+        ) {
             $data['username'] = '::invalid::';
         } else {
             $data['username'] = $temp[1];
@@ -773,7 +800,8 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         // if it can easily be overridden by the client?
         $ret = preg_match('/algorithm="?(' . $this->_algo . ')"?/', $header, $temp);
         if ($ret && !empty($temp[1])
-                 && in_array($temp[1], $this->_supportedAlgos)) {
+            && in_array($temp[1], $this->_supportedAlgos)
+        ) {
             $data['algorithm'] = $temp[1];
         } else {
             $data['algorithm'] = 'MD5';  // = $this->_algo; ?
@@ -807,7 +835,8 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
             }
             // This implementation only sends MD5 hex strings in the opaque value
             if (!$this->_ieNoOpaque &&
-                (32 != strlen($temp[1]) || !ctype_xdigit($temp[1]))) {
+                (32 != strlen($temp[1]) || !ctype_xdigit($temp[1]))
+            ) {
                 return false;
             } else {
                 $data['opaque'] = $temp[1];
@@ -843,27 +872,5 @@ class Zend_Auth_Adapter_Http implements Zend_Auth_Adapter_Interface
         $temp = null;
 
         return $data;
-    }
-
-    /**
-     * Securely compare two strings for equality while avoided C level memcmp()
-     * optimisations capable of leaking timing information useful to an attacker
-     * attempting to iteratively guess the unknown string (e.g. password) being
-     * compared against.
-     *
-     * @param string $a
-     * @param string $b
-     * @return bool
-     */
-    protected function _secureStringCompare($a, $b)
-    {
-        if (strlen($a) !== strlen($b)) {
-            return false;
-        }
-        $result = 0;
-        for ($i = 0; $i < strlen($a); $i++) {
-            $result |= ord($a[$i]) ^ ord($b[$i]);
-        }
-        return $result == 0;
     }
 }

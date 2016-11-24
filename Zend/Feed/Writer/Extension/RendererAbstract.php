@@ -24,7 +24,7 @@
  */
 require_once 'Zend/Feed/Writer/Extension/RendererInterface.php';
 
- /**
+/**
  * @category   Zend
  * @package    Zend_Feed_Writer
  * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
@@ -82,6 +82,16 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     }
 
     /**
+     * Get feed encoding
+     *
+     * @return void
+     */
+    public function getEncoding()
+    {
+        return $this->_encoding;
+    }
+
+    /**
      * Set feed encoding
      *
      * @param  string $enc
@@ -94,16 +104,6 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     }
 
     /**
-     * Get feed encoding
-     *
-     * @return void
-     */
-    public function getEncoding()
-    {
-        return $this->_encoding;
-    }
-
-    /**
      * Set DOMDocument and DOMElement on which to operate
      *
      * @param  DOMDocument $dom
@@ -112,7 +112,7 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
      */
     public function setDomDocument(DOMDocument $dom, DOMElement $base)
     {
-        $this->_dom  = $dom;
+        $this->_dom = $dom;
         $this->_base = $base;
         return $this;
     }
@@ -128,6 +128,16 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     }
 
     /**
+     * Get feedtype
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->_type;
+    }
+
+    /**
      * Set feed type
      *
      * @param  string $type
@@ -140,13 +150,13 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     }
 
     /**
-     * Get feedtype
+     * Get root element
      *
-     * @return string
+     * @return DOMElement
      */
-    public function getType()
+    public function getRootElement()
     {
-        return $this->_type;
+        return $this->_rootElement;
     }
 
     /**
@@ -159,16 +169,6 @@ abstract class Zend_Feed_Writer_Extension_RendererAbstract
     {
         $this->_rootElement = $root;
         return $this;
-    }
-
-    /**
-     * Get root element
-     *
-     * @return DOMElement
-     */
-    public function getRootElement()
-    {
-        return $this->_rootElement;
     }
 
     /**

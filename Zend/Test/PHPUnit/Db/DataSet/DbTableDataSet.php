@@ -65,18 +65,6 @@ class Zend_Test_PHPUnit_Db_DataSet_DbTableDataSet extends PHPUnit_Extensions_Dat
     }
 
     /**
-     * Creates an iterator over the tables in the data set. If $reverse is
-     * true a reverse iterator will be returned.
-     *
-     * @param bool $reverse
-     * @return PHPUnit_Extensions_Database_DB_TableIterator
-     */
-    protected function createIterator($reverse = FALSE)
-    {
-        return new PHPUnit_Extensions_Database_DataSet_DefaultTableIterator($this->tables, $reverse);
-    }
-
-    /**
      * Returns a table object for the given table.
      *
      * @param string $tableName
@@ -99,5 +87,17 @@ class Zend_Test_PHPUnit_Db_DataSet_DbTableDataSet extends PHPUnit_Extensions_Dat
     public function getTableNames()
     {
         return array_keys($this->tables);
+    }
+
+    /**
+     * Creates an iterator over the tables in the data set. If $reverse is
+     * true a reverse iterator will be returned.
+     *
+     * @param bool $reverse
+     * @return PHPUnit_Extensions_Database_DB_TableIterator
+     */
+    protected function createIterator($reverse = FALSE)
+    {
+        return new PHPUnit_Extensions_Database_DataSet_DefaultTableIterator($this->tables, $reverse);
     }
 }

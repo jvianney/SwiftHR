@@ -1,8 +1,9 @@
 <?php
-/********************************************************************************* 
+
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,46 +19,49 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
-
-class Login_Acl extends Zend_Acl {
+class Login_Acl extends Zend_Acl
+{
     /**
      * __construct
      *
      * @param Zend_Db_Adapter $db
      * @param integer $role
      */
-    public function __construct($db,$role) {
+    public function __construct($db, $role)
+    {
         $this->loadRoles($db);
         $roles = new Login_Model_Roles($db);
-        $inhRole= $role;
+        $inhRole = $role;
         while (!empty($inhRole)) {
-            $this->loadResources($db,$inhRole);
-            $this->loadPermissions($db,$inhRole);
-            $inhRole= $roles->getParentRole($inhRole);
+            $this->loadResources($db, $inhRole);
+            $this->loadPermissions($db, $inhRole);
+            $inhRole = $roles->getParentRole($inhRole);
         }
     }
+
     /**
      * Load all the roles from the DB
      *
      * @param Zend_Db_Adapter $db
      * @return boolean
      */
-    public function loadRoles($db) {
-    	if (empty($db)) {
-    		return false;
-    	}
+    public function loadRoles($db)
+    {
+        if (empty($db)) {
+            return false;
+        }
         $roles = new Login_Model_Roles($db);
         $allRoles = $roles->getRoles();
         foreach ($allRoles as $role) {
             if (!empty($role->id_parent)) {
-                $this->addRole(new Zend_Acl_Role($role->id),$role->id_parent);
+                $this->addRole(new Zend_Acl_Role($role->id), $role->id_parent);
             } else {
                 $this->addRole(new Zend_Acl_Role($role->id));
             }
         }
         return true;
     }
+
     /**
      * Load all the resources for the specified role
      *
@@ -65,19 +69,21 @@ class Login_Acl extends Zend_Acl {
      * @param integer $role
      * @return boolean
      */
-    public function loadResources($db,$role) {
-    	if (empty($db)) {
-    		return false;
-    	}
-    	$resources= new Login_Model_Resources($db);
-    	$allResources= $resources->getResources($role);
-    	foreach ($allResources as $res) {
-                if (!$this->has($res)) {
-                    $this->addResource(new Zend_Acl_Resource($res['resource']));
-                }
-    	}
+    public function loadResources($db, $role)
+    {
+        if (empty($db)) {
+            return false;
+        }
+        $resources = new Login_Model_Resources($db);
+        $allResources = $resources->getResources($role);
+        foreach ($allResources as $res) {
+            if (!$this->has($res)) {
+                $this->addResource(new Zend_Acl_Resource($res['resource']));
+            }
+        }
         return true;
     }
+
     /**
      * Load all the permission for the specified role
      *
@@ -85,19 +91,20 @@ class Login_Acl extends Zend_Acl {
      * @param integer $role
      * @return boolean
      */
-    public function loadPermissions($db,$role) {
-    	if (empty($db)) {
-    		return false;
-    	}
-    	$permissions= new Login_Model_Permissions($db);
-    	$allPermissions= $permissions->getPermissions($role);
-    	foreach ($allPermissions as $res) {
-    		if ($res['permission']=='allow') {
-    			$this->allow($res['id_role'],$res['resource']);
-    		} else {
-    			$this->deny($res['id_role'],$res['resource']);
-    		}	
-    	}
+    public function loadPermissions($db, $role)
+    {
+        if (empty($db)) {
+            return false;
+        }
+        $permissions = new Login_Model_Permissions($db);
+        $allPermissions = $permissions->getPermissions($role);
+        foreach ($allPermissions as $res) {
+            if ($res['permission'] == 'allow') {
+                $this->allow($res['id_role'], $res['resource']);
+            } else {
+                $this->deny($res['id_role'], $res['resource']);
+            }
+        }
         return true;
     }
 

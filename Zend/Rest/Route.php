@@ -76,17 +76,40 @@ class Zend_Rest_Route extends Zend_Controller_Router_Route_Module
      * @param array $responders Modules or controllers to receive RESTful routes
      */
     public function __construct(Zend_Controller_Front $front,
-        array $defaults = array(),
-        array $responders = array()
-    ) {
+                                array $defaults = array(),
+                                array $responders = array()
+    )
+    {
         $this->_defaults = $defaults;
 
         if ($responders) {
             $this->_parseResponders($responders);
         }
 
-        $this->_front      = $front;
+        $this->_front = $front;
         $this->_dispatcher = $front->getDispatcher();
+    }
+
+    /**
+     * Parses the responders array sent to constructor to know
+     * which modules and/or controllers are RESTful
+     *
+     * @param array $responders
+     */
+    protected function _parseResponders($responders)
+    {
+        $modulesOnly = true;
+        foreach ($responders as $responder) {
+            if (is_array($responder)) {
+                $modulesOnly = false;
+                break;
+            }
+        }
+        if ($modulesOnly) {
+            $this->_restfulModules = $responders;
+        } else {
+            $this->_restfulControllers = $responders;
+        }
     }
 
     /**
@@ -129,10 +152,10 @@ class Zend_Rest_Route extends Zend_Controller_Router_Route_Module
         $this->_request = $request;
         $this->_setRequestKeys();
 
-        $path   = $request->getPathInfo();
+        $path = $request->getPathInfo();
         $params = $request->getParams();
         $values = array();
-        $path   = trim($path, self::URI_DELIMITER);
+        $path = trim($path, self::URI_DELIMITER);
 
         if ($path != '') {
 
@@ -174,9 +197,9 @@ class Zend_Rest_Route extends Zend_Controller_Router_Route_Module
             $specialGetTarget = false;
             if ($pathElementCount && array_search($path[0], array('index', 'new')) > -1) {
                 $specialGetTarget = array_shift($path);
-            } elseif ($pathElementCount && $path[$pathElementCount-1] == 'edit') {
+            } elseif ($pathElementCount && $path[$pathElementCount - 1] == 'edit') {
                 $specialGetTarget = 'edit';
-                $params['id'] = urldecode($path[$pathElementCount-2]);
+                $params['id'] = urldecode($path[$pathElementCount - 2]);
             } elseif ($pathElementCount == 1) {
                 $params['id'] = urldecode(array_shift($path));
             } elseif ($pathElementCount == 0 && !isset($params['id'])) {
@@ -197,7 +220,7 @@ class Zend_Rest_Route extends Zend_Controller_Router_Route_Module
             if ($requestMethod != 'get') {
                 if ($request->getParam('_method')) {
                     $values[$this->_actionKey] = strtolower($request->getParam('_method'));
-                } elseif ( $request->getHeader('X-HTTP-Method-Override') ) {
+                } elseif ($request->getHeader('X-HTTP-Method-Override')) {
                     $values[$this->_actionKey] = strtolower($request->getHeader('X-HTTP-Method-Override'));
                 } else {
                     $values[$this->_actionKey] = $requestMethod;
@@ -205,7 +228,7 @@ class Zend_Rest_Route extends Zend_Controller_Router_Route_Module
 
                 // Map PUT and POST to actual create/update actions
                 // based on parameter count (posting to resource or collection)
-                switch( $values[$this->_actionKey] ){
+                switch ($values[$this->_actionKey]) {
                     case 'post':
                         if ($pathElementCount > 0) {
                             $values[$this->_actionKey] = 'put';
@@ -231,6 +254,75 @@ class Zend_Rest_Route extends Zend_Controller_Router_Route_Module
             $this->setMatchedPath($request->getPathInfo());
 
         return $result;
+    }
+
+    /**
+     * Determine if a specified module supports RESTful routing
+     *
+     * @param string $moduleName
+     * @return bool
+     */
+    protected function _checkRestfulModule($moduleName)
+    {
+        if ($this->_allRestful()) {
+            return true;
+        }
+        if ($this->_fullRestfulModule($moduleName)) {
+            return true;
+        }
+        if ($this->_restfulControllers && array_key_exists($moduleName, $this->_restfulControllers)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Determines if RESTful routing applies to the entire app
+     *
+     * @return bool
+     */
+    protected function _allRestful()
+    {
+        return (!$this->_restfulModules && !$this->_restfulControllers);
+    }
+
+    /**
+     * Determines if RESTful routing applies to an entire module
+     *
+     * @param string $moduleName
+     * @return bool
+     */
+    protected function _fullRestfulModule($moduleName)
+    {
+        return (
+            $this->_restfulModules
+            && (false !== array_search($moduleName, $this->_restfulModules))
+        );
+    }
+
+    /**
+     * Determine if a specified module + controller combination supports
+     * RESTful routing
+     *
+     * @param string $moduleName
+     * @param string $controllerName
+     * @return bool
+     */
+    protected function _checkRestfulController($moduleName, $controllerName)
+    {
+        if ($this->_allRestful()) {
+            return true;
+        }
+        if ($this->_fullRestfulModule($moduleName)) {
+            return true;
+        }
+        if ($this->_checkRestfulModule($moduleName)
+            && $this->_restfulControllers
+            && (false !== array_search($controllerName, $this->_restfulControllers[$moduleName]))
+        ) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -284,16 +376,16 @@ class Zend_Rest_Route extends Zend_Controller_Router_Route_Module
             unset($params['index']);
             $url .= '/index';
             if (isset($params['id'])) {
-                $url .= '/'.$params['id'];
+                $url .= '/' . $params['id'];
                 unset($params['id']);
             }
             foreach ($params as $key => $value) {
                 if ($encode) $value = urlencode($value);
                 $url .= '/' . $key . '/' . $value;
             }
-        } elseif (! empty($action) && isset($params['id'])) {
+        } elseif (!empty($action) && isset($params['id'])) {
             $url .= sprintf('/%s/%s', $params['id'], $action);
-        } elseif (! empty($action)) {
+        } elseif (!empty($action)) {
             $url .= sprintf('/%s', $action);
         } elseif (isset($params['id'])) {
             $url .= '/' . $params['id'];
@@ -318,96 +410,5 @@ class Zend_Rest_Route extends Zend_Controller_Router_Route_Module
     public function getVersion()
     {
         return 2;
-    }
-
-    /**
-     * Parses the responders array sent to constructor to know
-     * which modules and/or controllers are RESTful
-     *
-     * @param array $responders
-     */
-    protected function _parseResponders($responders)
-    {
-        $modulesOnly = true;
-        foreach ($responders as $responder) {
-            if(is_array($responder)) {
-                $modulesOnly = false;
-                break;
-            }
-        }
-        if ($modulesOnly) {
-            $this->_restfulModules = $responders;
-        } else {
-            $this->_restfulControllers = $responders;
-        }
-    }
-
-    /**
-     * Determine if a specified module supports RESTful routing
-     *
-     * @param string $moduleName
-     * @return bool
-     */
-    protected function _checkRestfulModule($moduleName)
-    {
-        if ($this->_allRestful()) {
-            return true;
-        }
-        if ($this->_fullRestfulModule($moduleName)) {
-            return true;
-        }
-        if ($this->_restfulControllers && array_key_exists($moduleName, $this->_restfulControllers)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Determine if a specified module + controller combination supports
-     * RESTful routing
-     *
-     * @param string $moduleName
-     * @param string $controllerName
-     * @return bool
-     */
-    protected function _checkRestfulController($moduleName, $controllerName)
-    {
-        if ($this->_allRestful()) {
-            return true;
-        }
-        if ($this->_fullRestfulModule($moduleName)) {
-            return true;
-        }
-        if ($this->_checkRestfulModule($moduleName)
-            && $this->_restfulControllers
-            && (false !== array_search($controllerName, $this->_restfulControllers[$moduleName]))
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Determines if RESTful routing applies to the entire app
-     *
-     * @return bool
-     */
-    protected function _allRestful()
-    {
-        return (!$this->_restfulModules && !$this->_restfulControllers);
-    }
-
-    /**
-     * Determines if RESTful routing applies to an entire module
-     *
-     * @param string $moduleName
-     * @return bool
-     */
-    protected function _fullRestfulModule($moduleName)
-    {
-        return (
-            $this->_restfulModules
-            && (false !==array_search($moduleName, $this->_restfulModules))
-        );
     }
 }

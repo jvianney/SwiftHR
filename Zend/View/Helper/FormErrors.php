@@ -45,8 +45,8 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
     /**#@+
      * @var string Element block start/end tags and separator
      */
-    protected $_htmlElementEnd       = '</li></ul>';
-    protected $_htmlElementStart     = '<ul%s><li>';
+    protected $_htmlElementEnd = '</li></ul>';
+    protected $_htmlElementStart = '<ul%s><li>';
     protected $_htmlElementSeparator = '</li><li>';
     /**#@-*/
 
@@ -61,7 +61,7 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
     {
         $escape = true;
         if (isset($options['escape'])) {
-            $escape = (bool) $options['escape'];
+            $escape = (bool)$options['escape'];
             unset($options['escape']);
         }
 
@@ -72,7 +72,7 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
         $start = $this->getElementStart();
         if (strstr($start, '%s')) {
             $attribs = $this->_htmlAttribs($options);
-            $start   = sprintf($start, $attribs);
+            $start = sprintf($start, $attribs);
         }
 
         if ($escape) {
@@ -81,45 +81,21 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
             }
         }
 
-        $html  = $start
-               . implode($this->getElementSeparator(), (array) $errors)
-               . $this->getElementEnd();
+        $html = $start
+            . implode($this->getElementSeparator(), (array)$errors)
+            . $this->getElementEnd();
 
         return $html;
     }
 
     /**
-     * Set end string for displaying errors
-     *
-     * @param  string $string
-     * @return Zend_View_Helper_FormErrors
-     */
-    public function setElementEnd($string)
-    {
-        $this->_htmlElementEnd = (string) $string;
-        return $this;
-    }
-
-    /**
-     * Retrieve end string for displaying errors
+     * Retrieve start string for displaying errors
      *
      * @return string
      */
-    public function getElementEnd()
+    public function getElementStart()
     {
-        return $this->_htmlElementEnd;
-    }
-
-    /**
-     * Set separator string for displaying errors
-     *
-     * @param  string $string
-     * @return Zend_View_Helper_FormErrors
-     */
-    public function setElementSeparator($string)
-    {
-        $this->_htmlElementSeparator = (string) $string;
-        return $this;
+        return $this->_htmlElementStart;
     }
 
     /**
@@ -133,6 +109,40 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
     }
 
     /**
+     * Retrieve end string for displaying errors
+     *
+     * @return string
+     */
+    public function getElementEnd()
+    {
+        return $this->_htmlElementEnd;
+    }
+
+    /**
+     * Set end string for displaying errors
+     *
+     * @param  string $string
+     * @return Zend_View_Helper_FormErrors
+     */
+    public function setElementEnd($string)
+    {
+        $this->_htmlElementEnd = (string)$string;
+        return $this;
+    }
+
+    /**
+     * Set separator string for displaying errors
+     *
+     * @param  string $string
+     * @return Zend_View_Helper_FormErrors
+     */
+    public function setElementSeparator($string)
+    {
+        $this->_htmlElementSeparator = (string)$string;
+        return $this;
+    }
+
+    /**
      * Set start string for displaying errors
      *
      * @param  string $string
@@ -140,18 +150,8 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
      */
     public function setElementStart($string)
     {
-        $this->_htmlElementStart = (string) $string;
+        $this->_htmlElementStart = (string)$string;
         return $this;
-    }
-
-    /**
-     * Retrieve start string for displaying errors
-     *
-     * @return string
-     */
-    public function getElementStart()
-    {
-        return $this->_htmlElementStart;
     }
 
 }

@@ -57,43 +57,6 @@ class Zend_Form_Decorator_Callback extends Zend_Form_Decorator_Abstract
     protected $_callback;
 
     /**
-     * Set callback
-     *
-     * @param  callback $callback
-     * @return Zend_Form_Decorator_Callback
-     * @throws Zend_Form_Exception
-     */
-    public function setCallback($callback)
-    {
-        if (!is_callable($callback)) {
-            require_once 'Zend/Form/Exception.php';
-            throw new Zend_Form_Exception('Invalid callback provided to callback decorator');
-        }
-        $this->_callback = $callback;
-        return $this;
-    }
-
-    /**
-     * Get registered callback
-     *
-     * If not previously registered, checks to see if it exists in registered
-     * options.
-     *
-     * @return null|string|array
-     */
-    public function getCallback()
-    {
-        if (null === $this->_callback) {
-            if (null !== ($callback = $this->getOption('callback'))) {
-                $this->setCallback($callback);
-                $this->removeOption('callback');
-            }
-        }
-
-        return $this->_callback;
-    }
-
-    /**
      * Render
      *
      * If no callback registered, returns callback. Otherwise, gets return
@@ -124,5 +87,42 @@ class Zend_Form_Decorator_Callback extends Zend_Form_Decorator_Abstract
                 // replace content
                 return $response;
         }
+    }
+
+    /**
+     * Get registered callback
+     *
+     * If not previously registered, checks to see if it exists in registered
+     * options.
+     *
+     * @return null|string|array
+     */
+    public function getCallback()
+    {
+        if (null === $this->_callback) {
+            if (null !== ($callback = $this->getOption('callback'))) {
+                $this->setCallback($callback);
+                $this->removeOption('callback');
+            }
+        }
+
+        return $this->_callback;
+    }
+
+    /**
+     * Set callback
+     *
+     * @param  callback $callback
+     * @return Zend_Form_Decorator_Callback
+     * @throws Zend_Form_Exception
+     */
+    public function setCallback($callback)
+    {
+        if (!is_callable($callback)) {
+            require_once 'Zend/Form/Exception.php';
+            throw new Zend_Form_Exception('Invalid callback provided to callback decorator');
+        }
+        $this->_callback = $callback;
+        return $this;
     }
 }

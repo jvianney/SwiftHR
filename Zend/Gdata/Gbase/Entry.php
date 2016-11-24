@@ -88,6 +88,50 @@ class Zend_Gdata_Gbase_Entry extends Zend_Gdata_Entry
     }
 
     /**
+     * Get the value of the itme_type
+     *
+     * @return Zend_Gdata_Gbase_Extension_ItemType The requested object.
+     */
+    public function getItemType()
+    {
+        $itemType = $this->getGbaseAttribute('item_type');
+        if (is_object($itemType[0])) {
+            return $itemType[0];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Return an array of Base attributes that match the given attribute name
+     *
+     * @param string $name The name of the Base attribute to look for
+     * @return array $matches Array that contains the matching list of Base attributes
+     */
+    public function getGbaseAttribute($name)
+    {
+        $matches = array();
+        for ($i = 0; $i < count($this->_baseAttributes); $i++) {
+            $baseAttribute = $this->_baseAttributes[$i];
+            if ($baseAttribute->rootElement == $name &&
+                $baseAttribute->rootNamespaceURI == $this->lookupNamespace('g')
+            ) {
+                $matches[] = &$this->_baseAttributes[$i];
+            }
+        }
+        return $matches;
+    }
+
+    /**
+     * Return all the Base attributes
+     * @return Zend_Gdata_Gbase_Extension_BaseAttribute
+     */
+    public function getGbaseAttributes()
+    {
+        return $this->_baseAttributes;
+    }
+
+    /**
      * Creates individual Entry objects of the appropriate type and
      * stores them as members of this entry based upon DOM data.
      *
@@ -104,48 +148,6 @@ class Zend_Gdata_Gbase_Entry extends Zend_Gdata_Entry
         } else {
             parent::takeChildFromDOM($child);
         }
-    }
-
-    /**
-     * Get the value of the itme_type
-     *
-     * @return Zend_Gdata_Gbase_Extension_ItemType The requested object.
-     */
-    public function getItemType()
-    {
-        $itemType = $this->getGbaseAttribute('item_type');
-        if (is_object($itemType[0])) {
-          return $itemType[0];
-        } else {
-          return null;
-        }
-    }
-
-    /**
-     * Return all the Base attributes
-     * @return Zend_Gdata_Gbase_Extension_BaseAttribute
-     */
-    public function getGbaseAttributes() {
-        return $this->_baseAttributes;
-    }
-
-    /**
-     * Return an array of Base attributes that match the given attribute name
-     *
-     * @param string $name The name of the Base attribute to look for
-     * @return array $matches Array that contains the matching list of Base attributes
-     */
-    public function getGbaseAttribute($name)
-    {
-        $matches = array();
-        for ($i = 0; $i < count($this->_baseAttributes); $i++) {
-            $baseAttribute = $this->_baseAttributes[$i];
-            if ($baseAttribute->rootElement == $name &&
-                $baseAttribute->rootNamespaceURI == $this->lookupNamespace('g')) {
-                $matches[] = &$this->_baseAttributes[$i];
-            }
-        }
-        return $matches;
     }
 
 }

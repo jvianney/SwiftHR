@@ -14,7 +14,8 @@ class HTMLPurifier_AttrDef_CSS_Number extends HTMLPurifier_AttrDef
     /**
      * @param $non_negative Bool indicating whether negatives are forbidden
      */
-    public function __construct($non_negative = false) {
+    public function __construct($non_negative = false)
+    {
         $this->non_negative = $non_negative;
     }
 
@@ -22,7 +23,8 @@ class HTMLPurifier_AttrDef_CSS_Number extends HTMLPurifier_AttrDef
      * @warning Some contexts do not pass $config, $context. These
      *          variables should not be used without checking HTMLPurifier_Length
      */
-    public function validate($number, $config, $context) {
+    public function validate($number, $config, $context)
+    {
 
         $number = $this->parseCDATA($number);
 
@@ -51,7 +53,7 @@ class HTMLPurifier_AttrDef_CSS_Number extends HTMLPurifier_AttrDef
         if ($left === '' && $right === '') return false;
         if ($left !== '' && !ctype_digit($left)) return false;
 
-        $left  = ltrim($left,  '0');
+        $left = ltrim($left, '0');
         $right = rtrim($right, '0');
 
         if ($right === '') {

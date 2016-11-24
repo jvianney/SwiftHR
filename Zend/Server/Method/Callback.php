@@ -64,7 +64,7 @@ class Zend_Server_Method_Callback
      */
     public function __construct($options = null)
     {
-        if ((null !== $options) && is_array($options))  {
+        if ((null !== $options) && is_array($options)) {
             $this->setOptions($options);
         }
     }
@@ -87,73 +87,33 @@ class Zend_Server_Method_Callback
     }
 
     /**
-     * Set callback class
+     * Cast callback to array
      *
-     * @param  string $class
-     * @return Zend_Server_Method_Callback
+     * @return array
      */
-    public function setClass($class)
+    public function toArray()
     {
-        if (is_object($class)) {
-            $class = get_class($class);
+        $type = $this->getType();
+        $array = array(
+            'type' => $type,
+        );
+        if ('function' == $type) {
+            $array['function'] = $this->getFunction();
+        } else {
+            $array['class'] = $this->getClass();
+            $array['method'] = $this->getMethod();
         }
-        $this->_class = $class;
-        return $this;
+        return $array;
     }
 
     /**
-     * Get callback class
+     * Get callback type
      *
-     * @return string|null
+     * @return string
      */
-    public function getClass()
+    public function getType()
     {
-        return $this->_class;
-    }
-
-    /**
-     * Set callback function
-     *
-     * @param  string $function
-     * @return Zend_Server_Method_Callback
-     */
-    public function setFunction($function)
-    {
-        $this->_function = (string) $function;
-        $this->setType('function');
-        return $this;
-    }
-
-    /**
-     * Get callback function
-     *
-     * @return null|string
-     */
-    public function getFunction()
-    {
-        return $this->_function;
-    }
-
-    /**
-     * Set callback class method
-     *
-     * @param  string $method
-     * @return Zend_Server_Method_Callback
-     */
-    public function setMethod($method)
-    {
-        $this->_method = $method;
-        return $this;
-    }
-
-    /**
-     * Get callback class  method
-     *
-     * @return null|string
-     */
-    public function getMethod()
-    {
-        return $this->_method;
+        return $this->_type;
     }
 
     /**
@@ -174,32 +134,72 @@ class Zend_Server_Method_Callback
     }
 
     /**
-     * Get callback type
+     * Get callback function
      *
-     * @return string
+     * @return null|string
      */
-    public function getType()
+    public function getFunction()
     {
-        return $this->_type;
+        return $this->_function;
     }
 
     /**
-     * Cast callback to array
+     * Set callback function
      *
-     * @return array
+     * @param  string $function
+     * @return Zend_Server_Method_Callback
      */
-    public function toArray()
+    public function setFunction($function)
     {
-        $type = $this->getType();
-        $array = array(
-            'type' => $type,
-        );
-        if ('function' == $type) {
-            $array['function'] = $this->getFunction();
-        } else {
-            $array['class']  = $this->getClass();
-            $array['method'] = $this->getMethod();
+        $this->_function = (string)$function;
+        $this->setType('function');
+        return $this;
+    }
+
+    /**
+     * Get callback class
+     *
+     * @return string|null
+     */
+    public function getClass()
+    {
+        return $this->_class;
+    }
+
+    /**
+     * Set callback class
+     *
+     * @param  string $class
+     * @return Zend_Server_Method_Callback
+     */
+    public function setClass($class)
+    {
+        if (is_object($class)) {
+            $class = get_class($class);
         }
-        return $array;
+        $this->_class = $class;
+        return $this;
+    }
+
+    /**
+     * Get callback class  method
+     *
+     * @return null|string
+     */
+    public function getMethod()
+    {
+        return $this->_method;
+    }
+
+    /**
+     * Set callback class method
+     *
+     * @param  string $method
+     * @return Zend_Server_Method_Callback
+     */
+    public function setMethod($method)
+    {
+        $this->_method = $method;
+        return $this;
     }
 }

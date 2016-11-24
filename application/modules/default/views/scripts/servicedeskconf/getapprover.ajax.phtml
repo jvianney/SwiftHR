@@ -1,8 +1,8 @@
-<?php 
-/********************************************************************************* 
+<?php
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -20,19 +20,17 @@
  ********************************************************************************/
 ?>
 
-<?php 
+<?php
 $options_data = "";
-   $options_data .= sapp_Global::selectOptionBuilder('', 'Select Approver '.$this->approvercount);
-if(!empty($this->employeedata))
-{
-		foreach ($this->employeedata as $employee) {
-			$options_data .= sapp_Global::selectOptionBuilder($employee['user_id'],utf8_encode($employee['userfullname']));
-		}
-		echo $options_data;
-	
-}else
-{
-  echo "noemployees";
+$options_data .= sapp_Global::selectOptionBuilder('', 'Select Approver ' . $this->approvercount);
+if (!empty($this->employeedata)) {
+    foreach ($this->employeedata as $employee) {
+        $options_data .= sapp_Global::selectOptionBuilder($employee['user_id'], utf8_encode($employee['userfullname']));
+    }
+    echo $options_data;
+
+} else {
+    echo "noemployees";
 }
 ?> 
  

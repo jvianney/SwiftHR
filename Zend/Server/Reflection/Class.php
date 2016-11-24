@@ -93,6 +93,37 @@ class Zend_Server_Reflection_Class
     }
 
     /**
+     * Get namespace for this class
+     *
+     * @return string
+     */
+    public function getNamespace()
+    {
+        return $this->_namespace;
+    }
+
+    /**
+     * Set namespace for this class
+     *
+     * @param string $namespace
+     * @return void
+     */
+    public function setNamespace($namespace)
+    {
+        if (empty($namespace)) {
+            $this->_namespace = '';
+            return;
+        }
+
+        if (!is_string($namespace) || !preg_match('/[a-z0-9_\.]+/i', $namespace)) {
+            require_once 'Zend/Server/Reflection/Exception.php';
+            throw new Zend_Server_Reflection_Exception('Invalid namespace');
+        }
+
+        $this->_namespace = $namespace;
+    }
+
+    /**
      * Proxy reflection calls
      *
      * @param string $method
@@ -150,37 +181,6 @@ class Zend_Server_Reflection_Class
     public function getMethods()
     {
         return $this->_methods;
-    }
-
-    /**
-     * Get namespace for this class
-     *
-     * @return string
-     */
-    public function getNamespace()
-    {
-        return $this->_namespace;
-    }
-
-    /**
-     * Set namespace for this class
-     *
-     * @param string $namespace
-     * @return void
-     */
-    public function setNamespace($namespace)
-    {
-        if (empty($namespace)) {
-            $this->_namespace = '';
-            return;
-        }
-
-        if (!is_string($namespace) || !preg_match('/[a-z0-9_\.]+/i', $namespace)) {
-            require_once 'Zend/Server/Reflection/Exception.php';
-            throw new Zend_Server_Reflection_Exception('Invalid namespace');
-        }
-
-        $this->_namespace = $namespace;
     }
 
     /**

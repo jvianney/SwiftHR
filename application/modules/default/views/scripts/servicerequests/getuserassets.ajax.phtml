@@ -1,8 +1,8 @@
-<?php 
-/********************************************************************************* 
+<?php
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -20,19 +20,17 @@
  ********************************************************************************/
 ?>
 
-<?php  $options_data = "";
-   $options_data .= sapp_Global::selectOptionBuilder('', 'Select Asset Name ');
-if(!empty($this->user_allocated_cat))
-{
-				foreach ($this->user_allocated_cat as $userdata) {
-			$options_data .= sapp_Global::selectOptionBuilder($userdata['id'].'_'.$userdata['category'],utf8_encode($userdata['name']));
-			
-				}
-		echo $options_data;
-	
-}else
-{
-  echo "noassets";
+<?php $options_data = "";
+$options_data .= sapp_Global::selectOptionBuilder('', 'Select Asset Name ');
+if (!empty($this->user_allocated_cat)) {
+    foreach ($this->user_allocated_cat as $userdata) {
+        $options_data .= sapp_Global::selectOptionBuilder($userdata['id'] . '_' . $userdata['category'], utf8_encode($userdata['name']));
+
+    }
+    echo $options_data;
+
+} else {
+    echo "noassets";
 }
 
 ?> 

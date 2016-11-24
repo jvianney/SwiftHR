@@ -168,16 +168,6 @@ class Zend_Ldap_Node_RootDse_ActiveDirectory extends Zend_Ldap_Node_RootDse
     }
 
     /**
-     * Gets the schemaNamingContext.
-     *
-     * @return string|null
-     */
-    public function getSchemaNamingContext()
-    {
-        return $this->getAttribute('schemaNamingContext', 0);
-    }
-
-    /**
      * Gets the serverName.
      *
      * @return string|null
@@ -243,5 +233,15 @@ class Zend_Ldap_Node_RootDse_ActiveDirectory extends Zend_Ldap_Node_RootDse
          */
         require_once 'Zend/Ldap/Dn.php';
         return Zend_Ldap_Dn::fromString($schemaDn);
+    }
+
+    /**
+     * Gets the schemaNamingContext.
+     *
+     * @return string|null
+     */
+    public function getSchemaNamingContext()
+    {
+        return $this->getAttribute('schemaNamingContext', 0);
     }
 }

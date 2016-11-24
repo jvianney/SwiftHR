@@ -149,6 +149,7 @@ a.waves-effect .waves-ripple {
     padding: 8px 24px;
     background-color: #f9f9f9;
 }
+
 .modal .modal-header h4 {
     font-family: 'Roboto Light', sans-serif;
     font-size: 18px;
@@ -156,6 +157,7 @@ a.waves-effect .waves-ripple {
     margin-bottom: 0;
     font-weight: 100;
 }
+
 .modal .modal-header .mc-icon {
     float: right;
     margin: 0 !important;
@@ -164,15 +166,19 @@ a.waves-effect .waves-ripple {
     padding: 2px 6px;
     font-size: 14px;
 }
+
 .modal .modal-content {
     padding: 0px
 }
+
 .modal .modal-content .mc-wrap {
     margin: 24px;
 }
+
 .modal .modal-content .mc-search {
     text-align: right;
 }
+
 .modal .modal-content .mc-search input[type="search"] {
     border: 1px solid #c2c2c2;
     padding: 8px 12px;
@@ -181,10 +187,22 @@ a.waves-effect .waves-ripple {
     font-size: 14px;
     min-width: 190px;
 }
-.modal .modal-content .mc-search input[type="search"]::-webkit-input-placeholder {color: #b8b8b8;}
-.modal .modal-content .mc-search input[type="search"]:-moz-placeholder {color: #b8b8b8;}
-.modal .modal-content .mc-search input[type="search"]::-moz-placeholder {color: #b8b8b8;}
-.modal .modal-content .mc-search input[type="search"]:-ms-input-placeholder {color: #b8b8b8;}
+
+.modal .modal-content .mc-search input[type="search"]::-webkit-input-placeholder {
+    color: #b8b8b8;
+}
+
+.modal .modal-content .mc-search input[type="search"]:-moz-placeholder {
+    color: #b8b8b8;
+}
+
+.modal .modal-content .mc-search input[type="search"]::-moz-placeholder {
+    color: #b8b8b8;
+}
+
+.modal .modal-content .mc-search input[type="search"]:-ms-input-placeholder {
+    color: #b8b8b8;
+}
 
 .modal .modal-close {
     cursor: pointer;
@@ -200,9 +218,11 @@ a.waves-effect .waves-ripple {
     width: 100%;
     line-height: 36px;
 }
+
 .modal .modal-footer .modal-action {
     margin: 12px 24px !important;
 }
+
 .modal .modal-footer .btn,
 .modal .modal-footer .btn-large,
 .modal .modal-footer .btn-flat {

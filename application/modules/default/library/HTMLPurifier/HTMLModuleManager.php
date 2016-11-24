@@ -47,17 +47,20 @@ class HTMLPurifier_HTMLModuleManager
     /** List of prefixes we should use for registering small names */
     public $prefixes = array('HTMLPurifier_HTMLModule_');
 
-    public $contentSets;     /**< Instance of HTMLPurifier_ContentSets */
-    public $attrCollections; /**< Instance of HTMLPurifier_AttrCollections */
+    public $contentSets;
+    /**< Instance of HTMLPurifier_ContentSets */
+    public $attrCollections;
+    /**< Instance of HTMLPurifier_AttrCollections */
 
     /** If set to true, unsafe elements and attributes will be allowed */
     public $trusted = false;
 
-    public function __construct() {
+    public function __construct()
+    {
 
         // editable internal objects
         $this->attrTypes = new HTMLPurifier_AttrTypes();
-        $this->doctypes  = new HTMLPurifier_DoctypeRegistry();
+        $this->doctypes = new HTMLPurifier_DoctypeRegistry();
 
         // setup basic modules
         $common = array(
@@ -65,7 +68,7 @@ class HTMLPurifier_HTMLModuleManager
             'Presentation', 'Edit', 'Bdo', 'Tables', 'Image',
             'StyleAttribute',
             // Unsafe:
-            'Scripting', 'Object',  'Forms',
+            'Scripting', 'Object', 'Forms',
             // Sorta legacy, but present in strict:
             'Name',
         );
@@ -122,6 +125,17 @@ class HTMLPurifier_HTMLModuleManager
     }
 
     /**
+     * Adds a module to the current doctype by first registering it,
+     * and then tacking it on to the active doctype
+     */
+    public function addModule($module)
+    {
+        $this->registerModule($module);
+        if (is_object($module)) $module = $module->name;
+        $this->userModules[] = $module;
+    }
+
+    /**
      * Registers a module to the recognized module list, useful for
      * overloading pre-existing modules.
      * @param $module Mixed: string module name, with or without
@@ -142,7 +156,8 @@ class HTMLPurifier_HTMLModuleManager
      *       your module manually. All modules must have been included
      *       externally: registerModule will not perform inclusions for you!
      */
-    public function registerModule($module, $overload = false) {
+    public function registerModule($module, $overload = false)
+    {
         if (is_string($module)) {
             // attempt to load the module
             $original_module = $module;
@@ -175,20 +190,11 @@ class HTMLPurifier_HTMLModuleManager
     }
 
     /**
-     * Adds a module to the current doctype by first registering it,
-     * and then tacking it on to the active doctype
-     */
-    public function addModule($module) {
-        $this->registerModule($module);
-        if (is_object($module)) $module = $module->name;
-        $this->userModules[] = $module;
-    }
-
-    /**
      * Adds a class prefix that registerModule() will use to resolve a
      * string name to a concrete class
      */
-    public function addPrefix($prefix) {
+    public function addPrefix($prefix)
+    {
         $this->prefixes[] = $prefix;
     }
 
@@ -197,7 +203,8 @@ class HTMLPurifier_HTMLModuleManager
      * use getElement() and getElements()
      * @param $config Instance of HTMLPurifier_Config
      */
-    public function setup($config) {
+    public function setup($config)
+    {
 
         $this->trusted = $config->get('HTML.Trusted');
 
@@ -268,8 +275,8 @@ class HTMLPurifier_HTMLModuleManager
 
         // note the different choice
         $this->contentSets = new HTMLPurifier_ContentSets(
-            // content set assembly deals with all possible modules,
-            // not just ones deemed to be "safe"
+        // content set assembly deals with all possible modules,
+        // not just ones deemed to be "safe"
             $this->modules
         );
         $this->attrCollections = new HTMLPurifier_AttrCollections(
@@ -285,7 +292,8 @@ class HTMLPurifier_HTMLModuleManager
      * Takes a module and adds it to the active module collection,
      * registering it if necessary.
      */
-    public function processModule($module) {
+    public function processModule($module)
+    {
         if (!isset($this->registeredModules[$module]) || is_object($module)) {
             $this->registerModule($module);
         }
@@ -296,7 +304,8 @@ class HTMLPurifier_HTMLModuleManager
      * Retrieves merged element definitions.
      * @return Array of HTMLPurifier_ElementDef
      */
-    public function getElements() {
+    public function getElements()
+    {
 
         $elements = array();
         foreach ($this->modules as $module) {
@@ -327,7 +336,8 @@ class HTMLPurifier_HTMLModuleManager
      *       in getElements() and once here). This
      *       is because
      */
-    public function getElement($name, $trusted = null) {
+    public function getElement($name, $trusted = null)
+    {
 
         if (!isset($this->elementLookup[$name])) {
             return false;
@@ -339,7 +349,7 @@ class HTMLPurifier_HTMLModuleManager
 
         // iterate through each module that has registered itself to this
         // element
-        foreach($this->elementLookup[$name] as $module_name) {
+        foreach ($this->elementLookup[$name] as $module_name) {
 
             $module = $this->modules[$module_name];
 
@@ -373,7 +383,8 @@ class HTMLPurifier_HTMLModuleManager
 
             // descendants_are_inline, for ChildDef_Chameleon
             if (is_string($def->content_model) &&
-                strpos($def->content_model, 'Inline') !== false) {
+                strpos($def->content_model, 'Inline') !== false
+            ) {
                 if ($name != 'del' && $name != 'ins') {
                     // this is for you, ins/del
                     $def->descendants_are_inline = true;

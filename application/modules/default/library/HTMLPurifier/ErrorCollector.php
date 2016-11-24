@@ -11,9 +11,9 @@ class HTMLPurifier_ErrorCollector
      * Identifiers for the returned error array. These are purposely numeric
      * so list() can be used.
      */
-    const LINENO   = 0;
+    const LINENO = 0;
     const SEVERITY = 1;
-    const MESSAGE  = 2;
+    const MESSAGE = 2;
     const CHILDREN = 3;
 
     protected $errors;
@@ -25,11 +25,12 @@ class HTMLPurifier_ErrorCollector
 
     protected $lines = array();
 
-    public function __construct($context) {
-        $this->locale    =& $context->get('Locale');
-        $this->context   = $context;
-        $this->_current  =& $this->_stacks[0];
-        $this->errors    =& $this->_stacks[0];
+    public function __construct($context)
+    {
+        $this->locale =& $context->get('Locale');
+        $this->context = $context;
+        $this->_current =& $this->_stacks[0];
+        $this->errors =& $this->_stacks[0];
     }
 
     /**
@@ -39,7 +40,8 @@ class HTMLPurifier_ErrorCollector
      * @param $subst1 string First substitution for $msg
      * @param $subst2 string ...
      */
-    public function send($severity, $msg) {
+    public function send($severity, $msg)
+    {
 
         $args = array();
         if (func_num_args() > 2) {
@@ -49,9 +51,9 @@ class HTMLPurifier_ErrorCollector
         }
 
         $token = $this->context->get('CurrentToken', true);
-        $line  = $token ? $token->line : $this->context->get('CurrentLine', true);
-        $col   = $token ? $token->col  : $this->context->get('CurrentCol',  true);
-        $attr  = $this->context->get('CurrentAttr', true);
+        $line = $token ? $token->line : $this->context->get('CurrentLine', true);
+        $col = $token ? $token->col : $this->context->get('CurrentCol', true);
+        $attr = $this->context->get('CurrentAttr', true);
 
         // perform special substitutions, also add custom parameters
         $subst = array();
@@ -73,9 +75,9 @@ class HTMLPurifier_ErrorCollector
 
         // (numerically indexed)
         $error = array(
-            self::LINENO   => $line,
+            self::LINENO => $line,
             self::SEVERITY => $severity,
-            self::MESSAGE  => $msg,
+            self::MESSAGE => $msg,
             self::CHILDREN => array()
         );
         $this->_current[] = $error;
@@ -132,7 +134,8 @@ class HTMLPurifier_ErrorCollector
      *        error severity, error message,
      *        recursive sub-errors array)
      */
-    public function getRaw() {
+    public function getRaw()
+    {
         return $this->errors;
     }
 
@@ -141,7 +144,8 @@ class HTMLPurifier_ErrorCollector
      * @param $config Configuration array, vital for HTML output nature
      * @param $errors Errors array to display; used for recursion.
      */
-    public function getHTMLFormatted($config, $errors = null) {
+    public function getHTMLFormatted($config, $errors = null)
+    {
         $ret = array();
 
         $this->generator = new HTMLPurifier_Generator($config, $this->context);
@@ -168,7 +172,8 @@ class HTMLPurifier_ErrorCollector
 
     }
 
-    private function _renderStruct(&$ret, $struct, $line = null, $col = null) {
+    private function _renderStruct(&$ret, $struct, $line = null, $col = null)
+    {
         $stack = array($struct);
         $context_stack = array(array());
         while ($current = array_pop($stack)) {

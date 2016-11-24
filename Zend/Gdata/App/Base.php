@@ -39,44 +39,37 @@ abstract class Zend_Gdata_App_Base
 {
 
     /**
-     * @var string The XML element name, including prefix if desired
-     */
-    protected $_rootElement = null;
-
-    /**
-     * @var string The XML namespace prefix
-     */
-    protected $_rootNamespace = 'atom';
-
-    /**
-     * @var string The XML namespace URI - takes precedence over lookup up the
-     * corresponding URI for $_rootNamespace
-     */
-    protected $_rootNamespaceURI = null;
-
-    /**
-     * @var array Leftover elements which were not handled
-     */
-    protected $_extensionElements = array();
-
-    /**
-     * @var array Leftover attributes which were not handled
-     */
-    protected $_extensionAttributes = array();
-
-    /**
-     * @var string XML child text node content
-     */
-    protected $_text = null;
-
-    /**
      * @var array Memoized results from calls to lookupNamespace() to avoid
      *      expensive calls to getGreatestBoundedValue(). The key is in the
      *      form 'prefix-majorVersion-minorVersion', and the value is the
      *      output from getGreatestBoundedValue().
      */
     protected static $_namespaceLookupCache = array();
-
+    /**
+     * @var string The XML element name, including prefix if desired
+     */
+    protected $_rootElement = null;
+    /**
+     * @var string The XML namespace prefix
+     */
+    protected $_rootNamespace = 'atom';
+    /**
+     * @var string The XML namespace URI - takes precedence over lookup up the
+     * corresponding URI for $_rootNamespace
+     */
+    protected $_rootNamespaceURI = null;
+    /**
+     * @var array Leftover elements which were not handled
+     */
+    protected $_extensionElements = array();
+    /**
+     * @var array Leftover attributes which were not handled
+     */
+    protected $_extensionAttributes = array();
+    /**
+     * @var string XML child text node content
+     */
+    protected $_text = null;
     /**
      * List of namespaces, as a three-dimensional array. The first dimension
      * represents the namespace prefix, the second dimension represents the
@@ -92,52 +85,36 @@ abstract class Zend_Gdata_App_Base
      * @see registerAllNamespaces()
      * @var array
      */
-   protected $_namespaces = array(
-        'atom'      => array(
+    protected $_namespaces = array(
+        'atom' => array(
             1 => array(
                 0 => 'http://www.w3.org/2005/Atom'
-                )
-            ),
-        'app'       => array(
+            )
+        ),
+        'app' => array(
             1 => array(
                 0 => 'http://purl.org/atom/app#'
-                ),
+            ),
             2 => array(
                 0 => 'http://www.w3.org/2007/app'
-                )
             )
-        );
+        )
+    );
 
     public function __construct()
     {
     }
 
     /**
-     * Returns the child text node of this element
-     * This represents any raw text contained within the XML element
+     * Flush namespace lookup cache.
      *
-     * @return string Child text node
+     * Empties the namespace lookup cache. Call this function if you have
+     * added data to the namespace lookup table that contradicts values that
+     * may have been cached during a previous call to lookupNamespace().
      */
-    public function getText($trim = true)
+    public static function flushNamespaceLookupCache()
     {
-        if ($trim) {
-            return trim($this->_text);
-        } else {
-            return $this->_text;
-        }
-    }
-
-    /**
-     * Sets the child text node of this element
-     * This represents any raw text contained within the XML element
-     *
-     * @param string $value Child text node
-     * @return Zend_Gdata_App_Base Returns an object of the same type as 'this' to provide a fluent interface.
-     */
-    public function setText($value)
-    {
-        $this->_text = $value;
-        return $this;
+        self::$_namespaceLookupCache = array();
     }
 
     /**
@@ -195,6 +172,114 @@ abstract class Zend_Gdata_App_Base
     }
 
     /**
+     * Parses the provided XML text and generates data model classes for
+     * each know element by turning the XML text into a DOM tree and calling
+     * transferFromDOM($element).  The first data model element with the same
+     * name as $this->_rootElement is used and the child elements are
+     * recursively parsed.
+     *
+     * @param string $xml The XML text to parse
+     */
+    public function transferFromXML($xml)
+    {
+        if ($xml) {
+            // Load the feed as an XML DOMDocument object
+            @ini_set('track_errors', 1);
+            $doc = new DOMDocument();
+            $success = @$doc->loadXML($xml);
+            @ini_restore('track_errors');
+            if (!$success) {
+                require_once 'Zend/Gdata/App/Exception.php';
+                throw new Zend_Gdata_App_Exception("DOMDocument cannot parse XML: $php_errormsg");
+            }
+            $element = $doc->getElementsByTagName($this->_rootElement)->item(0);
+            if (!$element) {
+                require_once 'Zend/Gdata/App/Exception.php';
+                throw new Zend_Gdata_App_Exception('No root <' . $this->_rootElement . '> element');
+            }
+            $this->transferFromDOM($element);
+        } else {
+            require_once 'Zend/Gdata/App/Exception.php';
+            throw new Zend_Gdata_App_Exception('XML passed to transferFromXML cannot be null');
+        }
+    }
+
+    /**
+     * Transfers each child and attribute into member variables.
+     * This is called when XML is received over the wire and the data
+     * model needs to be built to represent this XML.
+     *
+     * @param DOMNode $node The DOMNode that represents this object's data
+     */
+    public function transferFromDOM($node)
+    {
+        foreach ($node->childNodes as $child) {
+            $this->takeChildFromDOM($child);
+        }
+        foreach ($node->attributes as $attribute) {
+            $this->takeAttributeFromDOM($attribute);
+        }
+    }
+
+    /**
+     * Given a child DOMNode, tries to determine how to map the data into
+     * object instance members.  If no mapping is defined, Extension_Element
+     * objects are created and stored in an array.
+     *
+     * @param DOMNode $child The DOMNode needed to be handled
+     */
+    protected function takeChildFromDOM($child)
+    {
+        if ($child->nodeType == XML_TEXT_NODE) {
+            $this->_text = $child->nodeValue;
+        } else {
+            $extensionElement = new Zend_Gdata_App_Extension_Element();
+            $extensionElement->transferFromDOM($child);
+            $this->_extensionElements[] = $extensionElement;
+        }
+    }
+
+    /**
+     * Given a DOMNode representing an attribute, tries to map the data into
+     * instance members.  If no mapping is defined, the name and value are
+     * stored in an array.
+     *
+     * @param DOMNode $attribute The DOMNode attribute needed to be handled
+     */
+    protected function takeAttributeFromDOM($attribute)
+    {
+        $arrayIndex = ($attribute->namespaceURI != '') ? (
+            $attribute->namespaceURI . ':' . $attribute->name) :
+            $attribute->name;
+        $this->_extensionAttributes[$arrayIndex] =
+            array('namespaceUri' => $attribute->namespaceURI,
+                'name' => $attribute->localName,
+                'value' => $attribute->nodeValue);
+    }
+
+    /**
+     * Alias for saveXML() returns XML content for this element and all
+     * children
+     *
+     * @return string XML content
+     */
+    public function getXML()
+    {
+        return $this->saveXML();
+    }
+
+    /**
+     * Converts this element and all children into XML text using getDOM()
+     *
+     * @return string XML content
+     */
+    public function saveXML()
+    {
+        $element = $this->getDOM();
+        return $element->ownerDocument->saveXML($element);
+    }
+
+    /**
      * Retrieves a DOMElement which corresponds to this element and all
      * child properties.  This is used to build an entry back into a DOM
      * and eventually XML text for sending to the server upon updates, or
@@ -234,127 +319,6 @@ abstract class Zend_Gdata_App_Base
     }
 
     /**
-     * Given a child DOMNode, tries to determine how to map the data into
-     * object instance members.  If no mapping is defined, Extension_Element
-     * objects are created and stored in an array.
-     *
-     * @param DOMNode $child The DOMNode needed to be handled
-     */
-    protected function takeChildFromDOM($child)
-    {
-        if ($child->nodeType == XML_TEXT_NODE) {
-            $this->_text = $child->nodeValue;
-        } else {
-            $extensionElement = new Zend_Gdata_App_Extension_Element();
-            $extensionElement->transferFromDOM($child);
-            $this->_extensionElements[] = $extensionElement;
-        }
-    }
-
-    /**
-     * Given a DOMNode representing an attribute, tries to map the data into
-     * instance members.  If no mapping is defined, the name and value are
-     * stored in an array.
-     *
-     * @param DOMNode $attribute The DOMNode attribute needed to be handled
-     */
-    protected function takeAttributeFromDOM($attribute)
-    {
-        $arrayIndex = ($attribute->namespaceURI != '')?(
-                $attribute->namespaceURI . ':' . $attribute->name):
-                $attribute->name;
-        $this->_extensionAttributes[$arrayIndex] =
-                array('namespaceUri' => $attribute->namespaceURI,
-                      'name' => $attribute->localName,
-                      'value' => $attribute->nodeValue);
-    }
-
-    /**
-     * Transfers each child and attribute into member variables.
-     * This is called when XML is received over the wire and the data
-     * model needs to be built to represent this XML.
-     *
-     * @param DOMNode $node The DOMNode that represents this object's data
-     */
-    public function transferFromDOM($node)
-    {
-        foreach ($node->childNodes as $child) {
-            $this->takeChildFromDOM($child);
-        }
-        foreach ($node->attributes as $attribute) {
-            $this->takeAttributeFromDOM($attribute);
-        }
-    }
-
-    /**
-     * Parses the provided XML text and generates data model classes for
-     * each know element by turning the XML text into a DOM tree and calling
-     * transferFromDOM($element).  The first data model element with the same
-     * name as $this->_rootElement is used and the child elements are
-     * recursively parsed.
-     *
-     * @param string $xml The XML text to parse
-     */
-    public function transferFromXML($xml)
-    {
-        if ($xml) {
-            // Load the feed as an XML DOMDocument object
-            @ini_set('track_errors', 1);
-            $doc = new DOMDocument();
-            $success = @$doc->loadXML($xml);
-            @ini_restore('track_errors');
-            if (!$success) {
-                require_once 'Zend/Gdata/App/Exception.php';
-                throw new Zend_Gdata_App_Exception("DOMDocument cannot parse XML: $php_errormsg");
-            }
-            $element = $doc->getElementsByTagName($this->_rootElement)->item(0);
-            if (!$element) {
-                require_once 'Zend/Gdata/App/Exception.php';
-                throw new Zend_Gdata_App_Exception('No root <' . $this->_rootElement . '> element');
-            }
-            $this->transferFromDOM($element);
-        } else {
-            require_once 'Zend/Gdata/App/Exception.php';
-            throw new Zend_Gdata_App_Exception('XML passed to transferFromXML cannot be null');
-        }
-    }
-
-    /**
-     * Converts this element and all children into XML text using getDOM()
-     *
-     * @return string XML content
-     */
-    public function saveXML()
-    {
-        $element = $this->getDOM();
-        return $element->ownerDocument->saveXML($element);
-    }
-
-    /**
-     * Alias for saveXML() returns XML content for this element and all
-     * children
-     *
-     * @return string XML content
-     */
-    public function getXML()
-    {
-        return $this->saveXML();
-    }
-
-    /**
-     * Alias for saveXML()
-     *
-     * Can be overridden by children to provide more complex representations
-     * of entries.
-     *
-     * @return string Encoded string content
-     */
-    public function encode()
-    {
-        return $this->saveXML();
-    }
-
-    /**
      * Get the full version of a namespace prefix
      *
      * Looks up a prefix (atom:, etc.) in the list of registered
@@ -375,10 +339,10 @@ abstract class Zend_Gdata_App_Base
     {
         // Check for a memoized result
         $key = $prefix . ' ' .
-               ($majorVersion === null ? 'NULL' : $majorVersion) .
-               ' '. ($minorVersion === null ? 'NULL' : $minorVersion);
+            ($majorVersion === null ? 'NULL' : $majorVersion) .
+            ' ' . ($minorVersion === null ? 'NULL' : $minorVersion);
         if (array_key_exists($key, self::$_namespaceLookupCache))
-          return self::$_namespaceLookupCache[$key];
+            return self::$_namespaceLookupCache[$key];
         // If no match, return the prefix by default
         $result = $prefix;
 
@@ -387,11 +351,11 @@ abstract class Zend_Gdata_App_Base
             // Major version search
             $nsData = $this->_namespaces[$prefix];
             $foundMajorV = Zend_Gdata_App_Util::findGreatestBoundedValue(
-                    $majorVersion, $nsData);
+                $majorVersion, $nsData);
             // Minor version search
             $nsData = $nsData[$foundMajorV];
             $foundMinorV = Zend_Gdata_App_Util::findGreatestBoundedValue(
-                    $minorVersion, $nsData);
+                $minorVersion, $nsData);
             // Extract NS
             $result = $nsData[$foundMinorV];
         }
@@ -400,6 +364,37 @@ abstract class Zend_Gdata_App_Base
         self::$_namespaceLookupCache[$key] = $result;
 
         return $result;
+    }
+
+    /**
+     * Alias for saveXML()
+     *
+     * Can be overridden by children to provide more complex representations
+     * of entries.
+     *
+     * @return string Encoded string content
+     */
+    public function encode()
+    {
+        return $this->saveXML();
+    }
+
+    /**
+     * Add an array of namespaces to the registered list.
+     *
+     * Takes an array in the format of:
+     * namespace prefix, namespace URI, major protocol version,
+     * minor protocol version and adds them with calls to ->registerNamespace()
+     *
+     * @param array $namespaceArray An array of namespaces.
+     * @return void
+     */
+    public function registerAllNamespaces($namespaceArray)
+    {
+        foreach ($namespaceArray as $namespace) {
+            $this->registerNamespace(
+                $namespace[0], $namespace[1], $namespace[2], $namespace[3]);
+        }
     }
 
     /**
@@ -429,39 +424,8 @@ abstract class Zend_Gdata_App_Base
                                       $minorVersion = 0)
     {
         $this->_namespaces[$prefix][$majorVersion][$minorVersion] =
-        $namespaceUri;
+            $namespaceUri;
     }
-
-    /**
-     * Flush namespace lookup cache.
-     *
-     * Empties the namespace lookup cache. Call this function if you have
-     * added data to the namespace lookup table that contradicts values that
-     * may have been cached during a previous call to lookupNamespace().
-     */
-    public static function flushNamespaceLookupCache()
-    {
-        self::$_namespaceLookupCache = array();
-    }
-
-    /**
-     * Add an array of namespaces to the registered list.
-     *
-     * Takes an array in the format of:
-     * namespace prefix, namespace URI, major protocol version,
-     * minor protocol version and adds them with calls to ->registerNamespace()
-     *
-     * @param array $namespaceArray An array of namespaces.
-     * @return void
-     */
-    public function registerAllNamespaces($namespaceArray)
-    {
-        foreach($namespaceArray as $namespace) {
-                $this->registerNamespace(
-                    $namespace[0], $namespace[1], $namespace[2], $namespace[3]);
-        }
-    }
-
 
     /**
      * Magic getter to allow access like $entry->foo to call $entry->getFoo()
@@ -474,7 +438,7 @@ abstract class Zend_Gdata_App_Base
      */
     public function __get($name)
     {
-        $method = 'get'.ucfirst($name);
+        $method = 'get' . ucfirst($name);
         if (method_exists($this, $method)) {
             return call_user_func(array(&$this, $method));
         } else if (property_exists($this, "_${name}")) {
@@ -482,7 +446,7 @@ abstract class Zend_Gdata_App_Base
         } else {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'Property ' . $name . ' does not exist');
+                'Property ' . $name . ' does not exist');
         }
     }
 
@@ -500,7 +464,7 @@ abstract class Zend_Gdata_App_Base
      */
     public function __set($name, $val)
     {
-        $method = 'set'.ucfirst($name);
+        $method = 'set' . ucfirst($name);
         if (method_exists($this, $method)) {
             return call_user_func(array(&$this, $method), $val);
         } else if (isset($this->{'_' . $name}) || ($this->{'_' . $name} === null)) {
@@ -508,7 +472,7 @@ abstract class Zend_Gdata_App_Base
         } else {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'Property ' . $name . '  does not exist');
+                'Property ' . $name . '  does not exist');
         }
     }
 
@@ -524,7 +488,7 @@ abstract class Zend_Gdata_App_Base
         if (!($rc->hasProperty($privName))) {
             require_once 'Zend/Gdata/App/InvalidArgumentException.php';
             throw new Zend_Gdata_App_InvalidArgumentException(
-                    'Property ' . $name . ' does not exist');
+                'Property ' . $name . ' does not exist');
         } else {
             if (isset($this->{$privName})) {
                 if (is_array($this->{$privName})) {
@@ -567,6 +531,34 @@ abstract class Zend_Gdata_App_Base
     public function __toString()
     {
         return $this->getText();
+    }
+
+    /**
+     * Returns the child text node of this element
+     * This represents any raw text contained within the XML element
+     *
+     * @return string Child text node
+     */
+    public function getText($trim = true)
+    {
+        if ($trim) {
+            return trim($this->_text);
+        } else {
+            return $this->_text;
+        }
+    }
+
+    /**
+     * Sets the child text node of this element
+     * This represents any raw text contained within the XML element
+     *
+     * @param string $value Child text node
+     * @return Zend_Gdata_App_Base Returns an object of the same type as 'this' to provide a fluent interface.
+     */
+    public function setText($value)
+    {
+        $this->_text = $value;
+        return $this;
     }
 
 }

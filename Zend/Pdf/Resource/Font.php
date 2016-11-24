@@ -49,7 +49,7 @@ require_once 'Zend/Pdf/Font.php';
  */
 abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
 {
-  /**** Instance Variables ****/
+    /**** Instance Variables ****/
 
 
     /**
@@ -131,11 +131,10 @@ abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
     protected $_lineGap = 0;
 
 
+    /**** Public Interface ****/
 
-  /**** Public Interface ****/
 
-
-  /* Object Lifecycle */
+    /* Object Lifecycle */
 
     /**
      * Object constructor.
@@ -148,7 +147,7 @@ abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
     }
 
 
-  /* Object Magic Methods */
+    /* Object Magic Methods */
 
     /**
      * Returns the full name of the font in the encoding method of the current
@@ -163,18 +162,7 @@ abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
     }
 
 
-  /* Accessors */
-
-    /**
-     * Returns the type of font.
-     *
-     * @return integer One of the TYPE_ constants defined in
-     *   {@link Zend_Pdf_Font}.
-     */
-    public function getFontType()
-    {
-        return $this->_fontType;
-    }
+    /* Accessors */
 
     /**
      * Returns the specified descriptive name for the font.
@@ -223,7 +211,7 @@ abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
      */
     public function getFontName($nameType, $language, $characterSet = null)
     {
-        if (! isset($this->_fontNames[$nameType])) {
+        if (!isset($this->_fontNames[$nameType])) {
             return null;
         }
         $name = null;
@@ -243,7 +231,7 @@ abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
          */
         if ($name === null) {
             $names = $this->_fontNames[$nameType];
-            $name  = reset($names);
+            $name = reset($names);
         }
         /* Convert the character set if requested.
          */
@@ -251,6 +239,17 @@ abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
             $name = iconv('UTF-16BE', $characterSet, $name);
         }
         return $name;
+    }
+
+    /**
+     * Returns the type of font.
+     *
+     * @return integer One of the TYPE_ constants defined in
+     *   {@link Zend_Pdf_Font}.
+     */
+    public function getFontType()
+    {
+        return $this->_fontType;
     }
 
     /**
@@ -411,7 +410,7 @@ abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
     }
 
 
-  /* Information and Conversion Methods */
+    /* Information and Conversion Methods */
 
     /**
      * Returns an array of glyph numbers corresponding to the Unicode characters.
@@ -509,7 +508,7 @@ abstract class Zend_Pdf_Resource_Font extends Zend_Pdf_Resource
 
 
 
-  /**** Internal Methods ****/
+    /**** Internal Methods ****/
 
 
     /**

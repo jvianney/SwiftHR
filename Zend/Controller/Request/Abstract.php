@@ -90,6 +90,45 @@ abstract class Zend_Controller_Request_Abstract
     }
 
     /**
+     * Get an action parameter
+     *
+     * @param string $key
+     * @param mixed $default Default value to use if key not found
+     * @return mixed
+     */
+    public function getParam($key, $default = null)
+    {
+        $key = (string)$key;
+        if (isset($this->_params[$key])) {
+            return $this->escape($this->_params[$key]);
+        }
+
+        return $default;
+    }
+
+    /**
+     * Retrieve the module key
+     *
+     * @return string
+     */
+    public function getModuleKey()
+    {
+        return $this->_moduleKey;
+    }
+
+    /**
+     * Set the module key
+     *
+     * @param string $key
+     * @return Zend_Controller_Request_Abstract
+     */
+    public function setModuleKey($key)
+    {
+        $this->_moduleKey = (string)$key;
+        return $this;
+    }
+
+    /**
      * Set the module name to use
      *
      * @param string $value
@@ -113,6 +152,28 @@ abstract class Zend_Controller_Request_Abstract
         }
 
         return $this->_controller;
+    }
+
+    /**
+     * Retrieve the controller key
+     *
+     * @return string
+     */
+    public function getControllerKey()
+    {
+        return $this->_controllerKey;
+    }
+
+    /**
+     * Set the controller key
+     *
+     * @param string $key
+     * @return Zend_Controller_Request_Abstract
+     */
+    public function setControllerKey($key)
+    {
+        $this->_controllerKey = (string)$key;
+        return $this;
     }
 
     /**
@@ -142,6 +203,28 @@ abstract class Zend_Controller_Request_Abstract
     }
 
     /**
+     * Retrieve the action key
+     *
+     * @return string
+     */
+    public function getActionKey()
+    {
+        return $this->_actionKey;
+    }
+
+    /**
+     * Set the action key
+     *
+     * @param string $key
+     * @return Zend_Controller_Request_Abstract
+     */
+    public function setActionKey($key)
+    {
+        $this->_actionKey = (string)$key;
+        return $this;
+    }
+
+    /**
      * Set the action name
      *
      * @param string $value
@@ -160,86 +243,25 @@ abstract class Zend_Controller_Request_Abstract
     }
 
     /**
-     * Retrieve the module key
+     * Set an action parameter
      *
-     * @return string
-     */
-    public function getModuleKey()
-    {
-        return $this->_moduleKey;
-    }
-
-    /**
-     * Set the module key
+     * A $value of null will unset the $key if it exists
      *
      * @param string $key
+     * @param mixed $value
      * @return Zend_Controller_Request_Abstract
      */
-    public function setModuleKey($key)
+    public function setParam($key, $value)
     {
-        $this->_moduleKey = (string) $key;
-        return $this;
-    }
+        $key = (string)$key;
 
-    /**
-     * Retrieve the controller key
-     *
-     * @return string
-     */
-    public function getControllerKey()
-    {
-        return $this->_controllerKey;
-    }
-
-    /**
-     * Set the controller key
-     *
-     * @param string $key
-     * @return Zend_Controller_Request_Abstract
-     */
-    public function setControllerKey($key)
-    {
-        $this->_controllerKey = (string) $key;
-        return $this;
-    }
-
-    /**
-     * Retrieve the action key
-     *
-     * @return string
-     */
-    public function getActionKey()
-    {
-        return $this->_actionKey;
-    }
-
-    /**
-     * Set the action key
-     *
-     * @param string $key
-     * @return Zend_Controller_Request_Abstract
-     */
-    public function setActionKey($key)
-    {
-        $this->_actionKey = (string) $key;
-        return $this;
-    }
-
-    /**
-     * Get an action parameter
-     *
-     * @param string $key
-     * @param mixed $default Default value to use if key not found
-     * @return mixed
-     */
-    public function getParam($key, $default = null)
-    {
-        $key = (string) $key;
-        if (isset($this->_params[$key])) {
-            return $this->escape($this->_params[$key]);
+        if ((null === $value) && isset($this->_params[$key])) {
+            unset($this->_params[$key]);
+        } elseif (null !== $value) {
+            $this->_params[$key] = $value;
         }
 
-        return $default;
+        return $this;
     }
 
     /**
@@ -269,36 +291,14 @@ abstract class Zend_Controller_Request_Abstract
     }
 
     /**
-     * Set an action parameter
-     *
-     * A $value of null will unset the $key if it exists
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return Zend_Controller_Request_Abstract
-     */
-    public function setParam($key, $value)
-    {
-        $key = (string) $key;
-
-        if ((null === $value) && isset($this->_params[$key])) {
-            unset($this->_params[$key]);
-        } elseif (null !== $value) {
-            $this->_params[$key] = $value;
-        }
-
-        return $this;
-    }
-
-    /**
      * Get all action parameters
      *
      * @return array
      */
-     public function getParams()
-     {
-         return $this->_params;
-     }
+    public function getParams()
+    {
+        return $this->_params;
+    }
 
     /**
      * Set action parameters en masse; does not overwrite
@@ -310,7 +310,7 @@ abstract class Zend_Controller_Request_Abstract
      */
     public function setParams(array $array)
     {
-        $this->_params = $this->_params + (array) $array;
+        $this->_params = $this->_params + (array)$array;
 
         foreach ($array as $key => $value) {
             if (null === $value) {
@@ -333,6 +333,16 @@ abstract class Zend_Controller_Request_Abstract
     }
 
     /**
+     * Determine if the request has been dispatched
+     *
+     * @return boolean
+     */
+    public function isDispatched()
+    {
+        return $this->_dispatched;
+    }
+
+    /**
      * Set flag indicating whether or not request has been dispatched
      *
      * @param boolean $flag
@@ -342,15 +352,5 @@ abstract class Zend_Controller_Request_Abstract
     {
         $this->_dispatched = $flag ? true : false;
         return $this;
-    }
-
-    /**
-     * Determine if the request has been dispatched
-     *
-     * @return boolean
-     */
-    public function isDispatched()
-    {
-        return $this->_dispatched;
     }
 }

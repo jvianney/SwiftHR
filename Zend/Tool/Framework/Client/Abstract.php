@@ -95,6 +95,64 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
     abstract public function getName();
 
     /**
+     * getRegistry();
+     *
+     * @return Zend_Tool_Framework_Registry_Interface
+     */
+    public function getRegistry()
+    {
+        return $this->_registry;
+    }
+
+    /**
+     * setRegistry() - Required by the Zend_Tool_Framework_Registry_EnabledInterface
+     * interface which ensures proper registry dependency resolution
+     *
+     * @param Zend_Tool_Framework_Registry_Interface $registry
+     * @return Zend_Tool_Framework_Client_Abstract
+     */
+    public function setRegistry(Zend_Tool_Framework_Registry_Interface $registry)
+    {
+        $this->_registry = $registry;
+        return $this;
+    }
+
+    /**
+     * This method should be called in order to "handle" a Tooling Client
+     * request that has come to the client that has been implemented.
+     */
+    public function dispatch()
+    {
+        $this->initialize();
+
+        try {
+
+            $this->_preDispatch();
+
+            if ($this->_registry->getRequest()->isDispatchable()) {
+
+                if ($this->_registry->getRequest()->getActionName() == null) {
+                    require_once 'Zend/Tool/Framework/Client/Exception.php';
+                    throw new Zend_Tool_Framework_Client_Exception('Client failed to setup the action name.');
+                }
+
+                if ($this->_registry->getRequest()->getProviderName() == null) {
+                    require_once 'Zend/Tool/Framework/Client/Exception.php';
+                    throw new Zend_Tool_Framework_Client_Exception('Client failed to setup the provider name.');
+                }
+
+                $this->_handleDispatch();
+
+            }
+
+        } catch (Exception $exception) {
+            $this->_registry->getResponse()->setException($exception);
+        }
+
+        $this->_postDispatch();
+    }
+
+    /**
      * initialized() - This will initialize the client for use
      *
      */
@@ -140,7 +198,6 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
 
     }
 
-
     /**
      * This method should be implemented by the client implementation to
      * construct and set custom inflectors, request and response objects.
@@ -155,109 +212,6 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
      * information.
      */
     abstract protected function _preDispatch();
-
-    /**
-     * This method should be implemented by the client implementation to
-     * take the output of the response object and return it (in an client
-     * specific way) back to the Tooling Client.
-     */
-    protected function _postDispatch()
-    {
-    }
-
-    /**
-     * setRegistry() - Required by the Zend_Tool_Framework_Registry_EnabledInterface
-     * interface which ensures proper registry dependency resolution
-     *
-     * @param Zend_Tool_Framework_Registry_Interface $registry
-     * @return Zend_Tool_Framework_Client_Abstract
-     */
-    public function setRegistry(Zend_Tool_Framework_Registry_Interface $registry)
-    {
-        $this->_registry = $registry;
-        return $this;
-    }
-
-    /**
-     * getRegistry();
-     *
-     * @return Zend_Tool_Framework_Registry_Interface
-     */
-    public function getRegistry()
-    {
-        return $this->_registry;
-    }
-
-    /**
-     * hasInteractiveInput() - Convienence method for determining if this
-     * client can handle interactive input, and thus be able to run the
-     * promptInteractiveInput
-     *
-     * @return bool
-     */
-    public function hasInteractiveInput()
-    {
-        return ($this instanceof Zend_Tool_Framework_Client_Interactive_InputInterface);
-    }
-
-    public function promptInteractiveInput($inputRequest)
-    {
-        if (!$this->hasInteractiveInput()) {
-            require_once 'Zend/Tool/Framework/Client/Exception.php';
-            throw new Zend_Tool_Framework_Client_Exception('promptInteractive() cannot be called on a non-interactive client.');
-        }
-
-        $inputHandler = new Zend_Tool_Framework_Client_Interactive_InputHandler();
-        $inputHandler->setClient($this);
-        $inputHandler->setInputRequest($inputRequest);
-        return $inputHandler->handle();
-
-    }
-
-    /**
-     * This method should be called in order to "handle" a Tooling Client
-     * request that has come to the client that has been implemented.
-     */
-    public function dispatch()
-    {
-        $this->initialize();
-
-        try {
-
-            $this->_preDispatch();
-
-            if ($this->_registry->getRequest()->isDispatchable()) {
-
-                if ($this->_registry->getRequest()->getActionName() == null) {
-                    require_once 'Zend/Tool/Framework/Client/Exception.php';
-                    throw new Zend_Tool_Framework_Client_Exception('Client failed to setup the action name.');
-                }
-
-                if ($this->_registry->getRequest()->getProviderName() == null) {
-                    require_once 'Zend/Tool/Framework/Client/Exception.php';
-                    throw new Zend_Tool_Framework_Client_Exception('Client failed to setup the provider name.');
-                }
-
-                $this->_handleDispatch();
-
-            }
-
-        } catch (Exception $exception) {
-            $this->_registry->getResponse()->setException($exception);
-        }
-
-        $this->_postDispatch();
-    }
-
-    public function convertToClientNaming($string)
-    {
-        return $string;
-    }
-
-    public function convertFromClientNaming($string)
-    {
-        return $string;
-    }
 
     protected function _handleDispatch()
     {
@@ -288,7 +242,7 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
         }
 
         // get the actual method and param information
-        $methodName       = $actionableMethod['methodName'];
+        $methodName = $actionableMethod['methodName'];
         $methodParameters = $actionableMethod['parameterInfo'];
 
         // get the provider params
@@ -318,6 +272,32 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
         $this->_handleDispatchExecution($provider, $methodName, $callParameters);
     }
 
+    public function promptInteractiveInput($inputRequest)
+    {
+        if (!$this->hasInteractiveInput()) {
+            require_once 'Zend/Tool/Framework/Client/Exception.php';
+            throw new Zend_Tool_Framework_Client_Exception('promptInteractive() cannot be called on a non-interactive client.');
+        }
+
+        $inputHandler = new Zend_Tool_Framework_Client_Interactive_InputHandler();
+        $inputHandler->setClient($this);
+        $inputHandler->setInputRequest($inputRequest);
+        return $inputHandler->handle();
+
+    }
+
+    /**
+     * hasInteractiveInput() - Convienence method for determining if this
+     * client can handle interactive input, and thus be able to run the
+     * promptInteractiveInput
+     *
+     * @return bool
+     */
+    public function hasInteractiveInput()
+    {
+        return ($this instanceof Zend_Tool_Framework_Client_Interactive_InputInterface);
+    }
+
     protected function _handleDispatchExecution($class, $methodName, $callParameters)
     {
         if (method_exists($class, $methodName)) {
@@ -328,6 +308,25 @@ abstract class Zend_Tool_Framework_Client_Abstract implements Zend_Tool_Framewor
             require_once 'Zend/Tool/Framework/Client/Exception.php';
             throw new Zend_Tool_Framework_Client_Exception('Not a supported method.');
         }
+    }
+
+    /**
+     * This method should be implemented by the client implementation to
+     * take the output of the response object and return it (in an client
+     * specific way) back to the Tooling Client.
+     */
+    protected function _postDispatch()
+    {
+    }
+
+    public function convertToClientNaming($string)
+    {
+        return $string;
+    }
+
+    public function convertFromClientNaming($string)
+    {
+        return $string;
     }
 
 }

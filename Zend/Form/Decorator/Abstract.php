@@ -36,7 +36,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     /**
      * Placement constants
      */
-    const APPEND  = 'APPEND';
+    const APPEND = 'APPEND';
     const PREPEND = 'PREPEND';
 
     /**
@@ -78,18 +78,6 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     }
 
     /**
-     * Set options
-     *
-     * @param  array $options
-     * @return Zend_Form_Decorator_Abstract
-     */
-    public function setOptions(array $options)
-    {
-        $this->_options = $options;
-        return $this;
-    }
-
-    /**
      * Set options from config object
      *
      * @param  Zend_Config $config
@@ -109,24 +97,8 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
      */
     public function setOption($key, $value)
     {
-        $this->_options[(string) $key] = $value;
+        $this->_options[(string)$key] = $value;
         return $this;
-    }
-
-    /**
-     * Get option
-     *
-     * @param  string $key
-     * @return mixed
-     */
-    public function getOption($key)
-    {
-        $key = (string) $key;
-        if (isset($this->_options[$key])) {
-            return $this->_options[$key];
-        }
-
-        return null;
     }
 
     /**
@@ -140,19 +112,15 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     }
 
     /**
-     * Remove single option
+     * Set options
      *
-     * @param mixed $key
-     * @return void
+     * @param  array $options
+     * @return Zend_Form_Decorator_Abstract
      */
-    public function removeOption($key)
+    public function setOptions(array $options)
     {
-        if (null !== $this->getOption($key)) {
-            unset($this->_options[$key]);
-            return true;
-        }
-
-        return false;
+        $this->_options = $options;
+        return $this;
     }
 
     /**
@@ -167,6 +135,16 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     }
 
     /**
+     * Retrieve current element
+     *
+     * @return Zend_Form_Element|Zend_Form
+     */
+    public function getElement()
+    {
+        return $this->_element;
+    }
+
+    /**
      * Set current form element
      *
      * @param  Zend_Form_Element|Zend_Form $element
@@ -177,24 +155,14 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     {
         if ((!$element instanceof Zend_Form_Element)
             && (!$element instanceof Zend_Form)
-            && (!$element instanceof Zend_Form_DisplayGroup))
-        {
+            && (!$element instanceof Zend_Form_DisplayGroup)
+        ) {
             require_once 'Zend/Form/Decorator/Exception.php';
             throw new Zend_Form_Decorator_Exception('Invalid element type passed to decorator');
         }
 
         $this->_element = $element;
         return $this;
-    }
-
-    /**
-     * Retrieve current element
-     *
-     * @return Zend_Form_Element|Zend_Form
-     */
-    public function getElement()
-    {
-        return $this->_element;
     }
 
     /**
@@ -225,6 +193,38 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     }
 
     /**
+     * Get option
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function getOption($key)
+    {
+        $key = (string)$key;
+        if (isset($this->_options[$key])) {
+            return $this->_options[$key];
+        }
+
+        return null;
+    }
+
+    /**
+     * Remove single option
+     *
+     * @param mixed $key
+     * @return void
+     */
+    public function removeOption($key)
+    {
+        if (null !== $this->getOption($key)) {
+            unset($this->_options[$key]);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Retrieve separator to use between old and new content
      *
      * @return string
@@ -233,7 +233,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
     {
         $separator = $this->_separator;
         if (null !== ($separatorOpt = $this->getOption('separator'))) {
-            $separator = $this->_separator = (string) $separatorOpt;
+            $separator = $this->_separator = (string)$separatorOpt;
             $this->removeOption('separator');
         }
         return $separator;

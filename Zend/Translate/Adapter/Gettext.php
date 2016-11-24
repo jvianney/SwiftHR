@@ -31,42 +31,49 @@ require_once 'Zend/Translate/Adapter.php';
  * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Translate_Adapter_Gettext extends Zend_Translate_Adapter {
+class Zend_Translate_Adapter_Gettext extends Zend_Translate_Adapter
+{
     // Internal variables
-    private $_bigEndian   = false;
-    private $_file        = false;
+    private $_bigEndian = false;
+    private $_file = false;
     private $_adapterInfo = array();
-    private $_data        = array();
+    private $_data = array();
 
     /**
-     * Read values from the MO file
+     * Returns the adapter informations
      *
-     * @param  string  $bytes
+     * @return array Each loaded adapter information as array value
      */
-    private function _readMOData($bytes)
+    public function getAdapterInfo()
     {
-        if ($this->_bigEndian === false) {
-            return unpack('V' . $bytes, fread($this->_file, 4 * $bytes));
-        } else {
-            return unpack('N' . $bytes, fread($this->_file, 4 * $bytes));
-        }
+        return $this->_adapterInfo;
+    }
+
+    /**
+     * Returns the adapter name
+     *
+     * @return string
+     */
+    public function toString()
+    {
+        return "Gettext";
     }
 
     /**
      * Load translation data (MO file reader)
      *
-     * @param  string  $filename  MO file to add, full path must be given for access
-     * @param  string  $locale    New Locale/Language to set, identical with locale identifier,
+     * @param  string $filename MO file to add, full path must be given for access
+     * @param  string $locale New Locale/Language to set, identical with locale identifier,
      *                            see Zend_Locale for more information
-     * @param  array   $option    OPTIONAL Options to use
+     * @param  array $option OPTIONAL Options to use
      * @throws Zend_Translation_Exception
      * @return array
      */
     protected function _loadTranslationData($filename, $locale, array $options = array())
     {
-        $this->_data      = array();
+        $this->_data = array();
         $this->_bigEndian = false;
-        $this->_file      = @fopen($filename, 'rb');
+        $this->_file = @fopen($filename, 'rb');
         if (!$this->_file) {
             require_once 'Zend/Translate/Exception.php';
             throw new Zend_Translate_Exception('Error opening translation file \'' . $filename . '\'.');
@@ -109,7 +116,7 @@ class Zend_Translate_Adapter_Gettext extends Zend_Translate_Adapter {
         fseek($this->_file, $TOffset);
         $transtemp = $this->_readMOData(2 * $total);
 
-        for($count = 0; $count < $total; ++$count) {
+        for ($count = 0; $count < $total; ++$count) {
             if ($origtemp[$count * 2 + 1] != 0) {
                 fseek($this->_file, $origtemp[$count * 2 + 2]);
                 $original = @fread($this->_file, $origtemp[$count * 2 + 1]);
@@ -148,22 +155,16 @@ class Zend_Translate_Adapter_Gettext extends Zend_Translate_Adapter {
     }
 
     /**
-     * Returns the adapter informations
+     * Read values from the MO file
      *
-     * @return array Each loaded adapter information as array value
+     * @param  string $bytes
      */
-    public function getAdapterInfo()
+    private function _readMOData($bytes)
     {
-        return $this->_adapterInfo;
-    }
-
-    /**
-     * Returns the adapter name
-     *
-     * @return string
-     */
-    public function toString()
-    {
-        return "Gettext";
+        if ($this->_bigEndian === false) {
+            return unpack('V' . $bytes, fread($this->_file, 4 * $bytes));
+        } else {
+            return unpack('N' . $bytes, fread($this->_file, 4 * $bytes));
+        }
     }
 }

@@ -61,6 +61,25 @@ class Zend_Form_Element_Submit extends Zend_Form_Element_Xhtml
     }
 
     /**
+     * Has this submit button been selected?
+     *
+     * @return bool
+     */
+    public function isChecked()
+    {
+        $value = $this->getValue();
+
+        if (empty($value)) {
+            return false;
+        }
+        if ($value != $this->getLabel()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Return label
      *
      * If no label is present, returns the currently set name.
@@ -85,25 +104,6 @@ class Zend_Form_Element_Submit extends Zend_Form_Element_Xhtml
     }
 
     /**
-     * Has this submit button been selected?
-     *
-     * @return bool
-     */
-    public function isChecked()
-    {
-        $value = $this->getValue();
-
-        if (empty($value)) {
-            return false;
-        }
-        if ($value != $this->getLabel()) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Default decorators
      *
      * Uses only 'Submit' and 'DtDdWrapper' decorators by default.
@@ -119,8 +119,8 @@ class Zend_Form_Element_Submit extends Zend_Form_Element_Xhtml
         $decorators = $this->getDecorators();
         if (empty($decorators)) {
             $this->addDecorator('Tooltip')
-                 ->addDecorator('ViewHelper')
-                 ->addDecorator('DtDdWrapper');
+                ->addDecorator('ViewHelper')
+                ->addDecorator('DtDdWrapper');
         }
         return $this;
     }

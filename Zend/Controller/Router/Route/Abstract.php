@@ -41,7 +41,7 @@ abstract class Zend_Controller_Router_Route_Abstract implements Zend_Controller_
      * URI delimiter
      */
     const URI_DELIMITER = '/';
-    
+
     /**
      * Wether this route is abstract or not
      *
@@ -67,6 +67,16 @@ abstract class Zend_Controller_Router_Route_Abstract implements Zend_Controller_
     }
 
     /**
+     * Get partially matched path
+     *
+     * @return string
+     */
+    public function getMatchedPath()
+    {
+        return $this->_matchedPath;
+    }
+
+    /**
      * Set partially matched path
      *
      * @param  string $path
@@ -75,16 +85,6 @@ abstract class Zend_Controller_Router_Route_Abstract implements Zend_Controller_
     public function setMatchedPath($path)
     {
         $this->_matchedPath = $path;
-    }
-
-    /**
-     * Get partially matched path
-     *
-     * @return string
-     */
-    public function getMatchedPath()
-    {
-        return $this->_matchedPath;
     }
 
     /**
@@ -106,7 +106,7 @@ abstract class Zend_Controller_Router_Route_Abstract implements Zend_Controller_
      * Create a new chain
      *
      * @param  Zend_Controller_Router_Route_Abstract $route
-     * @param  string                                $separator
+     * @param  string $separator
      * @return Zend_Controller_Router_Route_Chain
      */
     public function chain(Zend_Controller_Router_Route_Abstract $route, $separator = '/')

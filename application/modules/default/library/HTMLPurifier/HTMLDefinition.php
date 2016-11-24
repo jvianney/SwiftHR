@@ -87,8 +87,18 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
     public $doctype;
 
 
-
     // RAW CUSTOMIZATION STUFF --------------------------------------------
+    public $type = 'HTML';
+    public $manager;
+    private $_anonModule;
+
+    /**
+     * Performs low-cost, preliminary initialization.
+     */
+    public function __construct()
+    {
+        $this->manager = new HTMLPurifier_HTMLModuleManager();
+    }
 
     /**
      * Adds a custom attribute to a pre-existing element
@@ -99,7 +109,8 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
      * @param $def Attribute definition, can be string or object, see
      *             HTMLPurifier_AttrTypes for details
      */
-    public function addAttribute($element_name, $attr_name, $def) {
+    public function addAttribute($element_name, $attr_name, $def)
+    {
         $module = $this->getAnonymousModule();
         if (!isset($module->info[$element_name])) {
             $element = $module->addBlankElement($element_name);
@@ -109,37 +120,16 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
         $element->attr[$attr_name] = $def;
     }
 
-    /**
-     * Adds a custom element to your HTML definition
-     * @note See HTMLPurifier_HTMLModule::addElement for detailed
-     *       parameter and return value descriptions.
-     */
-    public function addElement($element_name, $type, $contents, $attr_collections, $attributes = array()) {
-        $module = $this->getAnonymousModule();
-        // assume that if the user is calling this, the element
-        // is safe. This may not be a good idea
-        $element = $module->addElement($element_name, $type, $contents, $attr_collections, $attributes);
-        return $element;
-    }
 
-    /**
-     * Adds a blank element to your HTML definition, for overriding
-     * existing behavior
-     * @note See HTMLPurifier_HTMLModule::addBlankElement for detailed
-     *       parameter and return value descriptions.
-     */
-    public function addBlankElement($element_name) {
-        $module  = $this->getAnonymousModule();
-        $element = $module->addBlankElement($element_name);
-        return $element;
-    }
+    // PUBLIC BUT INTERNAL VARIABLES --------------------------------------
 
     /**
      * Retrieves a reference to the anonymous module, so you can
      * bust out advanced features without having to make your own
      * module.
      */
-    public function getAnonymousModule() {
+    public function getAnonymousModule()
+    {
         if (!$this->_anonModule) {
             $this->_anonModule = new HTMLPurifier_HTMLModule();
             $this->_anonModule->name = 'Anonymous';
@@ -147,22 +137,36 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
         return $this->_anonModule;
     }
 
-    private $_anonModule;
-
-
-    // PUBLIC BUT INTERNAL VARIABLES --------------------------------------
-
-    public $type = 'HTML';
-    public $manager; /**< Instance of HTMLPurifier_HTMLModuleManager */
+    /**
+     * Adds a custom element to your HTML definition
+     * @note See HTMLPurifier_HTMLModule::addElement for detailed
+     *       parameter and return value descriptions.
+     */
+    public function addElement($element_name, $type, $contents, $attr_collections, $attributes = array())
+    {
+        $module = $this->getAnonymousModule();
+        // assume that if the user is calling this, the element
+        // is safe. This may not be a good idea
+        $element = $module->addElement($element_name, $type, $contents, $attr_collections, $attributes);
+        return $element;
+    }
+    /**< Instance of HTMLPurifier_HTMLModuleManager */
 
     /**
-     * Performs low-cost, preliminary initialization.
+     * Adds a blank element to your HTML definition, for overriding
+     * existing behavior
+     * @note See HTMLPurifier_HTMLModule::addBlankElement for detailed
+     *       parameter and return value descriptions.
      */
-    public function __construct() {
-        $this->manager = new HTMLPurifier_HTMLModuleManager();
+    public function addBlankElement($element_name)
+    {
+        $module = $this->getAnonymousModule();
+        $element = $module->addBlankElement($element_name);
+        return $element;
     }
 
-    protected function doSetup($config) {
+    protected function doSetup($config)
+    {
         $this->processModules($config);
         $this->setupConfigStuff($config);
         unset($this->manager);
@@ -177,7 +181,8 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
     /**
      * Extract out the information from the manager
      */
-    protected function processModules($config) {
+    protected function processModules($config)
+    {
 
         if ($this->_anonModule) {
             // for user specific changes
@@ -191,15 +196,15 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
         $this->doctype = $this->manager->doctype;
 
         foreach ($this->manager->modules as $module) {
-            foreach($module->info_tag_transform as $k => $v) {
+            foreach ($module->info_tag_transform as $k => $v) {
                 if ($v === false) unset($this->info_tag_transform[$k]);
                 else $this->info_tag_transform[$k] = $v;
             }
-            foreach($module->info_attr_transform_pre as $k => $v) {
+            foreach ($module->info_attr_transform_pre as $k => $v) {
                 if ($v === false) unset($this->info_attr_transform_pre[$k]);
                 else $this->info_attr_transform_pre[$k] = $v;
             }
-            foreach($module->info_attr_transform_post as $k => $v) {
+            foreach ($module->info_attr_transform_post as $k => $v) {
                 if ($v === false) unset($this->info_attr_transform_post[$k]);
                 else $this->info_attr_transform_post[$k] = $v;
             }
@@ -217,7 +222,8 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
     /**
      * Sets up stuff based on config. We need a better way of doing this.
      */
-    protected function setupConfigStuff($config) {
+    protected function setupConfigStuff($config)
+    {
 
         $block_wrapper = $config->get('HTML.BlockWrapper');
         if (isset($this->info_content_sets['Block'][$block_wrapper])) {
@@ -239,8 +245,8 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
         }
 
         // support template text
-        $support = "(for information on implementing this, see the ".
-                   "support forums) ";
+        $support = "(for information on implementing this, see the " .
+            "support forums) ";
 
         // setup allowed elements -----------------------------------------
 
@@ -256,7 +262,7 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
 
         if (is_array($allowed_elements)) {
             foreach ($this->info as $name => $d) {
-                if(!isset($allowed_elements[$name])) unset($this->info[$name]);
+                if (!isset($allowed_elements[$name])) unset($this->info[$name]);
                 unset($allowed_elements[$name]);
             }
             // emit errors
@@ -325,10 +331,10 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
                             }
                             break;
                         }
-                        // otherwise fall through
+                    // otherwise fall through
                     case 1:
                         $attribute = htmlspecialchars($bits[0]);
-                        trigger_error("Global attribute '$attribute' is not ".
+                        trigger_error("Global attribute '$attribute' is not " .
                             "supported in any elements $support",
                             E_USER_WARNING);
                         break;
@@ -339,7 +345,7 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
 
         // setup forbidden elements ---------------------------------------
 
-        $forbidden_elements   = $config->get('HTML.ForbiddenElements');
+        $forbidden_elements = $config->get('HTML.ForbiddenElements');
         $forbidden_attributes = $config->get('HTML.ForbiddenAttributes');
 
         foreach ($this->info as $tag => $info) {
@@ -386,10 +392,11 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
      * @warning Although it's largely drawn from TinyMCE's implementation,
      *      it is different, and you'll probably have to modify your lists
      * @param $list String list to parse
-     * @param array($allowed_elements, $allowed_attributes)
+     * @param array ($allowed_elements, $allowed_attributes)
      * @todo Give this its own class, probably static interface
      */
-    public function parseTinyMCEAllowedList($list) {
+    public function parseTinyMCEAllowedList($list)
+    {
 
         $list = str_replace(array(' ', "\t"), '', $list);
 

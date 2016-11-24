@@ -42,24 +42,14 @@ class Zend_Barcode_Object_Identcode extends Zend_Barcode_Object_Code25interleave
 {
 
     /**
-     * Default options for Identcode barcode
-     * @return void
-     */
-    protected function _getDefaultOptions()
-    {
-        $this->_barcodeLength = 12;
-        $this->_mandatoryChecksum = true;
-    }
-
-    /**
      * Retrieve text to display
      * @return string
      */
     public function getTextToDisplay()
     {
         return preg_replace('/([0-9]{2})([0-9]{3})([0-9]{3})([0-9]{3})([0-9])/',
-                            '$1.$2 $3.$4 $5',
-                            $this->getText());
+            '$1.$2 $3.$4 $5',
+            $this->getText());
     }
 
     /**
@@ -84,12 +74,22 @@ class Zend_Barcode_Object_Identcode extends Zend_Barcode_Object_Code25interleave
         $this->_checkText($text);
         $checksum = 0;
 
-        for ($i = strlen($text); $i > 0; $i --) {
+        for ($i = strlen($text); $i > 0; $i--) {
             $checksum += intval($text{$i - 1}) * (($i % 2) ? 4 : 9);
         }
 
         $checksum = (10 - ($checksum % 10)) % 10;
 
         return $checksum;
+    }
+
+    /**
+     * Default options for Identcode barcode
+     * @return void
+     */
+    protected function _getDefaultOptions()
+    {
+        $this->_barcodeLength = 12;
+        $this->_mandatoryChecksum = true;
     }
 }

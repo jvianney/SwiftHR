@@ -67,7 +67,7 @@ class ZendX_JQuery_Form_Element_UiWidget extends Zend_Form_Element
      */
     public function getJQueryParam($key)
     {
-        $key = (string) $key;
+        $key = (string)$key;
         return $this->jQueryParams[$key];
     }
 
@@ -82,20 +82,6 @@ class ZendX_JQuery_Form_Element_UiWidget extends Zend_Form_Element
     }
 
     /**
-     * Set a jQuery related parameter of this form element.
-     *
-     * @param  string $key
-     * @param  string $value
-     * @return ZendX_JQuery_Form_Element_UiWidget
-     */
-    public function setJQueryParam($key, $value)
-    {
-        $key = (string) $key;
-        $this->jQueryParams[$key] = $value;
-        return $this;
-    }
-
-    /**
      * Set an array of jQuery related options for this element (merging with old options).
      *
      * @param  Array $params
@@ -104,6 +90,20 @@ class ZendX_JQuery_Form_Element_UiWidget extends Zend_Form_Element
     public function setJQueryParams($params)
     {
         $this->jQueryParams = array_merge($this->jQueryParams, $params);
+        return $this;
+    }
+
+    /**
+     * Set a jQuery related parameter of this form element.
+     *
+     * @param  string $key
+     * @param  string $value
+     * @return ZendX_JQuery_Form_Element_UiWidget
+     */
+    public function setJQueryParam($key, $value)
+    {
+        $key = (string)$key;
+        $this->jQueryParams[$key] = $value;
         return $this;
     }
 
@@ -121,11 +121,43 @@ class ZendX_JQuery_Form_Element_UiWidget extends Zend_Form_Element
         $decorators = $this->getDecorators();
         if (empty($decorators)) {
             $this->addDecorator('UiWidgetElement')
-                 ->addDecorator('Errors')
-                 ->addDecorator('Description', array('tag' => 'p', 'class' => 'description'))
-                 ->addDecorator('HtmlTag', array('tag' => 'dd'))
-                 ->addDecorator('Label', array('tag' => 'dt'));
+                ->addDecorator('Errors')
+                ->addDecorator('Description', array('tag' => 'p', 'class' => 'description'))
+                ->addDecorator('HtmlTag', array('tag' => 'dd'))
+                ->addDecorator('Label', array('tag' => 'dt'));
         }
+    }
+
+    /**
+     * Retrieve all decorators
+     *
+     * @throws ZendX_JQuery_Form_Exception
+     * @return array
+     */
+    public function getDecorators()
+    {
+        $decorators = parent::getDecorators();
+        if (count($decorators) > 0) {
+            // Only check this if there are decorators present, otherwise it could
+            // be that the decorators have not been initialized yet.
+            $foundUiWidgetElementMarker = false;
+            foreach ($decorators AS $decorator) {
+                if ($decorator instanceof ZendX_JQuery_Form_Decorator_UiWidgetElementMarker) {
+                    $foundUiWidgetElementMarker = true;
+                }
+            }
+            if ($foundUiWidgetElementMarker === false) {
+                require_once "ZendX/JQuery/Form/Exception.php";
+                throw new ZendX_JQuery_Form_Exception(
+                    "Cannot render jQuery form element without at least one decorator " .
+                    "implementing the 'ZendX_JQuery_Form_Decorator_UiWidgetElementMarker' interface. " .
+                    "Default decorator for this marker interface is the 'ZendX_JQuery_Form_Decorator_UiWidgetElement'. " .
+                    "Hint: The ViewHelper decorator does not render jQuery elements correctly."
+                );
+            }
+        }
+
+        return $decorators;
     }
 
     /**
@@ -144,37 +176,5 @@ class ZendX_JQuery_Form_Element_UiWidget extends Zend_Form_Element
             }
         }
         return parent::setView($view);
-    }
-
-    /**
-     * Retrieve all decorators
-     *
-     * @throws ZendX_JQuery_Form_Exception
-     * @return array
-     */
-    public function getDecorators()
-    {
-        $decorators = parent::getDecorators();
-        if(count($decorators) > 0) {
-            // Only check this if there are decorators present, otherwise it could
-            // be that the decorators have not been initialized yet.
-            $foundUiWidgetElementMarker = false;
-            foreach($decorators AS $decorator) {
-                if($decorator instanceof ZendX_JQuery_Form_Decorator_UiWidgetElementMarker) {
-                    $foundUiWidgetElementMarker = true;
-                }
-            }
-            if($foundUiWidgetElementMarker === false) {
-                require_once "ZendX/JQuery/Form/Exception.php";
-                throw new ZendX_JQuery_Form_Exception(
-                    "Cannot render jQuery form element without at least one decorator ".
-                    "implementing the 'ZendX_JQuery_Form_Decorator_UiWidgetElementMarker' interface. ".
-                    "Default decorator for this marker interface is the 'ZendX_JQuery_Form_Decorator_UiWidgetElement'. ".
-                    "Hint: The ViewHelper decorator does not render jQuery elements correctly."
-                );
-            }
-        }
-
-        return $decorators;
     }
 }

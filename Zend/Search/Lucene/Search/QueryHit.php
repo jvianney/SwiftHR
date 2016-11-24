@@ -31,29 +31,25 @@
 class Zend_Search_Lucene_Search_QueryHit
 {
     /**
-     * Object handle of the index
-     * @var Zend_Search_Lucene_Interface
-     */
-    protected $_index = null;
-
-    /**
-     * Object handle of the document associated with this hit
-     * @var Zend_Search_Lucene_Document
-     */
-    protected $_document = null;
-
-    /**
      * Number of the document in the index
      * @var integer
      */
     public $id;
-
     /**
      * Score of the hit
      * @var float
      */
     public $score;
-
+    /**
+     * Object handle of the index
+     * @var Zend_Search_Lucene_Interface
+     */
+    protected $_index = null;
+    /**
+     * Object handle of the document associated with this hit
+     * @var Zend_Search_Lucene_Document
+     */
+    protected $_document = null;
 
     /**
      * Constructor - pass object handle of Zend_Search_Lucene_Interface index that produced

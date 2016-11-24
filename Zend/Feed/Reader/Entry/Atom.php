@@ -223,6 +223,16 @@ class Zend_Feed_Reader_Entry_Atom extends Zend_Feed_Reader_EntryAbstract impleme
     }
 
     /**
+     * Get a permalink to the entry
+     *
+     * @return string
+     */
+    public function getPermalink()
+    {
+        return $this->getLink(0);
+    }
+
+    /**
      * Get a specific link
      *
      * @param  int $index
@@ -257,16 +267,6 @@ class Zend_Feed_Reader_Entry_Atom extends Zend_Feed_Reader_EntryAbstract impleme
         $this->_data['links'] = $links;
 
         return $this->_data['links'];
-    }
-
-    /**
-     * Get a permalink to the entry
-     *
-     * @return string
-     */
-    public function getPermalink()
-    {
-        return $this->getLink(0);
     }
 
     /**

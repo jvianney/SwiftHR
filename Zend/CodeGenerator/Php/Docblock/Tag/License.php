@@ -62,6 +62,16 @@ class Zend_CodeGenerator_Php_Docblock_Tag_License extends Zend_CodeGenerator_Php
     }
 
     /**
+     * getUrl()
+     *
+     * @return string
+     */
+    public function getUrl()
+    {
+        return $this->_url;
+    }
+
+    /**
      * setUrl()
      *
      * @param string $url
@@ -72,17 +82,6 @@ class Zend_CodeGenerator_Php_Docblock_Tag_License extends Zend_CodeGenerator_Php
         $this->_url = $url;
         return $this;
     }
-
-    /**
-     * getUrl()
-     *
-     * @return string
-     */
-    public function getUrl()
-    {
-        return $this->_url;
-    }
-
 
     /**
      * generate()

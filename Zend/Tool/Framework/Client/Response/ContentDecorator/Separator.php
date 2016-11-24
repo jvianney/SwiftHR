@@ -51,6 +51,16 @@ class Zend_Tool_Framework_Client_Response_ContentDecorator_Separator
     }
 
     /**
+     * getSeparator()
+     *
+     * @return string
+     */
+    public function getSeparator()
+    {
+        return $this->_separator;
+    }
+
+    /**
      * setSeparator()
      *
      * @param string $separator
@@ -60,16 +70,6 @@ class Zend_Tool_Framework_Client_Response_ContentDecorator_Separator
     {
         $this->_separator = $separator;
         return $this;
-    }
-
-    /**
-     * getSeparator()
-     *
-     * @return string
-     */
-    public function getSeparator()
-    {
-        return $this->_separator;
     }
 
     public function decorate($content, $decoratorValue)

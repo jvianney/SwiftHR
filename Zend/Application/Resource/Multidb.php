@@ -86,7 +86,7 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
 
         foreach ($options as $id => $params) {
             $adapter = $params['adapter'];
-            $default = (int) (
+            $default = (int)(
                 isset($params['isDefaultTableAdapter']) && $params['isDefaultTableAdapter']
                 || isset($params['default']) && $params['default']
             );
@@ -107,6 +107,49 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
     }
 
     /**
+     * Set the default metadata cache
+     *
+     * @param string|Zend_Cache_Core $cache
+     * @return Zend_Application_Resource_Multidb
+     */
+    protected function _setDefaultMetadataCache($cache)
+    {
+        $metadataCache = null;
+
+        if (is_string($cache)) {
+            $bootstrap = $this->getBootstrap();
+            if ($bootstrap instanceof Zend_Application_Bootstrap_ResourceBootstrapper &&
+                $bootstrap->hasPluginResource('CacheManager')
+            ) {
+                $cacheManager = $bootstrap->bootstrap('CacheManager')
+                    ->getResource('CacheManager');
+                if (null !== $cacheManager && $cacheManager->hasCache($cache)) {
+                    $metadataCache = $cacheManager->getCache($cache);
+                }
+            }
+        } else if ($cache instanceof Zend_Cache_Core) {
+            $metadataCache = $cache;
+        }
+
+        if ($metadataCache instanceof Zend_Cache_Core) {
+            Zend_Db_Table::setDefaultMetadataCache($metadataCache);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the default db adapter
+     *
+     * @var Zend_Db_Adapter_Abstract $adapter Adapter to set as default
+     */
+    protected function _setDefault(Zend_Db_Adapter_Abstract $adapter)
+    {
+        Zend_Db_Table::setDefaultAdapter($adapter);
+        $this->_defaultDb = $adapter;
+    }
+
+    /**
      * Determine if the given db(identifier) is the default db.
      *
      * @param  string|Zend_Db_Adapter_Abstract $db The db to determine whether it's set as default
@@ -114,7 +157,7 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
      */
     public function isDefault($db)
     {
-        if(!$db instanceof Zend_Db_Adapter_Abstract) {
+        if (!$db instanceof Zend_Db_Adapter_Abstract) {
             $db = $this->getDb($db);
         }
 
@@ -163,48 +206,5 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
         }
 
         return null;
-    }
-
-    /**
-     * Set the default db adapter
-     *
-     * @var Zend_Db_Adapter_Abstract $adapter Adapter to set as default
-     */
-    protected function _setDefault(Zend_Db_Adapter_Abstract $adapter)
-    {
-        Zend_Db_Table::setDefaultAdapter($adapter);
-        $this->_defaultDb = $adapter;
-    }
-
-   /**
-     * Set the default metadata cache
-     *
-     * @param string|Zend_Cache_Core $cache
-     * @return Zend_Application_Resource_Multidb
-     */
-    protected function _setDefaultMetadataCache($cache)
-    {
-        $metadataCache = null;
-
-        if (is_string($cache)) {
-            $bootstrap = $this->getBootstrap();
-            if ($bootstrap instanceof Zend_Application_Bootstrap_ResourceBootstrapper &&
-                $bootstrap->hasPluginResource('CacheManager')
-            ) {
-                $cacheManager = $bootstrap->bootstrap('CacheManager')
-                    ->getResource('CacheManager');
-                if (null !== $cacheManager && $cacheManager->hasCache($cache)) {
-                    $metadataCache = $cacheManager->getCache($cache);
-                }
-            }
-        } else if ($cache instanceof Zend_Cache_Core) {
-            $metadataCache = $cache;
-        }
-
-        if ($metadataCache instanceof Zend_Cache_Core) {
-            Zend_Db_Table::setDefaultMetadataCache($metadataCache);
-        }
-
-        return $this;
     }
 }

@@ -1,8 +1,9 @@
 <?php
-/********************************************************************************* 
+
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +19,6 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
 class sapp_DateLessThanToday extends Zend_Validate_Abstract
 {
     const DATE_INVALID = 'dateInvalid';
@@ -35,8 +35,7 @@ class sapp_DateLessThanToday extends Zend_Validate_Abstract
         $final_val = sapp_Global::change_date($value, 'database');
 
         // expecting $value to be YYYY-MM-DD
-        if ($final_val == $today)
-		{
+        if ($final_val == $today) {
             $this->_error(self::DATE_INVALID);
             return false;
         }
@@ -44,4 +43,5 @@ class sapp_DateLessThanToday extends Zend_Validate_Abstract
         return true;
     }
 }
+
 ?>

@@ -39,6 +39,14 @@ class Zend_Controller_Router_Route_Regex extends Zend_Controller_Router_Route_Ab
     protected $_map = array();
     protected $_values = array();
 
+    public function __construct($route, $defaults = array(), $map = array(), $reverse = null)
+    {
+        $this->_regex = $route;
+        $this->_defaults = (array)$defaults;
+        $this->_map = (array)$map;
+        $this->_reverse = $reverse;
+    }
+
     /**
      * Instantiates route based on passed Zend_Config structure
      *
@@ -52,15 +60,8 @@ class Zend_Controller_Router_Route_Regex extends Zend_Controller_Router_Route_Ab
         return new self($config->route, $defs, $map, $reverse);
     }
 
-    public function __construct($route, $defaults = array(), $map = array(), $reverse = null)
+    public function getVersion()
     {
-        $this->_regex    = $route;
-        $this->_defaults = (array) $defaults;
-        $this->_map      = (array) $map;
-        $this->_reverse  = $reverse;
-    }
-
-    public function getVersion() {
         return 1;
     }
 
@@ -99,9 +100,9 @@ class Zend_Controller_Router_Route_Regex extends Zend_Controller_Router_Route_Ab
 
         $this->_values = $values;
 
-        $values   = $this->_getMappedValues($values);
+        $values = $this->_getMappedValues($values);
         $defaults = $this->_getMappedValues($this->_defaults, false, true);
-        $return   = $values + $defaults;
+        $return = $values + $defaults;
 
         return $return;
     }
@@ -115,7 +116,7 @@ class Zend_Controller_Router_Route_Regex extends Zend_Controller_Router_Route_Ab
      * indexed numerically then every associative key will be stripped. Vice versa if reversed
      * is set to true.
      *
-     * @param  array   $values Indexed or associative array of values to map
+     * @param  array $values Indexed or associative array of values to map
      * @param  boolean $reversed False means translation of index to association. True means reverse.
      * @param  boolean $preserve Should wrong type of keys be preserved or stripped.
      * @return array   An array of mapped values
@@ -169,13 +170,13 @@ class Zend_Controller_Router_Route_Regex extends Zend_Controller_Router_Route_Ab
             throw new Zend_Controller_Router_Exception('Cannot assemble. Reversed route is not specified.');
         }
 
-        $defaultValuesMapped  = $this->_getMappedValues($this->_defaults, true, false);
-        $matchedValuesMapped  = $this->_getMappedValues($this->_values, true, false);
-        $dataValuesMapped     = $this->_getMappedValues($data, true, false);
+        $defaultValuesMapped = $this->_getMappedValues($this->_defaults, true, false);
+        $matchedValuesMapped = $this->_getMappedValues($this->_values, true, false);
+        $dataValuesMapped = $this->_getMappedValues($data, true, false);
 
         // handle resets, if so requested (By null value) to do so
         if (($resetKeys = array_search(null, $dataValuesMapped, true)) !== false) {
-            foreach ((array) $resetKeys as $resetKey) {
+            foreach ((array)$resetKeys as $resetKey) {
                 if (isset($matchedValuesMapped[$resetKey])) {
                     unset($matchedValuesMapped[$resetKey]);
                     unset($dataValuesMapped[$resetKey]);
@@ -208,12 +209,30 @@ class Zend_Controller_Router_Route_Regex extends Zend_Controller_Router_Route_Ab
     }
 
     /**
+     * _arrayMergeNumericKeys() - allows for a strict key (numeric's included) array_merge.
+     * php's array_merge() lacks the ability to merge with numeric keys.
+     *
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    protected function _arrayMergeNumericKeys(Array $array1, Array $array2)
+    {
+        $returnArray = $array1;
+        foreach ($array2 as $array2Index => $array2Value) {
+            $returnArray[$array2Index] = $array2Value;
+        }
+        return $returnArray;
+    }
+
+    /**
      * Return a single parameter of route's defaults
      *
      * @param string $name Array key of the parameter
      * @return string Previously set default
      */
-    public function getDefault($name) {
+    public function getDefault($name)
+    {
         if (isset($this->_defaults[$name])) {
             return $this->_defaults[$name];
         }
@@ -224,7 +243,8 @@ class Zend_Controller_Router_Route_Regex extends Zend_Controller_Router_Route_Ab
      *
      * @return array Route defaults
      */
-    public function getDefaults() {
+    public function getDefaults()
+    {
         return $this->_defaults;
     }
 
@@ -246,23 +266,6 @@ class Zend_Controller_Router_Route_Regex extends Zend_Controller_Router_Route_Ab
         }
 
         return $variables;
-    }
-
-    /**
-     * _arrayMergeNumericKeys() - allows for a strict key (numeric's included) array_merge.
-     * php's array_merge() lacks the ability to merge with numeric keys.
-     *
-     * @param array $array1
-     * @param array $array2
-     * @return array
-     */
-    protected function _arrayMergeNumericKeys(Array $array1, Array $array2)
-    {
-        $returnArray = $array1;
-        foreach ($array2 as $array2Index => $array2Value) {
-            $returnArray[$array2Index] = $array2Value;
-        }
-        return $returnArray;
     }
 
 

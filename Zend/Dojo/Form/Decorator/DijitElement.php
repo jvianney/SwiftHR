@@ -66,6 +66,36 @@ class Zend_Dojo_Form_Decorator_DijitElement extends Zend_Form_Decorator_ViewHelp
     protected $_dijitParams = array();
 
     /**
+     * Set a single dijit option parameter
+     *
+     * @param  string $key
+     * @param  mixed $value
+     * @return Zend_Dojo_Form_Decorator_DijitContainer
+     */
+    public function setDijitParam($key, $value)
+    {
+        $this->_dijitParams[(string)$key] = $value;
+        return $this;
+    }
+
+    /**
+     * Retrieve a single dijit option parameter
+     *
+     * @param  string $key
+     * @return mixed|null
+     */
+    public function getDijitParam($key)
+    {
+        $this->getElementAttribs();
+        $key = (string)$key;
+        if (array_key_exists($key, $this->_dijitParams)) {
+            return $this->_dijitParams[$key];
+        }
+
+        return null;
+    }
+
+    /**
      * Get element attributes
      *
      * @return array
@@ -81,59 +111,6 @@ class Zend_Dojo_Form_Decorator_DijitElement extends Zend_Form_Decorator_ViewHelp
         }
 
         return $this->_attribs;
-    }
-
-    /**
-     * Set a single dijit option parameter
-     *
-     * @param  string $key
-     * @param  mixed $value
-     * @return Zend_Dojo_Form_Decorator_DijitContainer
-     */
-    public function setDijitParam($key, $value)
-    {
-        $this->_dijitParams[(string) $key] = $value;
-        return $this;
-    }
-
-    /**
-     * Set dijit option parameters
-     *
-     * @param  array $params
-     * @return Zend_Dojo_Form_Decorator_DijitContainer
-     */
-    public function setDijitParams(array $params)
-    {
-        $this->_dijitParams = array_merge($this->_dijitParams, $params);
-        return $this;
-    }
-
-    /**
-     * Retrieve a single dijit option parameter
-     *
-     * @param  string $key
-     * @return mixed|null
-     */
-    public function getDijitParam($key)
-    {
-        $this->getElementAttribs();
-        $key = (string) $key;
-        if (array_key_exists($key, $this->_dijitParams)) {
-            return $this->_dijitParams[$key];
-        }
-
-        return null;
-    }
-
-    /**
-     * Get dijit option parameters
-     *
-     * @return array
-     */
-    public function getDijitParams()
-    {
-        $this->getElementAttribs();
-        return $this->_dijitParams;
     }
 
     /**
@@ -157,11 +134,11 @@ class Zend_Dojo_Form_Decorator_DijitElement extends Zend_Form_Decorator_ViewHelp
         }
 
         $options = null;
-        $helper    = $this->getHelper();
+        $helper = $this->getHelper();
         $separator = $this->getSeparator();
-        $value     = $this->getValue($element);
-        $attribs   = $this->getElementAttribs();
-        $name      = $element->getFullyQualifiedName();
+        $value = $this->getValue($element);
+        $attribs = $this->getElementAttribs();
+        $name = $element->getFullyQualifiedName();
 
         $dijitParams = $this->getDijitParams();
         $dijitParams['required'] = $element->isRequired();
@@ -177,7 +154,7 @@ class Zend_Dojo_Form_Decorator_DijitElement extends Zend_Form_Decorator_ViewHelp
         $attribs['id'] = $id;
 
         if (array_key_exists('options', $attribs)) {
-               $options = $attribs['options'];
+            $options = $attribs['options'];
         }
 
         $elementContent = $view->$helper($name, $value, $dijitParams, $attribs, $options);
@@ -189,5 +166,28 @@ class Zend_Dojo_Form_Decorator_DijitElement extends Zend_Form_Decorator_ViewHelp
             default:
                 return $elementContent;
         }
+    }
+
+    /**
+     * Get dijit option parameters
+     *
+     * @return array
+     */
+    public function getDijitParams()
+    {
+        $this->getElementAttribs();
+        return $this->_dijitParams;
+    }
+
+    /**
+     * Set dijit option parameters
+     *
+     * @param  array $params
+     * @return Zend_Dojo_Form_Decorator_DijitContainer
+     */
+    public function setDijitParams(array $params)
+    {
+        $this->_dijitParams = array_merge($this->_dijitParams, $params);
+        return $this;
     }
 }

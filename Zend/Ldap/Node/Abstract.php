@@ -40,7 +40,7 @@ require_once 'Zend/Ldap/Dn.php';
  */
 abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
 {
-    protected static $_systemAttributes=array('createtimestamp', 'creatorsname',
+    protected static $_systemAttributes = array('createtimestamp', 'creatorsname',
         'entrycsn', 'entrydn', 'entryuuid', 'hassubordinates', 'modifiersname',
         'modifytimestamp', 'structuralobjectclass', 'subschemasubentry',
         'distinguishedname', 'instancetype', 'name', 'objectcategory', 'objectguid',
@@ -66,8 +66,8 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
      * Constructor is protected to enforce the use of factory methods.
      *
      * @param  Zend_Ldap_Dn $dn
-     * @param  array        $data
-     * @param  boolean      $fromDataSource
+     * @param  array $data
+     * @param  boolean $fromDataSource
      */
     protected function __construct(Zend_Ldap_Dn $dn, array $data, $fromDataSource)
     {
@@ -76,7 +76,7 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
     }
 
     /**
-     * @param  array   $data
+     * @param  array $data
      * @param  boolean $fromDataSource
      * @throws Zend_Ldap_Exception
      */
@@ -134,19 +134,6 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
     }
 
     /**
-     * Gets the DN of the current node as a string.
-     *
-     * This is an offline method.
-     *
-     * @param  string $caseFold
-     * @return string
-     */
-    public function getDnString($caseFold = null)
-    {
-        return $this->_getDn()->toString($caseFold);
-    }
-
-    /**
      * Gets the DN of the current node as an array.
      *
      * This is an offline method.
@@ -196,6 +183,81 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
     }
 
     /**
+     * Gets a LDAP attribute.
+     *
+     * This is an offline method.
+     *
+     * @param  string $name
+     * @param  integer $index
+     * @return mixed
+     * @throws Zend_Ldap_Exception
+     */
+    public function getAttribute($name, $index = null)
+    {
+        if ($name == 'dn') {
+            return $this->getDnString();
+        } else {
+            return Zend_Ldap_Attribute::getAttribute($this->_currentData, $name, $index);
+        }
+    }
+
+    /**
+     * Gets the DN of the current node as a string.
+     *
+     * This is an offline method.
+     *
+     * @param  string $caseFold
+     * @return string
+     */
+    public function getDnString($caseFold = null)
+    {
+        return $this->_getDn()->toString($caseFold);
+    }
+
+    /**
+     * Cast to string representation {@see toString()}
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->toString();
+    }
+
+    /**
+     * Returns the DN of the current node. {@see getDnString()}
+     *
+     * @return string
+     */
+    public function toString()
+    {
+        return $this->getDnString();
+    }
+
+    /**
+     * Returns a JSON representation of the current node
+     *
+     * @param  boolean $includeSystemAttributes
+     * @return string
+     */
+    public function toJson($includeSystemAttributes = true)
+    {
+        return json_encode($this->toArray($includeSystemAttributes));
+    }
+
+    /**
+     * Returns an array representation of the current node
+     *
+     * @param  boolean $includeSystemAttributes
+     * @return array
+     */
+    public function toArray($includeSystemAttributes = true)
+    {
+        $attributes = $this->getAttributes($includeSystemAttributes);
+        return array_merge(array('dn' => $this->getDnString()), $attributes);
+    }
+
+    /**
      * Gets all attributes of node.
      *
      * The collection contains all attributes.
@@ -212,49 +274,6 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
             $data[$name] = $this->getAttribute($name, null);
         }
         return $data;
-    }
-
-    /**
-     * Returns the DN of the current node. {@see getDnString()}
-     *
-     * @return string
-     */
-    public function toString()
-    {
-        return $this->getDnString();
-    }
-
-    /**
-     * Cast to string representation {@see toString()}
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->toString();
-    }
-
-    /**
-     * Returns an array representation of the current node
-     *
-     * @param  boolean $includeSystemAttributes
-     * @return array
-     */
-    public function toArray($includeSystemAttributes = true)
-    {
-        $attributes = $this->getAttributes($includeSystemAttributes);
-        return array_merge(array('dn' => $this->getDnString()), $attributes);
-    }
-
-    /**
-     * Returns a JSON representation of the current node
-     *
-     * @param  boolean $includeSystemAttributes
-     * @return string
-     */
-    public function toJson($includeSystemAttributes = true)
-    {
-        return json_encode($this->toArray($includeSystemAttributes));
     }
 
     /**
@@ -283,32 +302,9 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
     }
 
     /**
-     * Checks whether a given attribute exists.
-     *
-     * If $emptyExists is false empty attributes (containing only array()) are
-     * treated as non-existent returning false.
-     * If $emptyExists is true empty attributes are treated as existent returning
-     * true. In this case method returns false only if the attribute name is
-     * missing in the key-collection.
-     *
-     * @param  string  $name
-     * @param  boolean $emptyExists
-     * @return boolean
-     */
-    public function existsAttribute($name, $emptyExists = false)
-    {
-        $name = strtolower($name);
-        if (isset($this->_currentData[$name])) {
-            if ($emptyExists) return true;
-            return count($this->_currentData[$name])>0;
-        }
-        else return false;
-    }
-
-    /**
      * Checks if the given value(s) exist in the attribute
      *
-     * @param  string      $attribName
+     * @param  string $attribName
      * @param  mixed|array $value
      * @return boolean
      */
@@ -318,31 +314,11 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
     }
 
     /**
-     * Gets a LDAP attribute.
-     *
-     * This is an offline method.
-     *
-     * @param  string  $name
-     * @param  integer $index
-     * @return mixed
-     * @throws Zend_Ldap_Exception
-     */
-    public function getAttribute($name, $index = null)
-    {
-        if ($name == 'dn') {
-            return $this->getDnString();
-        }
-        else {
-            return Zend_Ldap_Attribute::getAttribute($this->_currentData, $name, $index);
-        }
-    }
-
-    /**
      * Gets a LDAP date/time attribute.
      *
      * This is an offline method.
      *
-     * @param  string  $name
+     * @param  string $name
      * @param  integer $index
      * @return array|integer
      * @throws Zend_Ldap_Exception
@@ -350,21 +326,6 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
     public function getDateTimeAttribute($name, $index = null)
     {
         return Zend_Ldap_Attribute::getDateTimeAttribute($this->_currentData, $name, $index);
-    }
-
-    /**
-     * Sets a LDAP attribute.
-     *
-     * This is an offline method.
-     *
-     * @param  string $name
-     * @param  mixed  $value
-     * @return null
-     * @throws BadMethodCallException
-     */
-    public function __set($name, $value)
-    {
-        throw new BadMethodCallException();
     }
 
     /**
@@ -379,6 +340,21 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
     public function __get($name)
     {
         return $this->getAttribute($name, null);
+    }
+
+    /**
+     * Sets a LDAP attribute.
+     *
+     * This is an offline method.
+     *
+     * @param  string $name
+     * @param  mixed $value
+     * @return null
+     * @throws BadMethodCallException
+     */
+    public function __set($name, $value)
+    {
+        throw new BadMethodCallException();
     }
 
     /**
@@ -411,13 +387,35 @@ abstract class Zend_Ldap_Node_Abstract implements ArrayAccess, Countable
     }
 
     /**
+     * Checks whether a given attribute exists.
+     *
+     * If $emptyExists is false empty attributes (containing only array()) are
+     * treated as non-existent returning false.
+     * If $emptyExists is true empty attributes are treated as existent returning
+     * true. In this case method returns false only if the attribute name is
+     * missing in the key-collection.
+     *
+     * @param  string $name
+     * @param  boolean $emptyExists
+     * @return boolean
+     */
+    public function existsAttribute($name, $emptyExists = false)
+    {
+        $name = strtolower($name);
+        if (isset($this->_currentData[$name])) {
+            if ($emptyExists) return true;
+            return count($this->_currentData[$name]) > 0;
+        } else return false;
+    }
+
+    /**
      * Sets a LDAP attribute.
      * Implements ArrayAccess.
      *
      * This is an offline method.
      *
      * @param  string $name
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return null
      * @throws BadMethodCallException
      */

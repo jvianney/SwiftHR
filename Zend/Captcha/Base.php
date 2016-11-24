@@ -65,6 +65,33 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
     );
 
     /**
+     * Constructor
+     *
+     * @param  array|Zend_Config $options
+     * @return void
+     */
+    public function __construct($options = null)
+    {
+        // Set options
+        if (is_array($options)) {
+            $this->setOptions($options);
+        } else if ($options instanceof Zend_Config) {
+            $this->setConfig($options);
+        }
+    }
+
+    /**
+     * Set object state from config object
+     *
+     * @param  Zend_Config $config
+     * @return Zend_Captcha_Base
+     */
+    public function setConfig(Zend_Config $config)
+    {
+        return $this->setOptions($config->toArray());
+    }
+
+    /**
      * Get name
      *
      * @return string
@@ -86,22 +113,6 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
     }
 
     /**
-     * Constructor
-     *
-     * @param  array|Zend_Config $options
-     * @return void
-     */
-    public function __construct($options = null)
-    {
-        // Set options
-        if (is_array($options)) {
-            $this->setOptions($options);
-        } else if ($options instanceof Zend_Config) {
-            $this->setConfig($options);
-        }
-    }
-
-    /**
      * Set single option for the object
      *
      * @param string $key
@@ -114,8 +125,8 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
             return $this;
         }
 
-        $method = 'set' . ucfirst ($key);
-        if (method_exists ($this, $method)) {
+        $method = 'set' . ucfirst($key);
+        if (method_exists($this, $method)) {
             // Setter exists; use it
             $this->$method ($value);
             $this->_options[$key] = $value;
@@ -123,20 +134,6 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
             // Assume it's metadata
             $this->$key = $value;
             $this->_options[$key] = $value;
-        }
-        return $this;
-    }
-
-    /**
-     * Set object state from options array
-     *
-     * @param  array $options
-     * @return Zend_Form_Element
-     */
-    public function setOptions($options = null)
-    {
-        foreach ($options as $key => $value) {
-            $this->setOption($key, $value);
         }
         return $this;
     }
@@ -152,14 +149,17 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
     }
 
     /**
-     * Set object state from config object
+     * Set object state from options array
      *
-     * @param  Zend_Config $config
-     * @return Zend_Captcha_Base
+     * @param  array $options
+     * @return Zend_Form_Element
      */
-    public function setConfig(Zend_Config $config)
+    public function setOptions($options = null)
     {
-        return $this->setOptions($config->toArray());
+        foreach ($options as $key => $value) {
+            $this->setOption($key, $value);
+        }
+        return $this;
     }
 
     /**

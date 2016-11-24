@@ -117,16 +117,6 @@ class Zend_Search_Lucene_Search_Query_Insignificant extends Zend_Search_Lucene_S
     }
 
     /**
-     * Query specific matches highlighting
-     *
-     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter  Highlighter object (also contains doc for highlighting)
-     */
-    protected function _highlightMatches(Zend_Search_Lucene_Search_Highlighter_Interface $highlighter)
-    {
-        // Do nothing
-    }
-
-    /**
      * Print a query
      *
      * @return string
@@ -134,6 +124,16 @@ class Zend_Search_Lucene_Search_Query_Insignificant extends Zend_Search_Lucene_S
     public function __toString()
     {
         return '<InsignificantQuery>';
+    }
+
+    /**
+     * Query specific matches highlighting
+     *
+     * @param Zend_Search_Lucene_Search_Highlighter_Interface $highlighter Highlighter object (also contains doc for highlighting)
+     */
+    protected function _highlightMatches(Zend_Search_Lucene_Search_Highlighter_Interface $highlighter)
+    {
+        // Do nothing
     }
 }
 

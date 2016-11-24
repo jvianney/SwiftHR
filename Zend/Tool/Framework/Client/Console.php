@@ -48,7 +48,7 @@ require_once 'Zend/Tool/Framework/Client/Interactive/OutputInterface.php';
 class Zend_Tool_Framework_Client_Console
     extends Zend_Tool_Framework_Client_Abstract
     implements Zend_Tool_Framework_Client_Interactive_InputInterface,
-               Zend_Tool_Framework_Client_Interactive_OutputInterface
+    Zend_Tool_Framework_Client_Interactive_OutputInterface
 {
 
     /**
@@ -120,12 +120,94 @@ class Zend_Tool_Framework_Client_Console
     }
 
     /**
-		 * @param array $classesToLoad
-		 */
+     * @param array $classesToLoad
+     */
     public function setClassesToLoad($classesToLoad)
     {
         $this->_classesToLoad = $classesToLoad;
         return $this;
+    }
+
+    /**
+     * handleInteractiveInputRequest() is required by the Interactive InputInterface
+     *
+     *
+     * @param Zend_Tool_Framework_Client_Interactive_InputRequest $inputRequest
+     * @return string
+     */
+    public function handleInteractiveInputRequest(Zend_Tool_Framework_Client_Interactive_InputRequest $inputRequest)
+    {
+        fwrite(STDOUT, $inputRequest->getContent() . PHP_EOL . 'zf> ');
+        $inputContent = fgets(STDIN);
+        return rtrim($inputContent); // remove the return from the end of the string
+    }
+
+    /**
+     * handleInteractiveOutput() is required by the Interactive OutputInterface
+     *
+     * This allows us to display output immediately from providers, rather
+     * than displaying it after the provider is done.
+     *
+     * @param string $output
+     */
+    public function handleInteractiveOutput($output)
+    {
+        echo $output;
+    }
+
+    /**
+     * getMissingParameterPromptString()
+     *
+     * @param Zend_Tool_Framework_Provider_Interface $provider
+     * @param Zend_Tool_Framework_Action_Interface $actionInterface
+     * @param string $missingParameterName
+     * @return string
+     */
+    public function getMissingParameterPromptString(Zend_Tool_Framework_Provider_Interface $provider, Zend_Tool_Framework_Action_Interface $actionInterface, $missingParameterName)
+    {
+        return 'Please provide a value for $' . $missingParameterName;
+    }
+
+    /**
+     * convertToClientNaming()
+     *
+     * Convert words to client specific naming, in this case is lower, dash separated
+     *
+     * Filters are lazy-loaded.
+     *
+     * @param string $string
+     * @return string
+     */
+    public function convertToClientNaming($string)
+    {
+        if (!$this->_filterToClientNaming) {
+            $filter = new Zend_Filter();
+            $filter->addFilter(new Zend_Filter_Word_CamelCaseToDash());
+            $filter->addFilter(new Zend_Filter_StringToLower());
+
+            $this->_filterToClientNaming = $filter;
+        }
+
+        return $this->_filterToClientNaming->filter($string);
+    }
+
+    /**
+     * convertFromClientNaming()
+     *
+     * Convert words from client specific naming to code naming - camelcased
+     *
+     * Filters are lazy-loaded.
+     *
+     * @param string $string
+     * @return string
+     */
+    public function convertFromClientNaming($string)
+    {
+        if (!$this->_filterFromClientNaming) {
+            $this->_filterFromClientNaming = new Zend_Filter_Word_DashToCamelCase();
+        }
+
+        return $this->_filterFromClientNaming->filter($string);
     }
 
     /**
@@ -145,14 +227,14 @@ class Zend_Tool_Framework_Client_Console
         if ($this->_storageOptions != null && isset($this->_storageOptions['directory'])) {
             $storage->setAdapter(
                 new Zend_Tool_Framework_Client_Storage_Directory($this->_storageOptions['directory'])
-                );
+            );
         }
 
         // which classes are essential to initializing Zend_Tool_Framework_Client_Console
         $classesToLoad = array(
             'Zend_Tool_Framework_Client_Console_Manifest',
             'Zend_Tool_Framework_System_Manifest'
-            );
+        );
 
         if ($this->_classesToLoad) {
             if (is_string($this->_classesToLoad)) {
@@ -171,7 +253,7 @@ class Zend_Tool_Framework_Client_Console
 
         $this->_registry->setLoader(
             new Zend_Tool_Framework_Loader_BasicLoader(array('classesToLoad' => $classesToLoad))
-            );
+        );
 
         return;
     }
@@ -219,94 +301,11 @@ class Zend_Tool_Framework_Client_Console
                 ->respondWithSpecialtyAndParamHelp(
                     $request->getProviderName(),
                     $request->getActionName()
-                    );
+                );
         }
 
         echo PHP_EOL;
         return;
-    }
-
-    /**
-     * handleInteractiveInputRequest() is required by the Interactive InputInterface
-     *
-     *
-     * @param Zend_Tool_Framework_Client_Interactive_InputRequest $inputRequest
-     * @return string
-     */
-    public function handleInteractiveInputRequest(Zend_Tool_Framework_Client_Interactive_InputRequest $inputRequest)
-    {
-        fwrite(STDOUT, $inputRequest->getContent() . PHP_EOL . 'zf> ');
-        $inputContent = fgets(STDIN);
-        return rtrim($inputContent); // remove the return from the end of the string
-    }
-
-    /**
-     * handleInteractiveOutput() is required by the Interactive OutputInterface
-     *
-     * This allows us to display output immediately from providers, rather
-     * than displaying it after the provider is done.
-     *
-     * @param string $output
-     */
-    public function handleInteractiveOutput($output)
-    {
-        echo $output;
-    }
-
-    /**
-     * getMissingParameterPromptString()
-     *
-     * @param Zend_Tool_Framework_Provider_Interface $provider
-     * @param Zend_Tool_Framework_Action_Interface $actionInterface
-     * @param string $missingParameterName
-     * @return string
-     */
-    public function getMissingParameterPromptString(Zend_Tool_Framework_Provider_Interface $provider, Zend_Tool_Framework_Action_Interface $actionInterface, $missingParameterName)
-    {
-        return 'Please provide a value for $' . $missingParameterName;
-    }
-
-
-    /**
-     * convertToClientNaming()
-     *
-     * Convert words to client specific naming, in this case is lower, dash separated
-     *
-     * Filters are lazy-loaded.
-     *
-     * @param string $string
-     * @return string
-     */
-    public function convertToClientNaming($string)
-    {
-        if (!$this->_filterToClientNaming) {
-            $filter = new Zend_Filter();
-            $filter->addFilter(new Zend_Filter_Word_CamelCaseToDash());
-            $filter->addFilter(new Zend_Filter_StringToLower());
-
-            $this->_filterToClientNaming = $filter;
-        }
-
-        return $this->_filterToClientNaming->filter($string);
-    }
-
-    /**
-     * convertFromClientNaming()
-     *
-     * Convert words from client specific naming to code naming - camelcased
-     *
-     * Filters are lazy-loaded.
-     *
-     * @param string $string
-     * @return string
-     */
-    public function convertFromClientNaming($string)
-    {
-        if (!$this->_filterFromClientNaming) {
-            $this->_filterFromClientNaming = new Zend_Filter_Word_DashToCamelCase();
-        }
-
-        return $this->_filterFromClientNaming->filter($string);
     }
 
 }

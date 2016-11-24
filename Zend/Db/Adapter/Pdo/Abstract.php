@@ -53,29 +53,43 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
     protected $_defaultStmtClass = 'Zend_Db_Statement_Pdo';
 
     /**
-     * Creates a PDO DSN for the adapter from $this->_config settings.
+     * Test if a connection is active
      *
-     * @return string
+     * @return boolean
      */
-    protected function _dsn()
+    public function isConnected()
     {
-        // baseline of DSN parts
-        $dsn = $this->_config;
+        return ((bool)($this->_connection instanceof PDO));
+    }
 
-        // don't pass the username, password, charset, persistent and driver_options in the DSN
-        unset($dsn['username']);
-        unset($dsn['password']);
-        unset($dsn['options']);
-        unset($dsn['charset']);
-        unset($dsn['persistent']);
-        unset($dsn['driver_options']);
+    /**
+     * Force the connection to close.
+     *
+     * @return void
+     */
+    public function closeConnection()
+    {
+        $this->_connection = null;
+    }
 
-        // use all remaining parts in the DSN
-        foreach ($dsn as $key => $val) {
-            $dsn[$key] = "$key=$val";
+    /**
+     * Prepares an SQL statement.
+     *
+     * @param string $sql The SQL statement with placeholders.
+     * @param array $bind An array of data to bind to the placeholders.
+     * @return PDOStatement
+     */
+    public function prepare($sql)
+    {
+        $this->_connect();
+        $stmtClass = $this->_defaultStmtClass;
+        if (!class_exists($stmtClass)) {
+            require_once 'Zend/Loader.php';
+            Zend_Loader::loadClass($stmtClass);
         }
-
-        return $this->_pdoType . ':' . implode(';', $dsn);
+        $stmt = new $stmtClass($this, $sql);
+        $stmt->setFetchMode($this->_fetchMode);
+        return $stmt;
     }
 
     /**
@@ -147,43 +161,29 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
     }
 
     /**
-     * Test if a connection is active
+     * Creates a PDO DSN for the adapter from $this->_config settings.
      *
-     * @return boolean
+     * @return string
      */
-    public function isConnected()
+    protected function _dsn()
     {
-        return ((bool) ($this->_connection instanceof PDO));
-    }
+        // baseline of DSN parts
+        $dsn = $this->_config;
 
-    /**
-     * Force the connection to close.
-     *
-     * @return void
-     */
-    public function closeConnection()
-    {
-        $this->_connection = null;
-    }
+        // don't pass the username, password, charset, persistent and driver_options in the DSN
+        unset($dsn['username']);
+        unset($dsn['password']);
+        unset($dsn['options']);
+        unset($dsn['charset']);
+        unset($dsn['persistent']);
+        unset($dsn['driver_options']);
 
-    /**
-     * Prepares an SQL statement.
-     *
-     * @param string $sql The SQL statement with placeholders.
-     * @param array $bind An array of data to bind to the placeholders.
-     * @return PDOStatement
-     */
-    public function prepare($sql)
-    {
-        $this->_connect();
-        $stmtClass = $this->_defaultStmtClass;
-        if (!class_exists($stmtClass)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($stmtClass);
+        // use all remaining parts in the DSN
+        foreach ($dsn as $key => $val) {
+            $dsn[$key] = "$key=$val";
         }
-        $stmt = new $stmtClass($this, $sql);
-        $stmt->setFetchMode($this->_fetchMode);
-        return $stmt;
+
+        return $this->_pdoType . ':' . implode(';', $dsn);
     }
 
     /**
@@ -199,8 +199,8 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
      * On RDBMS brands that don't support sequences, $tableName and $primaryKey
      * are ignored.
      *
-     * @param string $tableName   OPTIONAL Name of table.
-     * @param string $primaryKey  OPTIONAL Name of primary key column.
+     * @param string $tableName OPTIONAL Name of table.
+     * @param string $primaryKey OPTIONAL Name of primary key column.
      * @return string
      */
     public function lastInsertId($tableName = null, $primaryKey = null)
@@ -248,7 +248,7 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
     /**
      * Executes an SQL statement and return the number of affected rows
      *
-     * @param  mixed  $sql  The SQL statement with placeholders.
+     * @param  mixed $sql The SQL statement with placeholders.
      *                      May be a string or Zend_Db_Select.
      * @return integer      Number of rows that were modified
      *                      or deleted by the SQL statement
@@ -279,47 +279,6 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
             require_once 'Zend/Db/Adapter/Exception.php';
             throw new Zend_Db_Adapter_Exception($e->getMessage(), $e->getCode(), $e);
         }
-    }
-
-    /**
-     * Quote a raw string.
-     *
-     * @param string $value     Raw string
-     * @return string           Quoted string
-     */
-    protected function _quote($value)
-    {
-        if (is_int($value) || is_float($value)) {
-            return $value;
-        }
-        $this->_connect();
-        return $this->_connection->quote($value);
-    }
-
-    /**
-     * Begin a transaction.
-     */
-    protected function _beginTransaction()
-    {
-        $this->_connect();
-        $this->_connection->beginTransaction();
-    }
-
-    /**
-     * Commit a transaction.
-     */
-    protected function _commit()
-    {
-        $this->_connect();
-        $this->_connection->commit();
-    }
-
-    /**
-     * Roll-back a transaction.
-     */
-    protected function _rollBack() {
-        $this->_connect();
-        $this->_connection->rollBack();
     }
 
     /**
@@ -396,6 +355,48 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
         } else {
             return null;
         }
+    }
+
+    /**
+     * Quote a raw string.
+     *
+     * @param string $value Raw string
+     * @return string           Quoted string
+     */
+    protected function _quote($value)
+    {
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+        $this->_connect();
+        return $this->_connection->quote($value);
+    }
+
+    /**
+     * Begin a transaction.
+     */
+    protected function _beginTransaction()
+    {
+        $this->_connect();
+        $this->_connection->beginTransaction();
+    }
+
+    /**
+     * Commit a transaction.
+     */
+    protected function _commit()
+    {
+        $this->_connect();
+        $this->_connection->commit();
+    }
+
+    /**
+     * Roll-back a transaction.
+     */
+    protected function _rollBack()
+    {
+        $this->_connect();
+        $this->_connection->rollBack();
     }
 }
 

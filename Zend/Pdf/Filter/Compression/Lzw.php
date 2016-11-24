@@ -33,29 +33,6 @@ require_once 'Zend/Pdf/Filter/Compression.php';
 class Zend_Pdf_Filter_Compression_Lzw extends Zend_Pdf_Filter_Compression
 {
     /**
-     * Get EarlyChange decode param value
-     *
-     * @param array $params
-     * @return integer
-     * @throws Zend_Pdf_Exception
-     */
-    private static function _getEarlyChangeValue($params)
-    {
-        if (isset($params['EarlyChange'])) {
-            $earlyChange = $params['EarlyChange'];
-
-            if ($earlyChange != 0  &&  $earlyChange != 1) {
-                require_once 'Zend/Pdf/Exception.php';
-                throw new Zend_Pdf_Exception('Invalid value of \'EarlyChange\' decode param - ' . $earlyChange . '.' );
-            }
-            return $earlyChange;
-        } else {
-            return 1;
-        }
-    }
-
-
-    /**
      * Encode data
      *
      * @param string $data
@@ -90,6 +67,28 @@ class Zend_Pdf_Filter_Compression_Lzw extends Zend_Pdf_Filter_Compression
             return self::_applyDecodeParams($data, $params);
         } else {
             return $data;
+        }
+    }
+
+    /**
+     * Get EarlyChange decode param value
+     *
+     * @param array $params
+     * @return integer
+     * @throws Zend_Pdf_Exception
+     */
+    private static function _getEarlyChangeValue($params)
+    {
+        if (isset($params['EarlyChange'])) {
+            $earlyChange = $params['EarlyChange'];
+
+            if ($earlyChange != 0 && $earlyChange != 1) {
+                require_once 'Zend/Pdf/Exception.php';
+                throw new Zend_Pdf_Exception('Invalid value of \'EarlyChange\' decode param - ' . $earlyChange . '.');
+            }
+            return $earlyChange;
+        } else {
+            return 1;
         }
     }
 }

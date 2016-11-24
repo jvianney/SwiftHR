@@ -3,19 +3,22 @@
 /**
  * Configuration definition, defines directives and their defaults.
  */
-class HTMLPurifier_ConfigSchema {
+class HTMLPurifier_ConfigSchema
+{
 
+    /**
+     * Application-wide singleton
+     */
+    static protected $singleton;
     /**
      * Defaults of the directives and namespaces.
      * @note This shares the exact same structure as HTMLPurifier_Config::$conf
      */
     public $defaults = array();
-
     /**
      * The default property list. Do not edit this property list.
      */
     public $defaultPlist;
-
     /**
      * Definition of the directives. The structure of this is:
      *
@@ -47,19 +50,29 @@ class HTMLPurifier_ConfigSchema {
      */
     public $info = array();
 
-    /**
-     * Application-wide singleton
-     */
-    static protected $singleton;
-
-    public function __construct() {
+    public function __construct()
+    {
         $this->defaultPlist = new HTMLPurifier_PropertyList();
+    }
+
+    /**
+     * Retrieves an instance of the application-wide configuration definition.
+     */
+    public static function instance($prototype = null)
+    {
+        if ($prototype !== null) {
+            HTMLPurifier_ConfigSchema::$singleton = $prototype;
+        } elseif (HTMLPurifier_ConfigSchema::$singleton === null || $prototype === true) {
+            HTMLPurifier_ConfigSchema::$singleton = HTMLPurifier_ConfigSchema::makeFromSerial();
+        }
+        return HTMLPurifier_ConfigSchema::$singleton;
     }
 
     /**
      * Unserializes the default ConfigSchema.
      */
-    public static function makeFromSerial() {
+    public static function makeFromSerial()
+    {
         $contents = file_get_contents(HTMLPURIFIER_PREFIX . '/HTMLPurifier/ConfigSchema/schema.ser');
         $r = unserialize($contents);
         if (!$r) {
@@ -67,18 +80,6 @@ class HTMLPurifier_ConfigSchema {
             trigger_error("Unserialization of configuration schema failed, sha1 of file was $hash", E_USER_ERROR);
         }
         return $r;
-    }
-
-    /**
-     * Retrieves an instance of the application-wide configuration definition.
-     */
-    public static function instance($prototype = null) {
-        if ($prototype !== null) {
-            HTMLPurifier_ConfigSchema::$singleton = $prototype;
-        } elseif (HTMLPurifier_ConfigSchema::$singleton === null || $prototype === true) {
-            HTMLPurifier_ConfigSchema::$singleton = HTMLPurifier_ConfigSchema::makeFromSerial();
-        }
-        return HTMLPurifier_ConfigSchema::$singleton;
     }
 
     /**
@@ -93,7 +94,8 @@ class HTMLPurifier_ConfigSchema {
      *      HTMLPurifier_DirectiveDef::$type for allowed values
      * @param $allow_null Whether or not to allow null values
      */
-    public function add($key, $default, $type, $allow_null) {
+    public function add($key, $default, $type, $allow_null)
+    {
         $obj = new stdclass();
         $obj->type = is_int($type) ? $type : HTMLPurifier_VarParser::$types[$type];
         if ($allow_null) $obj->allow_null = true;
@@ -111,7 +113,8 @@ class HTMLPurifier_ConfigSchema {
      * @param $name Name of Directive
      * @param $aliases Hash of aliased values to the real alias
      */
-    public function addValueAliases($key, $aliases) {
+    public function addValueAliases($key, $aliases)
+    {
         if (!isset($this->info[$key]->aliases)) {
             $this->info[$key]->aliases = array();
         }
@@ -128,7 +131,8 @@ class HTMLPurifier_ConfigSchema {
      * @param $name Name of directive
      * @param $allowed Lookup array of allowed values
      */
-    public function addAllowedValues($key, $allowed) {
+    public function addAllowedValues($key, $allowed)
+    {
         $this->info[$key]->allowed = $allowed;
     }
 
@@ -139,7 +143,8 @@ class HTMLPurifier_ConfigSchema {
      * @param $new_namespace
      * @param $new_name Directive that the alias will be to
      */
-    public function addAlias($key, $new_key) {
+    public function addAlias($key, $new_key)
+    {
         $obj = new stdclass;
         $obj->key = $new_key;
         $obj->isAlias = true;
@@ -149,11 +154,12 @@ class HTMLPurifier_ConfigSchema {
     /**
      * Replaces any stdclass that only has the type property with type integer.
      */
-    public function postProcess() {
+    public function postProcess()
+    {
         foreach ($this->info as $key => $v) {
-            if (count((array) $v) == 1) {
+            if (count((array)$v) == 1) {
                 $this->info[$key] = $v->type;
-            } elseif (count((array) $v) == 2 && isset($v->allow_null)) {
+            } elseif (count((array)$v) == 2 && isset($v->allow_null)) {
                 $this->info[$key] = -$v->type;
             }
         }

@@ -102,7 +102,7 @@ class Zend_Mail_Storage_Folder_Mbox extends Zend_Mail_Storage_Mbox implements Ze
 
         $this->_buildFolderTree($this->_rootdir);
         $this->selectFolder(!empty($params->folder) ? $params->folder : 'INBOX');
-        $this->_has['top']      = true;
+        $this->_has['top'] = true;
         $this->_has['uniqueid'] = false;
     }
 
@@ -156,6 +156,44 @@ class Zend_Mail_Storage_Folder_Mbox extends Zend_Mail_Storage_Mbox implements Ze
     }
 
     /**
+     * select given folder
+     *
+     * folder must be selectable!
+     *
+     * @param Zend_Mail_Storage_Folder|string $globalName global name of folder or instance for subfolder
+     * @return null
+     * @throws Zend_Mail_Storage_Exception
+     */
+    public function selectFolder($globalName)
+    {
+        $this->_currentFolder = (string)$globalName;
+
+        // getting folder from folder tree for validation
+        $folder = $this->getFolders($this->_currentFolder);
+
+        try {
+            $this->_openMboxFile($this->_rootdir . $folder->getGlobalName());
+        } catch (Zend_Mail_Storage_Exception $e) {
+            // check what went wrong
+            if (!$folder->isSelectable()) {
+                /**
+                 * @see Zend_Mail_Storage_Exception
+                 */
+                require_once 'Zend/Mail/Storage/Exception.php';
+                throw new Zend_Mail_Storage_Exception("{$this->_currentFolder} is not selectable", 0, $e);
+            }
+            // seems like file has vanished; rebuilding folder tree - but it's still an exception
+            $this->_buildFolderTree($this->_rootdir);
+            /**
+             * @see Zend_Mail_Storage_Exception
+             */
+            require_once 'Zend/Mail/Storage/Exception.php';
+            throw new Zend_Mail_Storage_Exception('seems like the mbox file has vanished, I\'ve rebuild the ' .
+                'folder tree, search for an other folder and try again', 0, $e);
+        }
+    }
+
+    /**
      * get root folder or given folder
      *
      * @param string $rootFolder get folder structure for given folder, else root
@@ -186,44 +224,6 @@ class Zend_Mail_Storage_Folder_Mbox extends Zend_Mail_Storage_Mbox implements Ze
             throw new Zend_Mail_Storage_Exception("folder $rootFolder not found");
         }
         return $currentFolder;
-    }
-
-    /**
-     * select given folder
-     *
-     * folder must be selectable!
-     *
-     * @param Zend_Mail_Storage_Folder|string $globalName global name of folder or instance for subfolder
-     * @return null
-     * @throws Zend_Mail_Storage_Exception
-     */
-    public function selectFolder($globalName)
-    {
-        $this->_currentFolder = (string)$globalName;
-
-        // getting folder from folder tree for validation
-        $folder = $this->getFolders($this->_currentFolder);
-
-        try {
-            $this->_openMboxFile($this->_rootdir . $folder->getGlobalName());
-        } catch(Zend_Mail_Storage_Exception $e) {
-            // check what went wrong
-            if (!$folder->isSelectable()) {
-                /**
-                 * @see Zend_Mail_Storage_Exception
-                 */
-                require_once 'Zend/Mail/Storage/Exception.php';
-                throw new Zend_Mail_Storage_Exception("{$this->_currentFolder} is not selectable", 0, $e);
-            }
-            // seems like file has vanished; rebuilding folder tree - but it's still an exception
-            $this->_buildFolderTree($this->_rootdir);
-            /**
-             * @see Zend_Mail_Storage_Exception
-             */
-            require_once 'Zend/Mail/Storage/Exception.php';
-            throw new Zend_Mail_Storage_Exception('seems like the mbox file has vanished, I\'ve rebuild the ' .
-                                                         'folder tree, search for an other folder and try again', 0, $e);
-        }
     }
 
     /**

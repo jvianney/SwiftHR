@@ -78,9 +78,16 @@ class Zend_Layout_Controller_Action_Helper_Layout extends Zend_Controller_Action
         }
     }
 
-    public function init()
+    /**
+     * Set layout object
+     *
+     * @param  Zend_Layout $layout
+     * @return Zend_Layout_Controller_Action_Helper_Layout
+     */
+    public function setLayoutInstance(Zend_Layout $layout)
     {
-        $this->_isActionControllerSuccessful = false;
+        $this->_layout = $layout;
+        return $this;
     }
 
     /**
@@ -101,36 +108,9 @@ class Zend_Layout_Controller_Action_Helper_Layout extends Zend_Controller_Action
         return $this->_frontController;
     }
 
-    /**
-     * Get layout object
-     *
-     * @return Zend_Layout
-     */
-    public function getLayoutInstance()
+    public function init()
     {
-        if (null === $this->_layout) {
-            /**
-             * @see Zend_Layout
-             */
-            require_once 'Zend/Layout.php';
-            if (null === ($this->_layout = Zend_Layout::getMvcInstance())) {
-                $this->_layout = new Zend_Layout();
-            }
-        }
-
-        return $this->_layout;
-    }
-
-    /**
-     * Set layout object
-     *
-     * @param  Zend_Layout $layout
-     * @return Zend_Layout_Controller_Action_Helper_Layout
-     */
-    public function setLayoutInstance(Zend_Layout $layout)
-    {
-        $this->_layout = $layout;
-        return $this;
+        $this->_isActionControllerSuccessful = false;
     }
 
     /**
@@ -164,6 +144,26 @@ class Zend_Layout_Controller_Action_Helper_Layout extends Zend_Controller_Action
     public function direct()
     {
         return $this->getLayoutInstance();
+    }
+
+    /**
+     * Get layout object
+     *
+     * @return Zend_Layout
+     */
+    public function getLayoutInstance()
+    {
+        if (null === $this->_layout) {
+            /**
+             * @see Zend_Layout
+             */
+            require_once 'Zend/Layout.php';
+            if (null === ($this->_layout = Zend_Layout::getMvcInstance())) {
+                $this->_layout = new Zend_Layout();
+            }
+        }
+
+        return $this->_layout;
     }
 
     /**

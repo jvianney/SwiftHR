@@ -32,28 +32,28 @@ class Zend_Text_Figlet
     /**
      * Smush2 layout modes
      */
-    const SM_EQUAL     = 0x01;
-    const SM_LOWLINE   = 0x02;
+    const SM_EQUAL = 0x01;
+    const SM_LOWLINE = 0x02;
     const SM_HIERARCHY = 0x04;
-    const SM_PAIR      = 0x08;
-    const SM_BIGX      = 0x10;
+    const SM_PAIR = 0x08;
+    const SM_BIGX = 0x10;
     const SM_HARDBLANK = 0x20;
-    const SM_KERN      = 0x40;
-    const SM_SMUSH     = 0x80;
+    const SM_KERN = 0x40;
+    const SM_SMUSH = 0x80;
 
     /**
      * Smush mode override modes
      */
-    const SMO_NO    = 0;
-    const SMO_YES   = 1;
+    const SMO_NO = 0;
+    const SMO_YES = 1;
     const SMO_FORCE = 2;
 
     /**
      * Justifications
      */
-    const JUSTIFICATION_LEFT   = 0;
+    const JUSTIFICATION_LEFT = 0;
     const JUSTIFICATION_CENTER = 1;
-    const JUSTIFICATION_RIGHT  = 2;
+    const JUSTIFICATION_RIGHT = 2;
 
     /**
      * Write directions
@@ -321,6 +321,254 @@ class Zend_Text_Figlet
     }
 
     /**
+     * Load the specified font
+     *
+     * @param  string $fontFile Font file to load
+     * @throws Zend_Text_Figlet_Exception When font file was not found
+     * @throws Zend_Text_Figlet_Exception When GZIP library is required but not found
+     * @throws Zend_Text_Figlet_Exception When font file is not readable
+     * @return void
+     */
+    protected function _loadFont($fontFile)
+    {
+        // Check if the font file exists
+        if (!file_exists($fontFile)) {
+            require_once 'Zend/Text/Figlet/Exception.php';
+            throw new Zend_Text_Figlet_Exception($fontFile . ': Font file not found');
+        }
+
+        // Check if gzip support is required
+        if (substr($fontFile, -3) === '.gz') {
+            if (!function_exists('gzcompress')) {
+                require_once 'Zend/Text/Figlet/Exception.php';
+                throw new Zend_Text_Figlet_Exception('GZIP library is required for '
+                    . 'gzip compressed font files');
+            }
+
+            $fontFile = 'compress.zlib://' . $fontFile;
+            $compressed = true;
+        } else {
+            $compressed = false;
+        }
+
+        // Try to open the file
+        $fp = fopen($fontFile, 'rb');
+        if ($fp === false) {
+            require_once 'Zend/Text/Figlet/Exception.php';
+            throw new Zend_Text_Figlet_Exception($fontFile . ': Could not open file');
+        }
+
+        // If the file is not compressed, lock the stream
+        if (!$compressed) {
+            flock($fp, LOCK_SH);
+        }
+
+        // Get magic
+        $magic = $this->_readMagic($fp);
+
+        // Get the header
+        $numsRead = sscanf(fgets($fp, 1000),
+            '%*c%c %d %*d %d %d %d %d %d',
+            $this->_hardBlank,
+            $this->_charHeight,
+            $this->_maxLength,
+            $smush,
+            $cmtLines,
+            $rightToLeft,
+            $this->_fontSmush);
+
+        if ($magic !== self::FONTFILE_MAGIC_NUMBER || $numsRead < 5) {
+            require_once 'Zend/Text/Figlet/Exception.php';
+            throw new Zend_Text_Figlet_Exception($fontFile . ': Not a FIGlet 2 font file');
+        }
+
+        // Set default right to left
+        if ($numsRead < 6) {
+            $rightToLeft = 0;
+        }
+
+        // If no smush2, decode smush into smush2
+        if ($numsRead < 7) {
+            if ($smush === 2) {
+                $this->_fontSmush = self::SM_KERN;
+            } else if ($smush < 0) {
+                $this->_fontSmush = 0;
+            } else {
+                $this->_fontSmush = (($smush & 31) | self::SM_SMUSH);
+            }
+        }
+
+        // Correct char height && maxlength
+        $this->_charHeight = max(1, $this->_charHeight);
+        $this->_maxLength = max(1, $this->_maxLength);
+
+        // Give ourselves some extra room
+        $this->_maxLength += 100;
+
+        // See if we have to override smush settings
+        $this->_setUsedSmush();
+
+        // Get left to right value
+        if ($this->_rightToLeft === null) {
+            $this->_rightToLeft = $rightToLeft;
+        }
+
+        // Get justification value
+        if ($this->_justification === null) {
+            $this->_justification = (2 * $this->_rightToLeft);
+        }
+
+        // Skip all comment lines
+        for ($line = 1; $line <= $cmtLines; $line++) {
+            $this->_skipToEol($fp);
+        }
+
+        // Fetch all ASCII characters
+        for ($asciiCode = 32; $asciiCode < 127; $asciiCode++) {
+            $this->_charList[$asciiCode] = $this->_loadChar($fp);
+        }
+
+        // Fetch all german characters
+        foreach ($this->_germanChars as $uniCode) {
+            $char = $this->_loadChar($fp);
+
+            if ($char === false) {
+                fclose($fp);
+                return;
+            }
+
+            if (trim(implode('', $char)) !== '') {
+                $this->_charList[$uniCode] = $char;
+            }
+        }
+
+        // At the end fetch all extended characters
+        while (!feof($fp)) {
+            // Get the Unicode
+            list($uniCode) = explode(' ', fgets($fp, 2048));
+
+            if (empty($uniCode)) {
+                continue;
+            }
+
+            // Convert it if required
+            if (substr($uniCode, 0, 2) === '0x') {
+                $uniCode = hexdec(substr($uniCode, 2));
+            } else if (substr($uniCode, 0, 1) === '0' and
+                $uniCode !== '0' or
+                substr($uniCode, 0, 2) === '-0'
+            ) {
+                $uniCode = octdec($uniCode);
+            } else {
+                $uniCode = (int)$uniCode;
+            }
+
+            // Now fetch the character
+            $char = $this->_loadChar($fp);
+
+            if ($char === false) {
+                fclose($fp);
+                return;
+            }
+
+            $this->_charList[$uniCode] = $char;
+        }
+
+        fclose($fp);
+
+        $this->_fontLoaded = true;
+    }
+
+    /**
+     * Reads a four-character magic string from a stream
+     *
+     * @param  resource $fp File pointer to the font file
+     * @return string
+     */
+    protected function _readMagic($fp)
+    {
+        $magic = '';
+
+        for ($i = 0; $i < 4; $i++) {
+            $magic .= fgetc($fp);
+        }
+
+        return $magic;
+    }
+
+    /**
+     * Set the used smush mode, according to smush override, user smsush and
+     * font smush.
+     *
+     * @return void
+     */
+    protected function _setUsedSmush()
+    {
+        if ($this->_smushOverride === self::SMO_NO) {
+            $this->_smushMode = $this->_fontSmush;
+        } else if ($this->_smushOverride === self::SMO_YES) {
+            $this->_smushMode = $this->_userSmush;
+        } else if ($this->_smushOverride === self::SMO_FORCE) {
+            $this->_smushMode = ($this->_fontSmush | $this->_userSmush);
+        }
+    }
+
+    /**
+     * Skip a stream to the end of line
+     *
+     * @param  resource $fp File pointer to the font file
+     * @return void
+     */
+    protected function _skipToEol($fp)
+    {
+        $dummy = fgetc($fp);
+        while ($dummy !== false && !feof($fp)) {
+            if ($dummy === "\n") {
+                return;
+            }
+
+            if ($dummy === "\r") {
+                $dummy = fgetc($fp);
+
+                if (!feof($fp) && $dummy !== "\n") {
+                    fseek($fp, -1, SEEK_SET);
+                }
+
+                return;
+            }
+
+            $dummy = fgetc($fp);
+        }
+    }
+
+    /**
+     * Load a single character from the font file
+     *
+     * @param  resource $fp File pointer to the font file
+     * @return array
+     */
+    protected function _loadChar($fp)
+    {
+        $char = array();
+
+        for ($i = 0; $i < $this->_charHeight; $i++) {
+            if (feof($fp)) {
+                return false;
+            }
+
+            $line = rtrim(fgets($fp, 2048), "\r\n");
+
+            if (preg_match('#(.)\\1?$#', $line, $result) === 1) {
+                $line = str_replace($result[1], '', $line);
+            }
+
+            $char[] = $line;
+        }
+
+        return $char;
+    }
+
+    /**
      * Set a font to use
      *
      * @param  string $font Path to the font
@@ -340,7 +588,7 @@ class Zend_Text_Figlet
      */
     public function setHandleParagraphs($handleParagraphs)
     {
-        $this->_handleParagraphs = (bool) $handleParagraphs;
+        $this->_handleParagraphs = (bool)$handleParagraphs;
         return $this;
     }
 
@@ -353,7 +601,7 @@ class Zend_Text_Figlet
      */
     public function setJustification($justification)
     {
-        $this->_justification = min(3, max(0, (int) $justification));
+        $this->_justification = min(3, max(0, (int)$justification));
         return $this;
     }
 
@@ -366,7 +614,7 @@ class Zend_Text_Figlet
      */
     public function setOutputWidth($outputWidth)
     {
-        $this->_outputWidth = max(1, (int) $outputWidth);
+        $this->_outputWidth = max(1, (int)$outputWidth);
         return $this;
     }
 
@@ -380,7 +628,7 @@ class Zend_Text_Figlet
      */
     public function setRightToLeft($rightToLeft)
     {
-        $this->_rightToLeft = min(1, max(0, (int) $rightToLeft));
+        $this->_rightToLeft = min(1, max(0, (int)$rightToLeft));
         return $this;
     }
 
@@ -394,7 +642,7 @@ class Zend_Text_Figlet
      */
     public function setSmushMode($smushMode)
     {
-        $smushMode = (int) $smushMode;
+        $smushMode = (int)$smushMode;
 
         if ($smushMode < -1) {
             $this->_smushOverride = self::SMO_NO;
@@ -418,7 +666,7 @@ class Zend_Text_Figlet
     /**
      * Render a FIGlet text
      *
-     * @param  string $text     Text to convert to a figlet text
+     * @param  string $text Text to convert to a figlet text
      * @param  string $encoding Encoding of the input string
      * @throws InvalidArgumentException When $text is not a string
      * @throws Zend_Text_Figlet_Exception    When $text it not properly encoded
@@ -434,17 +682,17 @@ class Zend_Text_Figlet
             $text = iconv($encoding, 'UTF-8', $text);
         }
 
-        $this->_output     = '';
+        $this->_output = '';
         $this->_outputLine = array();
 
         $this->_clearLine();
 
-        $this->_outlineLengthLimit    = ($this->_outputWidth - 1);
+        $this->_outlineLengthLimit = ($this->_outputWidth - 1);
         $this->_inCharLineLengthLimit = ($this->_outputWidth * 4 + 100);
 
-        $wordBreakMode  = 0;
+        $wordBreakMode = 0;
         $lastCharWasEol = false;
-        $textLength     = @iconv_strlen($text, 'UTF-8');
+        $textLength = @iconv_strlen($text, 'UTF-8');
 
         if ($textLength === false) {
             require_once 'Zend/Text/Figlet/Exception.php';
@@ -467,7 +715,7 @@ class Zend_Text_Figlet
             $lastCharWasEol = (ctype_space($char) && $char !== "\t" && $char !== ' ');
 
             if (ctype_space($char)) {
-                $char = ($char === "\t" || $char === ' ') ? ' ': "\n";
+                $char = ($char === "\t" || $char === ' ') ? ' ' : "\n";
             }
 
             // Skip unprintable characters
@@ -498,9 +746,9 @@ class Zend_Text_Figlet
                     $wordBreakMode = false;
                 } else if ($this->_addChar($char)) {
                     if ($char !== ' ') {
-                        $wordBreakMode = ($wordBreakMode >= 2) ? 3: 1;
+                        $wordBreakMode = ($wordBreakMode >= 2) ? 3 : 1;
                     } else {
-                        $wordBreakMode = ($wordBreakMode > 0) ? 2: 0;
+                        $wordBreakMode = ($wordBreakMode > 0) ? 2 : 0;
                     }
                 } else if ($this->_outlineLength === 0) {
                     for ($i = 0; $i < $this->_charHeight; $i++) {
@@ -529,7 +777,7 @@ class Zend_Text_Figlet
                     }
 
                     $wordBreakMode = ($wordBreakMode === 3) ? 1 : 0;
-                    $charNotAdded  = true;
+                    $charNotAdded = true;
                 }
             } while ($charNotAdded);
         }
@@ -539,6 +787,63 @@ class Zend_Text_Figlet
         }
 
         return $this->_output;
+    }
+
+    /**
+     * Clears the current line
+     *
+     * @return void
+     */
+    protected function _clearLine()
+    {
+        for ($i = 0; $i < $this->_charHeight; $i++) {
+            $this->_outputLine[$i] = '';
+        }
+
+        $this->_outlineLength = 0;
+        $this->_inCharLineLength = 0;
+    }
+
+    /**
+     * Unicode compatible ord() method
+     *
+     * @param  string $c The char to get the value from
+     * @return integer
+     */
+    protected function _uniOrd($c)
+    {
+        $h = ord($c[0]);
+
+        if ($h <= 0x7F) {
+            $ord = $h;
+        } else if ($h < 0xC2) {
+            $ord = 0;
+        } else if ($h <= 0xDF) {
+            $ord = (($h & 0x1F) << 6 | (ord($c[1]) & 0x3F));
+        } else if ($h <= 0xEF) {
+            $ord = (($h & 0x0F) << 12 | (ord($c[1]) & 0x3F) << 6 | (ord($c[2]) & 0x3F));
+        } else if ($h <= 0xF4) {
+            $ord = (($h & 0x0F) << 18 | (ord($c[1]) & 0x3F) << 12 |
+                (ord($c[2]) & 0x3F) << 6 | (ord($c[3]) & 0x3F));
+        } else {
+            $ord = 0;
+        }
+
+        return $ord;
+    }
+
+    /**
+     * Appends the current line to the output
+     *
+     * @return void
+     */
+    protected function _appendLine()
+    {
+        for ($i = 0; $i < $this->_charHeight; $i++) {
+            $this->_putString($this->_outputLine[$i]);
+        }
+
+        $this->_clearLine();
     }
 
     /**
@@ -573,82 +878,6 @@ class Zend_Text_Figlet
     }
 
     /**
-     * Appends the current line to the output
-     *
-     * @return void
-     */
-    protected function _appendLine()
-    {
-        for ($i = 0; $i < $this->_charHeight; $i++) {
-            $this->_putString($this->_outputLine[$i]);
-        }
-
-        $this->_clearLine();
-    }
-
-    /**
-     * Splits inCharLine at the last word break (bunch of consecutive blanks).
-     * Makes a new line out of the first part and appends it using appendLine().
-     * Makes a new line out of the second part and returns.
-     *
-     * @return void
-     */
-    protected function _splitLine()
-    {
-        $gotSpace = false;
-        for ($i = ($this->_inCharLineLength - 1); $i >= 0; $i--) {
-            if (!$gotSpace && $this->_inCharLine[$i] === ' ') {
-                $gotSpace  = true;
-                $lastSpace = $i;
-            }
-
-            if ($gotSpace && $this->_inCharLine[$i] !== ' ') {
-                break;
-            }
-        }
-
-        $firstLength = ($i + 1);
-        $lastLength  = ($this->_inCharLineLength - $lastSpace - 1);
-
-        $firstPart = '';
-        for ($i = 0; $i < $firstLength; $i++) {
-            $firstPart[$i] = $this->_inCharLine[$i];
-        }
-
-        $lastPart = '';
-        for ($i = 0; $i < $lastLength; $i++) {
-            $lastPart[$i] = $this->_inCharLine[($lastSpace + 1 + $i)];
-        }
-
-        $this->_clearLine();
-
-        for ($i = 0; $i < $firstLength; $i++) {
-            $this->_addChar($firstPart[$i]);
-        }
-
-        $this->_appendLine();
-
-        for ($i = 0; $i < $lastLength; $i++) {
-            $this->_addChar($lastPart[$i]);
-        }
-    }
-
-    /**
-     * Clears the current line
-     *
-     * @return void
-     */
-    protected function _clearLine()
-    {
-        for ($i = 0; $i < $this->_charHeight; $i++) {
-            $this->_outputLine[$i] = '';
-        }
-
-        $this->_outlineLength    = 0;
-        $this->_inCharLineLength = 0;
-    }
-
-    /**
      * Attempts to add the given character onto the end of the current line.
      * Returns true if this can be done, false otherwise.
      *
@@ -666,7 +895,8 @@ class Zend_Text_Figlet
         $smushAmount = $this->_smushAmount();
 
         if (($this->_outlineLength + $this->_currentCharWidth - $smushAmount) > $this->_outlineLengthLimit
-            || ($this->_inCharLineLength + 1) > $this->_inCharLineLengthLimit) {
+            || ($this->_inCharLineLength + 1) > $this->_inCharLineLengthLimit
+        ) {
             return false;
         }
 
@@ -676,7 +906,7 @@ class Zend_Text_Figlet
                 $tempLine = $this->_currentChar[$row];
 
                 for ($k = 0; $k < $smushAmount; $k++) {
-                    $position            = ($this->_currentCharWidth - $smushAmount + $k);
+                    $position = ($this->_currentCharWidth - $smushAmount + $k);
                     $tempLine[$position] = $this->_smushem($tempLine[$position], $this->_outputLine[$row][$k]);
                 }
 
@@ -701,7 +931,7 @@ class Zend_Text_Figlet
             }
         }
 
-        $this->_outlineLength                          = strlen($this->_outputLine[0]);
+        $this->_outlineLength = strlen($this->_outputLine[0]);
         $this->_inCharLine[$this->_inCharLineLength++] = $char;
 
         return true;
@@ -716,9 +946,9 @@ class Zend_Text_Figlet
     protected function _getLetter($char)
     {
         if (array_key_exists($this->_uniOrd($char), $this->_charList)) {
-            $this->_currentChar       = $this->_charList[$this->_uniOrd($char)];
+            $this->_currentChar = $this->_charList[$this->_uniOrd($char)];
             $this->_previousCharWidth = $this->_currentCharWidth;
-            $this->_currentCharWidth  = strlen($this->_currentChar[0]);
+            $this->_currentCharWidth = strlen($this->_currentChar[0]);
         } else {
             $this->_currentChar = null;
         }
@@ -737,7 +967,7 @@ class Zend_Text_Figlet
         }
 
         $maxSmush = $this->_currentCharWidth;
-        $amount   = $maxSmush;
+        $amount = $maxSmush;
 
         for ($row = 0; $row < $this->_charHeight; $row++) {
             if ($this->_rightToLeft === 1) {
@@ -835,7 +1065,7 @@ class Zend_Text_Figlet
      * 16: / + \ -> X, > + < -> X (only in that order)
      * 32: hardblank + hardblank -> hardblank
      *
-     * @param  string $leftChar  Left character to smush
+     * @param  string $leftChar Left character to smush
      * @param  string $rightChar Right character to smush
      * @return string
      */
@@ -956,277 +1186,49 @@ class Zend_Text_Figlet
     }
 
     /**
-     * Load the specified font
-     *
-     * @param  string $fontFile Font file to load
-     * @throws Zend_Text_Figlet_Exception When font file was not found
-     * @throws Zend_Text_Figlet_Exception When GZIP library is required but not found
-     * @throws Zend_Text_Figlet_Exception When font file is not readable
-     * @return void
-     */
-    protected function _loadFont($fontFile)
-    {
-        // Check if the font file exists
-        if (!file_exists($fontFile)) {
-            require_once 'Zend/Text/Figlet/Exception.php';
-            throw new Zend_Text_Figlet_Exception($fontFile . ': Font file not found');
-        }
-
-        // Check if gzip support is required
-        if (substr($fontFile, -3) === '.gz') {
-            if (!function_exists('gzcompress')) {
-                require_once 'Zend/Text/Figlet/Exception.php';
-                throw new Zend_Text_Figlet_Exception('GZIP library is required for '
-                                                     . 'gzip compressed font files');
-            }
-
-            $fontFile   = 'compress.zlib://' . $fontFile;
-            $compressed = true;
-        } else {
-            $compressed = false;
-        }
-
-        // Try to open the file
-        $fp = fopen($fontFile, 'rb');
-        if ($fp === false) {
-            require_once 'Zend/Text/Figlet/Exception.php';
-            throw new Zend_Text_Figlet_Exception($fontFile . ': Could not open file');
-        }
-
-        // If the file is not compressed, lock the stream
-        if (!$compressed) {
-            flock($fp, LOCK_SH);
-        }
-
-        // Get magic
-        $magic = $this->_readMagic($fp);
-
-        // Get the header
-        $numsRead = sscanf(fgets($fp, 1000),
-                           '%*c%c %d %*d %d %d %d %d %d',
-                           $this->_hardBlank,
-                           $this->_charHeight,
-                           $this->_maxLength,
-                           $smush,
-                           $cmtLines,
-                           $rightToLeft,
-                           $this->_fontSmush);
-
-        if ($magic !== self::FONTFILE_MAGIC_NUMBER || $numsRead < 5) {
-            require_once 'Zend/Text/Figlet/Exception.php';
-            throw new Zend_Text_Figlet_Exception($fontFile . ': Not a FIGlet 2 font file');
-        }
-
-        // Set default right to left
-        if ($numsRead < 6) {
-            $rightToLeft = 0;
-        }
-
-        // If no smush2, decode smush into smush2
-        if ($numsRead < 7) {
-            if ($smush === 2) {
-                $this->_fontSmush = self::SM_KERN;
-            } else if ($smush < 0) {
-                $this->_fontSmush = 0;
-            } else {
-                $this->_fontSmush = (($smush & 31) | self::SM_SMUSH);
-            }
-        }
-
-        // Correct char height && maxlength
-        $this->_charHeight = max(1, $this->_charHeight);
-        $this->_maxLength  = max(1, $this->_maxLength);
-
-        // Give ourselves some extra room
-        $this->_maxLength += 100;
-
-        // See if we have to override smush settings
-        $this->_setUsedSmush();
-
-        // Get left to right value
-        if ($this->_rightToLeft === null) {
-            $this->_rightToLeft = $rightToLeft;
-        }
-
-        // Get justification value
-        if ($this->_justification === null) {
-            $this->_justification = (2 * $this->_rightToLeft);
-        }
-
-        // Skip all comment lines
-        for ($line = 1; $line <= $cmtLines; $line++) {
-            $this->_skipToEol($fp);
-        }
-
-        // Fetch all ASCII characters
-        for ($asciiCode = 32; $asciiCode < 127; $asciiCode++) {
-            $this->_charList[$asciiCode] = $this->_loadChar($fp);
-        }
-
-        // Fetch all german characters
-        foreach ($this->_germanChars as $uniCode) {
-            $char = $this->_loadChar($fp);
-
-            if ($char === false) {
-                fclose($fp);
-                return;
-            }
-
-            if (trim(implode('', $char)) !== '') {
-                $this->_charList[$uniCode] = $char;
-            }
-        }
-
-        // At the end fetch all extended characters
-        while (!feof($fp)) {
-            // Get the Unicode
-            list($uniCode) = explode(' ', fgets($fp, 2048));
-
-            if (empty($uniCode)) {
-                continue;
-            }
-
-            // Convert it if required
-            if (substr($uniCode, 0, 2) === '0x') {
-                $uniCode = hexdec(substr($uniCode, 2));
-            } else if (substr($uniCode, 0, 1) === '0' and
-                       $uniCode !== '0' or
-                       substr($uniCode, 0, 2) === '-0') {
-                $uniCode = octdec($uniCode);
-            } else {
-                $uniCode = (int) $uniCode;
-            }
-
-            // Now fetch the character
-            $char = $this->_loadChar($fp);
-
-            if ($char === false) {
-                fclose($fp);
-                return;
-            }
-
-            $this->_charList[$uniCode] = $char;
-        }
-
-        fclose($fp);
-
-        $this->_fontLoaded = true;
-    }
-
-    /**
-     * Set the used smush mode, according to smush override, user smsush and
-     * font smush.
+     * Splits inCharLine at the last word break (bunch of consecutive blanks).
+     * Makes a new line out of the first part and appends it using appendLine().
+     * Makes a new line out of the second part and returns.
      *
      * @return void
      */
-    protected function _setUsedSmush()
+    protected function _splitLine()
     {
-        if ($this->_smushOverride === self::SMO_NO) {
-            $this->_smushMode = $this->_fontSmush;
-        } else if ($this->_smushOverride === self::SMO_YES) {
-            $this->_smushMode = $this->_userSmush;
-        } else if ($this->_smushOverride === self::SMO_FORCE) {
-            $this->_smushMode = ($this->_fontSmush | $this->_userSmush);
-        }
-    }
-
-    /**
-     * Reads a four-character magic string from a stream
-     *
-     * @param  resource $fp File pointer to the font file
-     * @return string
-     */
-    protected function _readMagic($fp)
-    {
-        $magic = '';
-
-        for ($i = 0; $i < 4; $i++) {
-            $magic .= fgetc($fp);
-        }
-
-        return $magic;
-    }
-
-    /**
-     * Skip a stream to the end of line
-     *
-     * @param  resource $fp File pointer to the font file
-     * @return void
-     */
-    protected function _skipToEol($fp)
-    {
-        $dummy = fgetc($fp);
-        while ($dummy !== false && !feof($fp)) {
-            if ($dummy === "\n") {
-                return;
+        $gotSpace = false;
+        for ($i = ($this->_inCharLineLength - 1); $i >= 0; $i--) {
+            if (!$gotSpace && $this->_inCharLine[$i] === ' ') {
+                $gotSpace = true;
+                $lastSpace = $i;
             }
 
-            if ($dummy === "\r") {
-                $dummy = fgetc($fp);
-
-                if (!feof($fp) && $dummy !== "\n") {
-                    fseek($fp, -1, SEEK_SET);
-                }
-
-                return;
+            if ($gotSpace && $this->_inCharLine[$i] !== ' ') {
+                break;
             }
-
-            $dummy = fgetc($fp);
-        }
-    }
-
-    /**
-     * Load a single character from the font file
-     *
-     * @param  resource $fp File pointer to the font file
-     * @return array
-     */
-    protected function _loadChar($fp)
-    {
-        $char = array();
-
-        for ($i = 0; $i < $this->_charHeight; $i++) {
-            if (feof($fp)) {
-                return false;
-            }
-
-            $line = rtrim(fgets($fp, 2048), "\r\n");
-
-            if (preg_match('#(.)\\1?$#', $line, $result) === 1) {
-                $line = str_replace($result[1], '', $line);
-            }
-
-            $char[] = $line;
         }
 
-        return $char;
-    }
+        $firstLength = ($i + 1);
+        $lastLength = ($this->_inCharLineLength - $lastSpace - 1);
 
-    /**
-     * Unicode compatible ord() method
-     *
-     * @param  string $c The char to get the value from
-     * @return integer
-     */
-    protected function _uniOrd($c)
-    {
-        $h = ord($c[0]);
-
-        if ($h <= 0x7F) {
-            $ord = $h;
-        } else if ($h < 0xC2) {
-            $ord = 0;
-        } else if ($h <= 0xDF) {
-            $ord = (($h & 0x1F) << 6 | (ord($c[1]) & 0x3F));
-        } else if ($h <= 0xEF) {
-            $ord = (($h & 0x0F) << 12 | (ord($c[1]) & 0x3F) << 6 | (ord($c[2]) & 0x3F));
-        } else if ($h <= 0xF4) {
-            $ord = (($h & 0x0F) << 18 | (ord($c[1]) & 0x3F) << 12 |
-                   (ord($c[2]) & 0x3F) << 6 | (ord($c[3]) & 0x3F));
-        } else {
-            $ord = 0;
+        $firstPart = '';
+        for ($i = 0; $i < $firstLength; $i++) {
+            $firstPart[$i] = $this->_inCharLine[$i];
         }
 
-        return $ord;
+        $lastPart = '';
+        for ($i = 0; $i < $lastLength; $i++) {
+            $lastPart[$i] = $this->_inCharLine[($lastSpace + 1 + $i)];
+        }
+
+        $this->_clearLine();
+
+        for ($i = 0; $i < $firstLength; $i++) {
+            $this->_addChar($firstPart[$i]);
+        }
+
+        $this->_appendLine();
+
+        for ($i = 0; $i < $lastLength; $i++) {
+            $this->_addChar($lastPart[$i]);
+        }
     }
 }

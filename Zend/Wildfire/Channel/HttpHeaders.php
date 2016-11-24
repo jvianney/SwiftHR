@@ -74,6 +74,20 @@ class Zend_Wildfire_Channel_HttpHeaders extends Zend_Controller_Plugin_Abstract 
     protected $_protocols = null;
 
     /**
+     * Get or create singleton instance
+     *
+     * @param bool $skipCreate True if an instance should not be created
+     * @return Zend_Wildfire_Channel_HttpHeaders
+     */
+    public static function getInstance($skipCreate = false)
+    {
+        if (self::$_instance === null && $skipCreate !== true) {
+            return self::init();
+        }
+        return self::$_instance;
+    }
+
+    /**
      * Initialize singleton instance.
      *
      * @param string $class OPTIONAL Subclass of Zend_Wildfire_Channel_HttpHeaders
@@ -111,21 +125,6 @@ class Zend_Wildfire_Channel_HttpHeaders extends Zend_Controller_Plugin_Abstract 
         return self::$_instance;
     }
 
-
-    /**
-     * Get or create singleton instance
-     *
-     * @param bool $skipCreate True if an instance should not be created
-     * @return Zend_Wildfire_Channel_HttpHeaders
-     */
-    public static function getInstance($skipCreate=false)
-    {
-        if (self::$_instance===null && $skipCreate!==true) {
-            return self::init();
-        }
-        return self::$_instance;
-    }
-
     /**
      * Destroys the singleton instance
      *
@@ -136,6 +135,19 @@ class Zend_Wildfire_Channel_HttpHeaders extends Zend_Controller_Plugin_Abstract 
     public static function destroyInstance()
     {
         self::$_instance = null;
+    }
+
+    /**
+     * Set the index of the plugin in the controller dispatch loop plugin stack
+     *
+     * @param integer $index The index of the plugin in the stack
+     * @return integer The previous index.
+     */
+    public static function setControllerPluginStackIndex($index)
+    {
+        $previous = self::$_controllerPluginStackIndex;
+        self::$_controllerPluginStackIndex = $index;
+        return $previous;
     }
 
     /**
@@ -169,47 +181,7 @@ class Zend_Wildfire_Channel_HttpHeaders extends Zend_Controller_Plugin_Abstract 
                 return new Zend_Wildfire_Protocol_JsonStream();
         }
         require_once 'Zend/Wildfire/Exception.php';
-        throw new Zend_Wildfire_Exception('Tyring to initialize unknown protocol for URI "'.$uri.'".');
-    }
-
-
-    /**
-     * Flush all data from all protocols and send all data to response headers.
-     *
-     * @return boolean Returns TRUE if data was flushed
-     */
-    public function flush()
-    {
-        if (!$this->_protocols || !$this->isReady()) {
-            return false;
-        }
-
-        foreach ( $this->_protocols as $protocol ) {
-
-            $payload = $protocol->getPayload($this);
-
-            if ($payload) {
-                foreach( $payload as $message ) {
-
-                    $this->getResponse()->setHeader(self::$_headerPrefix.$message[0],
-                                                    $message[1], true);
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Set the index of the plugin in the controller dispatch loop plugin stack
-     *
-     * @param integer $index The index of the plugin in the stack
-     * @return integer The previous index.
-     */
-    public static function setControllerPluginStackIndex($index)
-    {
-        $previous = self::$_controllerPluginStackIndex;
-        self::$_controllerPluginStackIndex = $index;
-        return $previous;
+        throw new Zend_Wildfire_Exception('Tyring to initialize unknown protocol for URI "' . $uri . '".');
     }
 
     /**
@@ -225,9 +197,50 @@ class Zend_Wildfire_Channel_HttpHeaders extends Zend_Controller_Plugin_Abstract 
         }
     }
 
+    /**
+     * Flush messages to headers as late as possible but before headers have been sent.
+     *
+     * @return void
+     */
+    public function dispatchLoopShutdown()
+    {
+        $this->flush();
+    }
+
 
     /*
      * Zend_Wildfire_Channel_Interface
+     */
+
+    /**
+     * Flush all data from all protocols and send all data to response headers.
+     *
+     * @return boolean Returns TRUE if data was flushed
+     */
+    public function flush()
+    {
+        if (!$this->_protocols || !$this->isReady()) {
+            return false;
+        }
+
+        foreach ($this->_protocols as $protocol) {
+
+            $payload = $protocol->getPayload($this);
+
+            if ($payload) {
+                foreach ($payload as $message) {
+
+                    $this->getResponse()->setHeader(self::$_headerPrefix . $message[0],
+                        $message[1], true);
+                }
+            }
+        }
+        return true;
+    }
+
+
+    /*
+     * Zend_Controller_Plugin_Abstract
      */
 
     /**
@@ -261,7 +274,7 @@ class Zend_Wildfire_Channel_HttpHeaders extends Zend_Controller_Plugin_Abstract 
      * @param boolean $forceCheckRequest OPTIONAL Set to TRUE if the request must be checked
      * @return boolean Returns TRUE if channel is ready.
      */
-    public function isReady($forceCheckRequest=false)
+    public function isReady($forceCheckRequest = false)
     {
         if (!$forceCheckRequest
             && !$this->_request
@@ -275,30 +288,15 @@ class Zend_Wildfire_Channel_HttpHeaders extends Zend_Controller_Plugin_Abstract 
         }
 
         return ($this->getResponse()->canSendHeaders()
-                && (preg_match_all(
-                        '/\s?FirePHP\/([\.\d]*)\s?/si',
-                        $this->getRequest()->getHeader('User-Agent'),
-                        $m
-                    ) ||
-                    (($header = $this->getRequest()->getHeader('X-FirePHP-Version'))
-                     && preg_match_all('/^([\.\d]*)$/si', $header, $m)
-                   ))
-               );
-    }
-
-
-    /*
-     * Zend_Controller_Plugin_Abstract
-     */
-
-    /**
-     * Flush messages to headers as late as possible but before headers have been sent.
-     *
-     * @return void
-     */
-    public function dispatchLoopShutdown()
-    {
-        $this->flush();
+            && (preg_match_all(
+                    '/\s?FirePHP\/([\.\d]*)\s?/si',
+                    $this->getRequest()->getHeader('User-Agent'),
+                    $m
+                ) ||
+                (($header = $this->getRequest()->getHeader('X-FirePHP-Version'))
+                    && preg_match_all('/^([\.\d]*)$/si', $header, $m)
+                ))
+        );
     }
 
     /**

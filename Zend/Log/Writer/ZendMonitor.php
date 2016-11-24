@@ -72,20 +72,6 @@ class Zend_Log_Writer_ZendMonitor extends Zend_Log_Writer_Abstract
     }
 
     /**
-     * Is logging to this writer enabled?
-     *
-     * If the Zend Monitor extension is not enabled, this log writer will
-     * fail silently. You can query this method to determine if the log
-     * writer is enabled.
-     *
-     * @return boolean
-     */
-    public function isEnabled()
-    {
-        return $this->_isEnabled;
-    }
-
-    /**
      * Log a message to this writer.
      *
      * @param  array $event log data event
@@ -101,15 +87,29 @@ class Zend_Log_Writer_ZendMonitor extends Zend_Log_Writer_Abstract
     }
 
     /**
+     * Is logging to this writer enabled?
+     *
+     * If the Zend Monitor extension is not enabled, this log writer will
+     * fail silently. You can query this method to determine if the log
+     * writer is enabled.
+     *
+     * @return boolean
+     */
+    public function isEnabled()
+    {
+        return $this->_isEnabled;
+    }
+
+    /**
      * Write a message to the log.
      *
-     * @param  array  $event log data event
+     * @param  array $event log data event
      * @return void
      */
     protected function _write($event)
     {
         $priority = $event['priority'];
-        $message  = $event['message'];
+        $message = $event['message'];
         unset($event['priority'], $event['message']);
 
         if (!empty($event)) {

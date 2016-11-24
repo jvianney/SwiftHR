@@ -101,19 +101,6 @@ class Zend_Controller_Action_Helper_FlashMessenger extends Zend_Controller_Actio
     }
 
     /**
-     * setNamespace() - change the namespace messages are added to, useful for
-     * per action controller messaging between requests
-     *
-     * @param  string $namespace
-     * @return Zend_Controller_Action_Helper_FlashMessenger Provides a fluent interface
-     */
-    public function setNamespace($namespace = 'default')
-    {
-        $this->_namespace = $namespace;
-        return $this;
-    }
-
-    /**
      * resetNamespace() - reset the namespace to the default
      *
      * @return Zend_Controller_Action_Helper_FlashMessenger Provides a fluent interface
@@ -125,48 +112,16 @@ class Zend_Controller_Action_Helper_FlashMessenger extends Zend_Controller_Actio
     }
 
     /**
-     * addMessage() - Add a message to flash message
+     * setNamespace() - change the namespace messages are added to, useful for
+     * per action controller messaging between requests
      *
-     * @param  string $message
+     * @param  string $namespace
      * @return Zend_Controller_Action_Helper_FlashMessenger Provides a fluent interface
      */
-    public function addMessage($message)
+    public function setNamespace($namespace = 'default')
     {
-        if (self::$_messageAdded === false) {
-            self::$_session->setExpirationHops(1, null, true);
-        }
-
-        if (!is_array(self::$_session->{$this->_namespace})) {
-            self::$_session->{$this->_namespace} = array();
-        }
-
-        self::$_session->{$this->_namespace}[] = $message;
-
+        $this->_namespace = $namespace;
         return $this;
-    }
-
-    /**
-     * hasMessages() - Wether a specific namespace has messages
-     *
-     * @return boolean
-     */
-    public function hasMessages()
-    {
-        return isset(self::$_messages[$this->_namespace]);
-    }
-
-    /**
-     * getMessages() - Get messages from a specific namespace
-     *
-     * @return array
-     */
-    public function getMessages()
-    {
-        if ($this->hasMessages()) {
-            return self::$_messages[$this->_namespace];
-        }
-
-        return array();
     }
 
     /**
@@ -185,14 +140,13 @@ class Zend_Controller_Action_Helper_FlashMessenger extends Zend_Controller_Actio
     }
 
     /**
-     * hasCurrentMessages() - check to see if messages have been added to current
-     * namespace within this request
+     * hasMessages() - Wether a specific namespace has messages
      *
      * @return boolean
      */
-    public function hasCurrentMessages()
+    public function hasMessages()
     {
-        return isset(self::$_session->{$this->_namespace});
+        return isset(self::$_messages[$this->_namespace]);
     }
 
     /**
@@ -208,6 +162,17 @@ class Zend_Controller_Action_Helper_FlashMessenger extends Zend_Controller_Actio
         }
 
         return array();
+    }
+
+    /**
+     * hasCurrentMessages() - check to see if messages have been added to current
+     * namespace within this request
+     *
+     * @return boolean
+     */
+    public function hasCurrentMessages()
+    {
+        return isset(self::$_session->{$this->_namespace});
     }
 
     /**
@@ -240,6 +205,20 @@ class Zend_Controller_Action_Helper_FlashMessenger extends Zend_Controller_Actio
     }
 
     /**
+     * getMessages() - Get messages from a specific namespace
+     *
+     * @return array
+     */
+    public function getMessages()
+    {
+        if ($this->hasMessages()) {
+            return self::$_messages[$this->_namespace];
+        }
+
+        return array();
+    }
+
+    /**
      * count() - Complete the countable interface
      *
      * @return int
@@ -262,5 +241,26 @@ class Zend_Controller_Action_Helper_FlashMessenger extends Zend_Controller_Actio
     public function direct($message)
     {
         return $this->addMessage($message);
+    }
+
+    /**
+     * addMessage() - Add a message to flash message
+     *
+     * @param  string $message
+     * @return Zend_Controller_Action_Helper_FlashMessenger Provides a fluent interface
+     */
+    public function addMessage($message)
+    {
+        if (self::$_messageAdded === false) {
+            self::$_session->setExpirationHops(1, null, true);
+        }
+
+        if (!is_array(self::$_session->{$this->_namespace})) {
+            self::$_session->{$this->_namespace} = array();
+        }
+
+        self::$_session->{$this->_namespace}[] = $message;
+
+        return $this;
     }
 }

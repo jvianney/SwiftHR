@@ -1,8 +1,8 @@
-<?php 
-/********************************************************************************* 
+<?php
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -20,50 +20,48 @@
  ********************************************************************************/
 ?>
 
-<?php if($this->popup == 'close') { ?>	
-	<div class="ml-alert-1-success">
-	<div class="style-1-icon success"></div>
-	Expenses <?php echo $this->eventact; ?> successfully.
-	</div>
-	<script type='text/javascript'>
-	param = window.parent.$('.parameter').val();
-	Url = base_url + "/expenses/receipts/displayreceipts/format/html";
-		$.ajax({
-			url: Url,
-			type: 'POST',
-			data: '&param=' + param,
-			success: function(response) {
-				window.parent.$('#receiptslist').html(response);
-				window.parent.$('.parameter').val(param);
-				window.parent.$('.dropdown-button').dropdown();
-			}
-		});
-</script>	
-	<?php } 
-else
-{
-	$domain_url = APPLICATION_PATH;
-		include($domain_url.'/modules/expenses/views/scripts/expenses/edit.phtml');
-?>
+<?php if ($this->popup == 'close') { ?>
+    <div class="ml-alert-1-success">
+        <div class="style-1-icon success"></div>
+        Expenses <?php echo $this->eventact; ?> successfully.
+    </div>
+    <script type='text/javascript'>
+        param = window.parent.$('.parameter').val();
+        Url = base_url + "/expenses/receipts/displayreceipts/format/html";
+        $.ajax({
+            url: Url,
+            type: 'POST',
+            data: '&param=' + param,
+            success: function (response) {
+                window.parent.$('#receiptslist').html(response);
+                window.parent.$('.parameter').val(param);
+                window.parent.$('.dropdown-button').dropdown();
+            }
+        });
+    </script>
+<?php } else {
+    $domain_url = APPLICATION_PATH;
+    include($domain_url . '/modules/expenses/views/scripts/expenses/edit.phtml');
+    ?>
 
-<?php }?>
+<?php } ?>
 
 <script language='javascript' type='text/javascript'>
 
-	<?php if($this->popup != '') { ?>
-	setTimeout(function(){
-	  closePopup('<?php echo $this->controllername; ?>','expense_id'); 					
-},3000);
+    <?php if($this->popup != '') { ?>
+    setTimeout(function () {
+        closePopup('<?php echo $this->controllername; ?>', 'expense_id');
+    }, 3000);
 
-	<?php } ?>
-	</script>
+    <?php } ?>
+</script>
 <script type='text/javascript'>
-	$(document).ready(function() { 
-		<?php if (count($this->messages)) {?>
-			  setTimeout(function(){
-					$('#popupmessage').fadeOut('slow');
-				},3000);
+    $(document).ready(function () {
+        <?php if (count($this->messages)) {?>
+        setTimeout(function () {
+            $('#popupmessage').fadeOut('slow');
+        }, 3000);
 
-		<?php } ?>
-	});
+        <?php } ?>
+    });
 </script>

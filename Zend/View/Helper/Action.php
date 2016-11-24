@@ -62,7 +62,7 @@ class Zend_View_Helper_Action extends Zend_View_Helper_Abstract
      */
     public function __construct()
     {
-        $front   = Zend_Controller_Front::getInstance();
+        $front = Zend_Controller_Front::getInstance();
         $modules = $front->getControllerDirectory();
         if (empty($modules)) {
             require_once 'Zend/View/Exception.php';
@@ -71,7 +71,7 @@ class Zend_View_Helper_Action extends Zend_View_Helper_Abstract
             throw $e;
         }
 
-        $request  = $front->getRequest();
+        $request = $front->getRequest();
         $response = $front->getResponse();
 
         if (empty($request) || empty($response)) {
@@ -81,27 +81,10 @@ class Zend_View_Helper_Action extends Zend_View_Helper_Abstract
             throw $e;
         }
 
-        $this->request       = clone $request;
-        $this->response      = clone $response;
-        $this->dispatcher    = clone $front->getDispatcher();
+        $this->request = clone $request;
+        $this->response = clone $response;
+        $this->dispatcher = clone $front->getDispatcher();
         $this->defaultModule = $front->getDefaultModule();
-    }
-
-    /**
-     * Reset object states
-     *
-     * @return void
-     */
-    public function resetObjects()
-    {
-        $params = $this->request->getUserParams();
-        foreach (array_keys($params) as $key) {
-            $this->request->setParam($key, null);
-        }
-
-        $this->response->clearBody();
-        $this->response->clearHeaders()
-                       ->clearRawHeaders();
     }
 
     /**
@@ -127,10 +110,10 @@ class Zend_View_Helper_Action extends Zend_View_Helper_Abstract
         Zend_Controller_Action_HelperBroker::addHelper(clone $viewRendererObj);
 
         $this->request->setParams($params)
-                      ->setModuleName($module)
-                      ->setControllerName($controller)
-                      ->setActionName($action)
-                      ->setDispatched(true);
+            ->setModuleName($module)
+            ->setControllerName($controller)
+            ->setActionName($action)
+            ->setDispatched(true);
 
         $this->dispatcher->dispatch($this->request, $this->response);
 
@@ -139,8 +122,8 @@ class Zend_View_Helper_Action extends Zend_View_Helper_Abstract
 
 
         if (!$this->request->isDispatched()
-            || $this->response->isRedirect())
-        {
+            || $this->response->isRedirect()
+        ) {
             // forwards and redirects render nothing
             return '';
         }
@@ -148,6 +131,23 @@ class Zend_View_Helper_Action extends Zend_View_Helper_Abstract
         $return = $this->response->getBody();
         $this->resetObjects();
         return $return;
+    }
+
+    /**
+     * Reset object states
+     *
+     * @return void
+     */
+    public function resetObjects()
+    {
+        $params = $this->request->getUserParams();
+        foreach (array_keys($params) as $key) {
+            $this->request->setParam($key, null);
+        }
+
+        $this->response->clearBody();
+        $this->response->clearHeaders()
+            ->clearRawHeaders();
     }
 
     /**

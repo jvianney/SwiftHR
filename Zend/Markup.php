@@ -33,7 +33,7 @@ require_once 'Zend/Loader/PluginLoader.php';
 class Zend_Markup
 {
     const CALLBACK = 'callback';
-    const REPLACE  = 'replace';
+    const REPLACE = 'replace';
 
 
     /**
@@ -54,7 +54,21 @@ class Zend_Markup
     /**
      * Disable instantiation of Zend_Markup
      */
-    private function __construct() { }
+    private function __construct()
+    {
+    }
+
+    /**
+     * Add a parser path
+     *
+     * @param  string $prefix
+     * @param  string $path
+     * @return Zend_Loader_PluginLoader
+     */
+    public static function addParserPath($prefix, $path)
+    {
+        return self::getParserLoader()->addPrefixPath($prefix, $path);
+    }
 
     /**
      * Get the parser loader
@@ -70,6 +84,18 @@ class Zend_Markup
         }
 
         return self::$_parserLoader;
+    }
+
+    /**
+     * Add a renderer path
+     *
+     * @param  string $prefix
+     * @param  string $path
+     * @return Zend_Loader_PluginLoader
+     */
+    public static function addRendererPath($prefix, $path)
+    {
+        return self::getRendererLoader()->addPrefixPath($prefix, $path);
     }
 
     /**
@@ -89,30 +115,6 @@ class Zend_Markup
     }
 
     /**
-     * Add a parser path
-     *
-     * @param  string $prefix
-     * @param  string $path
-     * @return Zend_Loader_PluginLoader
-     */
-    public static function addParserPath($prefix, $path)
-    {
-        return self::getParserLoader()->addPrefixPath($prefix, $path);
-    }
-
-    /**
-     * Add a renderer path
-     *
-     * @param  string $prefix
-     * @param  string $path
-     * @return Zend_Loader_PluginLoader
-     */
-    public static function addRendererPath($prefix, $path)
-    {
-        return self::getRendererLoader()->addPrefixPath($prefix, $path);
-    }
-
-    /**
      * Factory pattern
      *
      * @param  string $parser
@@ -122,12 +124,12 @@ class Zend_Markup
      */
     public static function factory($parser, $renderer = 'Html', array $options = array())
     {
-        $parserClass   = self::getParserLoader()->load($parser);
+        $parserClass = self::getParserLoader()->load($parser);
         $rendererClass = self::getRendererLoader()->load($renderer);
 
-        $parser            = new $parserClass();
+        $parser = new $parserClass();
         $options['parser'] = $parser;
-        $renderer          = new $rendererClass($options);
+        $renderer = new $rendererClass($options);
 
         return $renderer;
     }

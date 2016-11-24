@@ -7,8 +7,6 @@
  * strategies provide plug points for extra configuration or even extra
  * features, such as custom tags, custom parsing of text, etc.
  */
-
-
 abstract class HTMLPurifier_Strategy
 {
 

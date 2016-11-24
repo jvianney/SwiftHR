@@ -66,20 +66,6 @@ class Zend_Http_UserAgent_Text extends Zend_Http_UserAgent_AbstractDevice
     }
 
     /**
-     * Look for features
-     *
-     * @return string
-     */
-    protected function _defineFeatures()
-    {
-        $this->setFeature('images', false, 'product_capability');
-        $this->setFeature('iframes', false, 'product_capability');
-        $this->setFeature('frames', false, 'product_capability');
-        $this->setFeature('javascript', false, 'product_capability');
-        return parent::_defineFeatures();
-    }
-
-    /**
      * Determine supported image formats
      *
      * @return null
@@ -128,5 +114,19 @@ class Zend_Http_UserAgent_Text extends Zend_Http_UserAgent_AbstractDevice
     public function hasPdfSupport()
     {
         return false;
+    }
+
+    /**
+     * Look for features
+     *
+     * @return string
+     */
+    protected function _defineFeatures()
+    {
+        $this->setFeature('images', false, 'product_capability');
+        $this->setFeature('iframes', false, 'product_capability');
+        $this->setFeature('frames', false, 'product_capability');
+        $this->setFeature('javascript', false, 'product_capability');
+        return parent::_defineFeatures();
     }
 }

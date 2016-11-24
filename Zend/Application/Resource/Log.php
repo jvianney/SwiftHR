@@ -54,6 +54,16 @@ class Zend_Application_Resource_Log
         return $this->getLog();
     }
 
+    public function getLog()
+    {
+        if (null === $this->_log) {
+            $options = $this->getOptions();
+            $log = Zend_Log::factory($options);
+            $this->setLog($log);
+        }
+        return $this->_log;
+    }
+
     /**
      * Attach logger
      *
@@ -64,15 +74,5 @@ class Zend_Application_Resource_Log
     {
         $this->_log = $log;
         return $this;
-    }
-
-    public function getLog()
-    {
-        if (null === $this->_log) {
-            $options = $this->getOptions();
-            $log = Zend_Log::factory($options);
-            $this->setLog($log);
-        }
-        return $this->_log;
     }
 }

@@ -46,6 +46,35 @@ class Zend_Text_Table_Decorator_Unicode implements Zend_Text_Table_Decorator_Int
     }
 
     /**
+     * Convert am unicode character code to a character
+     *
+     * @param  integer $code
+     * @return string|false
+     */
+    protected function _uniChar($code)
+    {
+        if ($code <= 0x7F) {
+            $char = chr($code);
+        } else if ($code <= 0x7FF) {
+            $char = chr(0xC0 | $code >> 6)
+                . chr(0x80 | $code & 0x3F);
+        } else if ($code <= 0xFFFF) {
+            $char = chr(0xE0 | $code >> 12)
+                . chr(0x80 | $code >> 6 & 0x3F)
+                . chr(0x80 | $code & 0x3F);
+        } else if ($code <= 0x10FFFF) {
+            $char = chr(0xF0 | $code >> 18)
+                . chr(0x80 | $code >> 12 & 0x3F)
+                . chr(0x80 | $code >> 6 & 0x3F)
+                . chr(0x80 | $code & 0x3F);
+        } else {
+            return false;
+        }
+
+        return $char;
+    }
+
+    /**
      * Defined by Zend_Text_Table_Decorator_Interface
      *
      * @return string
@@ -143,34 +172,5 @@ class Zend_Text_Table_Decorator_Unicode implements Zend_Text_Table_Decorator_Int
     public function getHorizontalUp()
     {
         return $this->_uniChar(0x2534);
-    }
-
-    /**
-     * Convert am unicode character code to a character
-     *
-     * @param  integer $code
-     * @return string|false
-     */
-    protected function _uniChar($code)
-    {
-        if ($code <= 0x7F) {
-            $char = chr($code);
-        } else if ($code <= 0x7FF) {
-            $char = chr(0xC0 | $code >> 6)
-                  . chr(0x80 | $code & 0x3F);
-        } else if ($code <= 0xFFFF) {
-            $char =  chr(0xE0 | $code >> 12)
-                  . chr(0x80 | $code >> 6 & 0x3F)
-                  . chr(0x80 | $code & 0x3F);
-        } else if ($code <= 0x10FFFF) {
-            $char =  chr(0xF0 | $code >> 18)
-                  . chr(0x80 | $code >> 12 & 0x3F)
-                  . chr(0x80 | $code >> 6 & 0x3F)
-                  . chr(0x80 | $code & 0x3F);
-        } else {
-            return false;
-        }
-
-        return $char;
     }
 }

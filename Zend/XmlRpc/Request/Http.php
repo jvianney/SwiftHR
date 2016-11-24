@@ -84,6 +84,23 @@ class Zend_XmlRpc_Request_Http extends Zend_XmlRpc_Request
     }
 
     /**
+     * Retrieve the full HTTP request, including headers and XML
+     *
+     * @return string
+     */
+    public function getFullRequest()
+    {
+        $request = '';
+        foreach ($this->getHeaders() as $key => $value) {
+            $request .= $key . ': ' . $value . "\n";
+        }
+
+        $request .= $this->_xml;
+
+        return $request;
+    }
+
+    /**
      * Get headers
      *
      * Gets all headers as key => value pairs and returns them.
@@ -103,22 +120,5 @@ class Zend_XmlRpc_Request_Http extends Zend_XmlRpc_Request
         }
 
         return $this->_headers;
-    }
-
-    /**
-     * Retrieve the full HTTP request, including headers and XML
-     *
-     * @return string
-     */
-    public function getFullRequest()
-    {
-        $request = '';
-        foreach ($this->getHeaders() as $key => $value) {
-            $request .= $key . ': ' . $value . "\n";
-        }
-
-        $request .= $this->_xml;
-
-        return $request;
     }
 }

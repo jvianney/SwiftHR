@@ -42,15 +42,15 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
     /**#@+
      * @param const string
      */
-    const VISIBILITY_PUBLIC    = 'public';
+    const VISIBILITY_PUBLIC = 'public';
     const VISIBILITY_PROTECTED = 'protected';
-    const VISIBILITY_PRIVATE   = 'private';
+    const VISIBILITY_PRIVATE = 'private';
     /**#@-*/
 
     /**
      * @var Zend_CodeGenerator_Php_Docblock
      */
-    protected $_docblock   = null;
+    protected $_docblock = null;
 
     /**
      * @var bool
@@ -60,12 +60,12 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
     /**
      * @var bool
      */
-    protected $_isFinal    = false;
+    protected $_isFinal = false;
 
     /**
      * @var bool
      */
-    protected $_isStatic   = false;
+    protected $_isStatic = false;
 
     /**
      * @var const
@@ -76,6 +76,16 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
      * @var string
      */
     protected $_name = null;
+
+    /**
+     * getDocblock()
+     *
+     * @return Zend_CodeGenerator_Php_Docblock
+     */
+    public function getDocblock()
+    {
+        return $this->_docblock;
+    }
 
     /**
      * setDocblock() Set the docblock
@@ -98,16 +108,6 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
 
         $this->_docblock = $docblock;
         return $this;
-    }
-
-    /**
-     * getDocblock()
-     *
-     * @return Zend_CodeGenerator_Php_Docblock
-     */
-    public function getDocblock()
-    {
-        return $this->_docblock;
     }
 
     /**
@@ -177,6 +177,16 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
     }
 
     /**
+     * getVisibility()
+     *
+     * @return const
+     */
+    public function getVisibility()
+    {
+        return $this->_visibility;
+    }
+
+    /**
      * setVisitibility()
      *
      * @param const $visibility
@@ -189,13 +199,13 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
     }
 
     /**
-     * getVisibility()
+     * getName()
      *
-     * @return const
+     * @return string
      */
-    public function getVisibility()
+    public function getName()
     {
-        return $this->_visibility;
+        return $this->_name;
     }
 
     /**
@@ -208,15 +218,5 @@ abstract class Zend_CodeGenerator_Php_Member_Abstract extends Zend_CodeGenerator
     {
         $this->_name = $name;
         return $this;
-    }
-
-    /**
-     * getName()
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->_name;
     }
 }

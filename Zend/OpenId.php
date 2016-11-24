@@ -43,12 +43,12 @@ class Zend_OpenId
     /**
      * Default Diffie-Hellman key generator (1024 bit)
      */
-    const DH_P   = 'dcf93a0b883972ec0e19989ac5a2ce310e1d37717e8d9571bb7623731866e61ef75a2e27898b057f9891c2e27a639c3f29b60814581cd3b2ca3986d2683705577d45c2e7e52dc81c7a171876e5cea74b1448bfdfaf18828efd2519f14e45e3826634af1949e5b535cc829a483b8a76223e5d490a257f05bdff16f2fb22c583ab';
+    const DH_P = 'dcf93a0b883972ec0e19989ac5a2ce310e1d37717e8d9571bb7623731866e61ef75a2e27898b057f9891c2e27a639c3f29b60814581cd3b2ca3986d2683705577d45c2e7e52dc81c7a171876e5cea74b1448bfdfaf18828efd2519f14e45e3826634af1949e5b535cc829a483b8a76223e5d490a257f05bdff16f2fb22c583ab';
 
     /**
      * Default Diffie-Hellman prime number (should be 2 or 5)
      */
-    const DH_G   = '02';
+    const DH_G = '02';
 
     /**
      * OpenID 2.0 namespace. All OpenID 2.0 messages MUST contain variable
@@ -82,129 +82,59 @@ class Zend_OpenId
     }
 
     /**
-     * Returns a full URL that was requested on current HTTP request.
+     * Normalizes OpenID identifier that can be URL or XRI name.
+     * Returns true on success and false of failure.
      *
-     * @return string
+     * Normalization is performed according to the following rules:
+     * 1. If the user's input starts with one of the "xri://", "xri://$ip*",
+     *    or "xri://$dns*" prefixes, they MUST be stripped off, so that XRIs
+     *    are used in the canonical form, and URI-authority XRIs are further
+     *    considered URL identifiers.
+     * 2. If the first character of the resulting string is an XRI Global
+     *    Context Symbol ("=", "@", "+", "$", "!"), then the input SHOULD be
+     *    treated as an XRI.
+     * 3. Otherwise, the input SHOULD be treated as an http URL; if it does
+     *    not include a "http" or "https" scheme, the Identifier MUST be
+     *    prefixed with the string "http://".
+     * 4. URL identifiers MUST then be further normalized by both following
+     *    redirects when retrieving their content and finally applying the
+     *    rules in Section 6 of [RFC3986] to the final destination URL.
+     * @param string &$id identifier to be normalized
+     * @return bool
      */
-    static public function selfUrl()
+    static public function normalize(&$id)
     {
-        if (self::$selfUrl !== null) {
-            return self::$selfUrl;
-        } if (isset($_SERVER['SCRIPT_URI'])) {
-            return $_SERVER['SCRIPT_URI'];
-        }
-        $url = '';
-        $port = '';
-        if (isset($_SERVER['HTTP_HOST'])) {
-            if (($pos = strpos($_SERVER['HTTP_HOST'], ':')) === false) {
-                if (isset($_SERVER['SERVER_PORT'])) {
-                    $port = ':' . $_SERVER['SERVER_PORT'];
-                }
-                $url = $_SERVER['HTTP_HOST'];
-            } else {
-                $url = substr($_SERVER['HTTP_HOST'], 0, $pos);
-                $port = substr($_SERVER['HTTP_HOST'], $pos);
-            }
-        } else if (isset($_SERVER['SERVER_NAME'])) {
-            $url = $_SERVER['SERVER_NAME'];
-            if (isset($_SERVER['SERVER_PORT'])) {
-                $port = ':' . $_SERVER['SERVER_PORT'];
-            }
-        }
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
-            $url = 'https://' . $url;
-            if ($port == ':443') {
-                $port = '';
-            }
-        } else {
-            $url = 'http://' . $url;
-            if ($port == ':80') {
-                $port = '';
-            }
+        $id = trim($id);
+        if (strlen($id) === 0) {
+            return true;
         }
 
-        $url .= $port;
-        if (isset($_SERVER['HTTP_X_REWRITE_URL'])) {
-            $url .= $_SERVER['HTTP_X_REWRITE_URL'];
-        } elseif (isset($_SERVER['REQUEST_URI'])) {
-            $query = strpos($_SERVER['REQUEST_URI'], '?');
-            if ($query === false) {
-                $url .= $_SERVER['REQUEST_URI'];
-            } else {
-                $url .= substr($_SERVER['REQUEST_URI'], 0, $query);
-            }
-        } else if (isset($_SERVER['SCRIPT_URL'])) {
-            $url .= $_SERVER['SCRIPT_URL'];
-        } else if (isset($_SERVER['REDIRECT_URL'])) {
-            $url .= $_SERVER['REDIRECT_URL'];
-        } else if (isset($_SERVER['PHP_SELF'])) {
-            $url .= $_SERVER['PHP_SELF'];
-        } else if (isset($_SERVER['SCRIPT_NAME'])) {
-            $url .= $_SERVER['SCRIPT_NAME'];
-            if (isset($_SERVER['PATH_INFO'])) {
-                $url .= $_SERVER['PATH_INFO'];
-            }
+        // 7.2.1
+        if (strpos($id, 'xri://$ip*') === 0) {
+            $id = substr($id, strlen('xri://$ip*'));
+        } else if (strpos($id, 'xri://$dns*') === 0) {
+            $id = substr($id, strlen('xri://$dns*'));
+        } else if (strpos($id, 'xri://') === 0) {
+            $id = substr($id, strlen('xri://'));
         }
-        return $url;
-    }
 
-    /**
-     * Returns an absolute URL for the given one
-     *
-     * @param string $url absilute or relative URL
-     * @return string
-     */
-    static public function absoluteUrl($url)
-    {
-        if (empty($url)) {
-            return Zend_OpenId::selfUrl();
-        } else if (!preg_match('|^([^:]+)://|', $url)) {
-            if (preg_match('|^([^:]+)://([^:@]*(?:[:][^@]*)?@)?([^/:@?#]*)(?:[:]([^/?#]*))?(/[^?]*)?((?:[?](?:[^#]*))?(?:#.*)?)$|', Zend_OpenId::selfUrl(), $reg)) {
-                $scheme = $reg[1];
-                $auth = $reg[2];
-                $host = $reg[3];
-                $port = $reg[4];
-                $path = $reg[5];
-                $query = $reg[6];
-                if ($url[0] == '/') {
-                    return $scheme
-                        . '://'
-                        . $auth
-                        . $host
-                        . (empty($port) ? '' : (':' . $port))
-                        . $url;
-                } else {
-                    $dir = dirname($path);
-                    return $scheme
-                        . '://'
-                        . $auth
-                        . $host
-                        . (empty($port) ? '' : (':' . $port))
-                        . (strlen($dir) > 1 ? $dir : '')
-                        . '/'
-                        . $url;
-                }
-            }
+        // 7.2.2
+        if ($id[0] == '=' ||
+            $id[0] == '@' ||
+            $id[0] == '+' ||
+            $id[0] == '$' ||
+            $id[0] == '!'
+        ) {
+            return true;
         }
-        return $url;
-    }
 
-    /**
-     * Converts variable/value pairs into URL encoded query string
-     *
-     * @param array $params variable/value pairs
-     * @return string URL encoded query string
-     */
-    static public function paramsToQuery($params)
-    {
-        foreach($params as $key => $value) {
-            if (isset($query)) {
-                $query .= '&' . $key . '=' . urlencode($value);
-            } else {
-                $query = $key . '=' . urlencode($value);
-            }
+        // 7.2.3
+        if (strpos($id, "://") === false) {
+            $id = 'http://' . $id;
         }
-        return isset($query) ? $query : '';
+
+        // 7.2.4
+        return self::normalizeURL($id);
     }
 
     /**
@@ -255,7 +185,8 @@ class Zend_OpenId
                     $ch == '-' ||
                     $ch == '.' ||
                     $ch == '_' ||
-                    $ch == '~') {
+                    $ch == '~'
+                ) {
                     $res .= $ch;
                 } else {
                     $res .= '%';
@@ -315,7 +246,7 @@ class Zend_OpenId
                                     $res = substr($res, 0, $pos);
                                 }
                             } else {
-                                    $res .= '/..';
+                                $res .= '/..';
                             }
                         } else if ($i != $n && $path[$i] != '/') {
                             $res .= '/.';
@@ -356,61 +287,6 @@ class Zend_OpenId
     }
 
     /**
-     * Normalizes OpenID identifier that can be URL or XRI name.
-     * Returns true on success and false of failure.
-     *
-     * Normalization is performed according to the following rules:
-     * 1. If the user's input starts with one of the "xri://", "xri://$ip*",
-     *    or "xri://$dns*" prefixes, they MUST be stripped off, so that XRIs
-     *    are used in the canonical form, and URI-authority XRIs are further
-     *    considered URL identifiers.
-     * 2. If the first character of the resulting string is an XRI Global
-     *    Context Symbol ("=", "@", "+", "$", "!"), then the input SHOULD be
-     *    treated as an XRI.
-     * 3. Otherwise, the input SHOULD be treated as an http URL; if it does
-     *    not include a "http" or "https" scheme, the Identifier MUST be
-     *    prefixed with the string "http://".
-     * 4. URL identifiers MUST then be further normalized by both following
-     *    redirects when retrieving their content and finally applying the
-     *    rules in Section 6 of [RFC3986] to the final destination URL.
-     * @param string &$id identifier to be normalized
-     * @return bool
-     */
-    static public function normalize(&$id)
-    {
-        $id = trim($id);
-        if (strlen($id) === 0) {
-            return true;
-        }
-
-        // 7.2.1
-        if (strpos($id, 'xri://$ip*') === 0) {
-            $id = substr($id, strlen('xri://$ip*'));
-        } else if (strpos($id, 'xri://$dns*') === 0) {
-            $id = substr($id, strlen('xri://$dns*'));
-        } else if (strpos($id, 'xri://') === 0) {
-            $id = substr($id, strlen('xri://'));
-        }
-
-        // 7.2.2
-        if ($id[0] == '=' ||
-            $id[0] == '@' ||
-            $id[0] == '+' ||
-            $id[0] == '$' ||
-            $id[0] == '!') {
-            return true;
-        }
-
-        // 7.2.3
-        if (strpos($id, "://") === false) {
-            $id = 'http://' . $id;
-        }
-
-        // 7.2.4
-        return self::normalizeURL($id);
-    }
-
-    /**
      * Performs a HTTP redirection to specified URL with additional data.
      * It may generate redirected request using GET or POST HTTP method.
      * The function never returns.
@@ -421,7 +297,7 @@ class Zend_OpenId
      * @param string $method redirection method ('GET' or 'POST')
      */
     static public function redirect($url, $params = null,
-        Zend_Controller_Response_Abstract $response = null, $method = 'GET')
+                                    Zend_Controller_Response_Abstract $response = null, $method = 'GET')
     {
         $url = Zend_OpenId::absoluteUrl($url);
         $body = "";
@@ -434,7 +310,7 @@ class Zend_OpenId
             $body = "<html><body onLoad=\"document.forms[0].submit();\">\n";
             $body .= "<form method=\"POST\" action=\"$url\">\n";
             if (is_array($params) && count($params) > 0) {
-                foreach($params as $key => $value) {
+                foreach ($params as $key => $value) {
                     $body .= '<input type="hidden" name="' . $key . '" value="' . $value . "\">\n";
                 }
             }
@@ -451,8 +327,8 @@ class Zend_OpenId
             $response->setBody($body);
         } else if (!$response->canSendHeaders()) {
             $response->setBody("<script language=\"JavaScript\"" .
-                 " type=\"text/javascript\">window.location='$url';" .
-                 "</script>");
+                " type=\"text/javascript\">window.location='$url';" .
+                "</script>");
         } else {
             $response->setRedirect($url);
         }
@@ -463,50 +339,130 @@ class Zend_OpenId
     }
 
     /**
-     * Produces string of random byte of given length.
+     * Returns an absolute URL for the given one
      *
-     * @param integer $len length of requested string
-     * @return string RAW random binary string
+     * @param string $url absilute or relative URL
+     * @return string
      */
-    static public function randomBytes($len)
+    static public function absoluteUrl($url)
     {
-        $key = '';
-        for($i=0; $i < $len; $i++) {
-            $key .= chr(mt_rand(0, 255));
+        if (empty($url)) {
+            return Zend_OpenId::selfUrl();
+        } else if (!preg_match('|^([^:]+)://|', $url)) {
+            if (preg_match('|^([^:]+)://([^:@]*(?:[:][^@]*)?@)?([^/:@?#]*)(?:[:]([^/?#]*))?(/[^?]*)?((?:[?](?:[^#]*))?(?:#.*)?)$|', Zend_OpenId::selfUrl(), $reg)) {
+                $scheme = $reg[1];
+                $auth = $reg[2];
+                $host = $reg[3];
+                $port = $reg[4];
+                $path = $reg[5];
+                $query = $reg[6];
+                if ($url[0] == '/') {
+                    return $scheme
+                        . '://'
+                        . $auth
+                        . $host
+                        . (empty($port) ? '' : (':' . $port))
+                        . $url;
+                } else {
+                    $dir = dirname($path);
+                    return $scheme
+                        . '://'
+                        . $auth
+                        . $host
+                        . (empty($port) ? '' : (':' . $port))
+                        . (strlen($dir) > 1 ? $dir : '')
+                        . '/'
+                        . $url;
+                }
+            }
         }
-        return $key;
+        return $url;
     }
 
     /**
-     * Generates a hash value (message digest) according to given algorithm.
-     * It returns RAW binary string.
+     * Returns a full URL that was requested on current HTTP request.
      *
-     * This is a wrapper function that uses one of available internal function
-     * dependent on given PHP configuration. It may use various functions from
-     *  ext/openssl, ext/hash, ext/mhash or ext/standard.
-     *
-     * @param string $func digest algorithm
-     * @param string $data data to sign
-     * @return string RAW digital signature
-     * @throws Zend_OpenId_Exception
+     * @return string
      */
-    static public function digest($func, $data)
+    static public function selfUrl()
     {
-        if (function_exists('openssl_digest')) {
-            return openssl_digest($data, $func, true);
-        } else if (function_exists('hash')) {
-            return hash($func, $data, true);
-        } else if ($func === 'sha1') {
-            return sha1($data, true);
-        } else if ($func === 'sha256') {
-            if (function_exists('mhash')) {
-                return mhash(MHASH_SHA256 , $data);
+        if (self::$selfUrl !== null) {
+            return self::$selfUrl;
+        }
+        if (isset($_SERVER['SCRIPT_URI'])) {
+            return $_SERVER['SCRIPT_URI'];
+        }
+        $url = '';
+        $port = '';
+        if (isset($_SERVER['HTTP_HOST'])) {
+            if (($pos = strpos($_SERVER['HTTP_HOST'], ':')) === false) {
+                if (isset($_SERVER['SERVER_PORT'])) {
+                    $port = ':' . $_SERVER['SERVER_PORT'];
+                }
+                $url = $_SERVER['HTTP_HOST'];
+            } else {
+                $url = substr($_SERVER['HTTP_HOST'], 0, $pos);
+                $port = substr($_SERVER['HTTP_HOST'], $pos);
+            }
+        } else if (isset($_SERVER['SERVER_NAME'])) {
+            $url = $_SERVER['SERVER_NAME'];
+            if (isset($_SERVER['SERVER_PORT'])) {
+                $port = ':' . $_SERVER['SERVER_PORT'];
             }
         }
-        require_once "Zend/OpenId/Exception.php";
-        throw new Zend_OpenId_Exception(
-            'Unsupported digest algorithm "' . $func . '".',
-            Zend_OpenId_Exception::UNSUPPORTED_DIGEST);
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+            $url = 'https://' . $url;
+            if ($port == ':443') {
+                $port = '';
+            }
+        } else {
+            $url = 'http://' . $url;
+            if ($port == ':80') {
+                $port = '';
+            }
+        }
+
+        $url .= $port;
+        if (isset($_SERVER['HTTP_X_REWRITE_URL'])) {
+            $url .= $_SERVER['HTTP_X_REWRITE_URL'];
+        } elseif (isset($_SERVER['REQUEST_URI'])) {
+            $query = strpos($_SERVER['REQUEST_URI'], '?');
+            if ($query === false) {
+                $url .= $_SERVER['REQUEST_URI'];
+            } else {
+                $url .= substr($_SERVER['REQUEST_URI'], 0, $query);
+            }
+        } else if (isset($_SERVER['SCRIPT_URL'])) {
+            $url .= $_SERVER['SCRIPT_URL'];
+        } else if (isset($_SERVER['REDIRECT_URL'])) {
+            $url .= $_SERVER['REDIRECT_URL'];
+        } else if (isset($_SERVER['PHP_SELF'])) {
+            $url .= $_SERVER['PHP_SELF'];
+        } else if (isset($_SERVER['SCRIPT_NAME'])) {
+            $url .= $_SERVER['SCRIPT_NAME'];
+            if (isset($_SERVER['PATH_INFO'])) {
+                $url .= $_SERVER['PATH_INFO'];
+            }
+        }
+        return $url;
+    }
+
+    /**
+     * Converts variable/value pairs into URL encoded query string
+     *
+     * @param array $params variable/value pairs
+     * @return string URL encoded query string
+     */
+    static public function paramsToQuery($params)
+    {
+        foreach ($params as $key => $value) {
+            if (isset($query)) {
+                $query .= '&' . $key . '=' . urlencode($value);
+            } else {
+                $query = $key . '=' . urlencode($value);
+            }
+        }
+        return isset($query) ? $query : '';
     }
 
     /**
@@ -539,6 +495,105 @@ class Zend_OpenId
     }
 
     /**
+     * Returns lenght of binary string in bytes
+     *
+     * @param string $str
+     * @return int the string lenght
+     */
+    static public function strlen($str)
+    {
+        if (extension_loaded('mbstring') &&
+            (((int)ini_get('mbstring.func_overload')) & 2)
+        ) {
+            return mb_strlen($str, 'latin1');
+        } else {
+            return strlen($str);
+        }
+    }
+
+    /**
+     * Generates a hash value (message digest) according to given algorithm.
+     * It returns RAW binary string.
+     *
+     * This is a wrapper function that uses one of available internal function
+     * dependent on given PHP configuration. It may use various functions from
+     *  ext/openssl, ext/hash, ext/mhash or ext/standard.
+     *
+     * @param string $func digest algorithm
+     * @param string $data data to sign
+     * @return string RAW digital signature
+     * @throws Zend_OpenId_Exception
+     */
+    static public function digest($func, $data)
+    {
+        if (function_exists('openssl_digest')) {
+            return openssl_digest($data, $func, true);
+        } else if (function_exists('hash')) {
+            return hash($func, $data, true);
+        } else if ($func === 'sha1') {
+            return sha1($data, true);
+        } else if ($func === 'sha256') {
+            if (function_exists('mhash')) {
+                return mhash(MHASH_SHA256, $data);
+            }
+        }
+        require_once "Zend/OpenId/Exception.php";
+        throw new Zend_OpenId_Exception(
+            'Unsupported digest algorithm "' . $func . '".',
+            Zend_OpenId_Exception::UNSUPPORTED_DIGEST);
+    }
+
+    /**
+     * Performs the first step of a Diffie-Hellman key exchange by generating
+     * private and public DH values based on given prime number $p and
+     * generator $g. Both sides of key exchange MUST have the same prime number
+     * and generator. In this case they will able to create a random shared
+     * secret that is never send from one to the other.
+     *
+     * @param string $p prime number in binary representation
+     * @param string $g generator in binary representation
+     * @param string $priv_key private key in binary representation
+     * @return mixed
+     */
+    static public function createDhKey($p, $g, $priv_key = null)
+    {
+        if (function_exists('openssl_dh_compute_key')) {
+            $dh_details = array(
+                'p' => $p,
+                'g' => $g
+            );
+            if ($priv_key !== null) {
+                $dh_details['priv_key'] = $priv_key;
+            }
+            return openssl_pkey_new(array('dh' => $dh_details));
+        } else {
+            $bn_p = self::binToBigNum($p);
+            $bn_g = self::binToBigNum($g);
+            if ($priv_key === null) {
+                $priv_key = self::randomBytes(Zend_OpenId::strlen($p));
+            }
+            $bn_priv_key = self::binToBigNum($priv_key);
+            if (extension_loaded('gmp')) {
+                $bn_pub_key = gmp_powm($bn_g, $bn_priv_key, $bn_p);
+            } else if (extension_loaded('bcmath')) {
+                $bn_pub_key = bcpowmod($bn_g, $bn_priv_key, $bn_p);
+            }
+            $pub_key = self::bigNumToBin($bn_pub_key);
+
+            return array(
+                'p' => $bn_p,
+                'g' => $bn_g,
+                'priv_key' => $bn_priv_key,
+                'pub_key' => $bn_pub_key,
+                'details' => array(
+                    'p' => $p,
+                    'g' => $g,
+                    'priv_key' => $priv_key,
+                    'pub_key' => $pub_key));
+        }
+    }
+
+    /**
      * Converts binary representation into ext/gmp or ext/bcmath big integer
      * representation.
      *
@@ -563,6 +618,21 @@ class Zend_OpenId
         throw new Zend_OpenId_Exception(
             'The system doesn\'t have proper big integer extension',
             Zend_OpenId_Exception::UNSUPPORTED_LONG_MATH);
+    }
+
+    /**
+     * Produces string of random byte of given length.
+     *
+     * @param integer $len length of requested string
+     * @return string RAW random binary string
+     */
+    static public function randomBytes($len)
+    {
+        $key = '';
+        for ($i = 0; $i < $len; $i++) {
+            $key .= chr(mt_rand(0, 255));
+        }
+        return $key;
     }
 
     /**
@@ -610,56 +680,6 @@ class Zend_OpenId
     }
 
     /**
-     * Performs the first step of a Diffie-Hellman key exchange by generating
-     * private and public DH values based on given prime number $p and
-     * generator $g. Both sides of key exchange MUST have the same prime number
-     * and generator. In this case they will able to create a random shared
-     * secret that is never send from one to the other.
-     *
-     * @param string $p prime number in binary representation
-     * @param string $g generator in binary representation
-     * @param string $priv_key private key in binary representation
-     * @return mixed
-     */
-    static public function createDhKey($p, $g, $priv_key = null)
-    {
-        if (function_exists('openssl_dh_compute_key')) {
-            $dh_details = array(
-                    'p' => $p,
-                    'g' => $g
-                );
-            if ($priv_key !== null) {
-                $dh_details['priv_key'] = $priv_key;
-            }
-            return openssl_pkey_new(array('dh'=>$dh_details));
-        } else {
-            $bn_p        = self::binToBigNum($p);
-            $bn_g        = self::binToBigNum($g);
-            if ($priv_key === null) {
-                $priv_key    = self::randomBytes(Zend_OpenId::strlen($p));
-            }
-            $bn_priv_key = self::binToBigNum($priv_key);
-            if (extension_loaded('gmp')) {
-                $bn_pub_key  = gmp_powm($bn_g, $bn_priv_key, $bn_p);
-            } else if (extension_loaded('bcmath')) {
-                $bn_pub_key  = bcpowmod($bn_g, $bn_priv_key, $bn_p);
-            }
-            $pub_key     = self::bigNumToBin($bn_pub_key);
-
-            return array(
-                'p'        => $bn_p,
-                'g'        => $bn_g,
-                'priv_key' => $bn_priv_key,
-                'pub_key'  => $bn_pub_key,
-                'details'  => array(
-                    'p'        => $p,
-                    'g'        => $g,
-                    'priv_key' => $priv_key,
-                    'pub_key'  => $pub_key));
-        }
-    }
-
-    /**
      * Returns an associative array with Diffie-Hellman key components in
      * binary representation. The array includes original prime number 'p' and
      * generator 'g', random private key 'priv_key' and corresponding public
@@ -699,11 +719,11 @@ class Zend_OpenId
             return $ret;
         } else if (extension_loaded('gmp')) {
             $bn_pub_key = self::binToBigNum($pub_key);
-            $bn_secret  = gmp_powm($bn_pub_key, $dh['priv_key'], $dh['p']);
+            $bn_secret = gmp_powm($bn_pub_key, $dh['priv_key'], $dh['p']);
             return self::bigNumToBin($bn_secret);
         } else if (extension_loaded('bcmath')) {
             $bn_pub_key = self::binToBigNum($pub_key);
-            $bn_secret  = bcpowmod($bn_pub_key, $dh['priv_key'], $dh['p']);
+            $bn_secret = bcpowmod($bn_pub_key, $dh['priv_key'], $dh['p']);
             return self::bigNumToBin($bn_secret);
         }
         require_once "Zend/OpenId/Exception.php";
@@ -733,22 +753,6 @@ class Zend_OpenId
             return "\0" . $str;
         }
         return $str;
-    }
-
-    /**
-     * Returns lenght of binary string in bytes
-     *
-     * @param string $str
-     * @return int the string lenght
-     */
-    static public function strlen($str)
-    {
-        if (extension_loaded('mbstring') &&
-            (((int)ini_get('mbstring.func_overload')) & 2)) {
-            return mb_strlen($str, 'latin1');
-        } else {
-            return strlen($str);
-        }
     }
 
 }

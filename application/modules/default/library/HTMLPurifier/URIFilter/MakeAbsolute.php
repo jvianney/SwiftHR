@@ -7,7 +7,9 @@ class HTMLPurifier_URIFilter_MakeAbsolute extends HTMLPurifier_URIFilter
     public $name = 'MakeAbsolute';
     protected $base;
     protected $basePathStack = array();
-    public function prepare($config) {
+
+    public function prepare($config)
+    {
         $def = $config->getDefinition('URI');
         $this->base = $def->base;
         if (is_null($this->base)) {
@@ -21,7 +23,48 @@ class HTMLPurifier_URIFilter_MakeAbsolute extends HTMLPurifier_URIFilter
         $this->basePathStack = $stack;
         return true;
     }
-    public function filter(&$uri, $config, $context) {
+
+    /**
+     * Resolve dots and double-dots in a path stack
+     */
+    private function _collapseStack($stack)
+    {
+        $result = array();
+        $is_folder = false;
+        for ($i = 0; isset($stack[$i]); $i++) {
+            $is_folder = false;
+            // absorb an internally duplicated slash
+            if ($stack[$i] == '' && $i && isset($stack[$i + 1])) continue;
+            if ($stack[$i] == '..') {
+                if (!empty($result)) {
+                    $segment = array_pop($result);
+                    if ($segment === '' && empty($result)) {
+                        // error case: attempted to back out too far:
+                        // restore the leading slash
+                        $result[] = '';
+                    } elseif ($segment === '..') {
+                        $result[] = '..'; // cannot remove .. with ..
+                    }
+                } else {
+                    // relative path, preserve the double-dots
+                    $result[] = '..';
+                }
+                $is_folder = true;
+                continue;
+            }
+            if ($stack[$i] == '.') {
+                // silently absorb
+                $is_folder = true;
+                continue;
+            }
+            $result[] = $stack[$i];
+        }
+        if ($is_folder) $result[] = '';
+        return $result;
+    }
+
+    public function filter(&$uri, $config, $context)
+    {
         if (is_null($this->base)) return true; // abort early
         if (
             $uri->path === '' && is_null($uri->scheme) &&
@@ -67,47 +110,9 @@ class HTMLPurifier_URIFilter_MakeAbsolute extends HTMLPurifier_URIFilter
         // re-combine
         $uri->scheme = $this->base->scheme;
         if (is_null($uri->userinfo)) $uri->userinfo = $this->base->userinfo;
-        if (is_null($uri->host))     $uri->host     = $this->base->host;
-        if (is_null($uri->port))     $uri->port     = $this->base->port;
+        if (is_null($uri->host)) $uri->host = $this->base->host;
+        if (is_null($uri->port)) $uri->port = $this->base->port;
         return true;
-    }
-
-    /**
-     * Resolve dots and double-dots in a path stack
-     */
-    private function _collapseStack($stack) {
-        $result = array();
-        $is_folder = false;
-        for ($i = 0; isset($stack[$i]); $i++) {
-            $is_folder = false;
-            // absorb an internally duplicated slash
-            if ($stack[$i] == '' && $i && isset($stack[$i+1])) continue;
-            if ($stack[$i] == '..') {
-                if (!empty($result)) {
-                    $segment = array_pop($result);
-                    if ($segment === '' && empty($result)) {
-                        // error case: attempted to back out too far:
-                        // restore the leading slash
-                        $result[] = '';
-                    } elseif ($segment === '..') {
-                        $result[] = '..'; // cannot remove .. with ..
-                    }
-                } else {
-                    // relative path, preserve the double-dots
-                    $result[] = '..';
-                }
-                $is_folder = true;
-                continue;
-            }
-            if ($stack[$i] == '.') {
-                // silently absorb
-                $is_folder = true;
-                continue;
-            }
-            $result[] = $stack[$i];
-        }
-        if ($is_folder) $result[] = '';
-        return $result;
     }
 }
 

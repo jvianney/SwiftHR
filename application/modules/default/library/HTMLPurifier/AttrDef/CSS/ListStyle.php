@@ -13,14 +13,16 @@ class HTMLPurifier_AttrDef_CSS_ListStyle extends HTMLPurifier_AttrDef
      */
     protected $info;
 
-    public function __construct($config) {
+    public function __construct($config)
+    {
         $def = $config->getCSSDefinition();
-        $this->info['list-style-type']     = $def->info['list-style-type'];
+        $this->info['list-style-type'] = $def->info['list-style-type'];
         $this->info['list-style-position'] = $def->info['list-style-position'];
         $this->info['list-style-image'] = $def->info['list-style-image'];
     }
 
-    public function validate($string, $config, $context) {
+    public function validate($string, $config, $context)
+    {
 
         // regular pre-processing
         $string = $this->parseCDATA($string);
@@ -30,9 +32,9 @@ class HTMLPurifier_AttrDef_CSS_ListStyle extends HTMLPurifier_AttrDef
         $bits = explode(' ', strtolower($string)); // bits to process
 
         $caught = array();
-        $caught['type']     = false;
+        $caught['type'] = false;
         $caught['position'] = false;
-        $caught['image']    = false;
+        $caught['image'] = false;
 
         $i = 0; // number of catches
         $none = false;

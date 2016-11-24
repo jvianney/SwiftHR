@@ -8,8 +8,17 @@ class HTMLPurifier_HTMLModule_Edit extends HTMLPurifier_HTMLModule
 {
 
     public $name = 'Edit';
+    public $defines_child_def = true;
 
-    public function setup($config) {
+    // HTML 4.01 specifies that ins/del must not contain block
+    // elements when used in an inline context, chameleon is
+    // a complicated workaround to acheive this effect
+
+    // Inline context ! Block context (exclamation mark is
+    // separator, see getChildDef for parsing)
+
+    public function setup($config)
+    {
         $contents = 'Chameleon: #PCDATA | Inline ! #PCDATA | Flow';
         $attr = array(
             'cite' => 'URI',
@@ -19,15 +28,8 @@ class HTMLPurifier_HTMLModule_Edit extends HTMLPurifier_HTMLModule
         $this->addElement('ins', 'Inline', $contents, 'Common', $attr);
     }
 
-    // HTML 4.01 specifies that ins/del must not contain block
-    // elements when used in an inline context, chameleon is
-    // a complicated workaround to acheive this effect
-
-    // Inline context ! Block context (exclamation mark is
-    // separator, see getChildDef for parsing)
-
-    public $defines_child_def = true;
-    public function getChildDef($def) {
+    public function getChildDef($def)
+    {
         if ($def->content_model_type != 'chameleon') return false;
         $value = explode('!', $def->content_model);
         return new HTMLPurifier_ChildDef_Chameleon($value[0], $value[1]);

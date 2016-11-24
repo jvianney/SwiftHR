@@ -62,17 +62,6 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
     }
 
     /**
-     * Append namespaces to entry root
-     *
-     * @return void
-     */
-    protected function _appendNamespaces()
-    {
-        $this->getRootElement()->setAttribute('xmlns:itunes',
-            'http://www.itunes.com/dtds/podcast-1.0.dtd');
-    }
-
-    /**
      * Set entry authors
      *
      * @param  DOMDocument $dom
@@ -212,5 +201,16 @@ class Zend_Feed_Writer_Extension_ITunes_Renderer_Entry
         $el->appendChild($text);
         $root->appendChild($el);
         $this->_called = true;
+    }
+
+    /**
+     * Append namespaces to entry root
+     *
+     * @return void
+     */
+    protected function _appendNamespaces()
+    {
+        $this->getRootElement()->setAttribute('xmlns:itunes',
+            'http://www.itunes.com/dtds/podcast-1.0.dtd');
     }
 }

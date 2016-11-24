@@ -32,17 +32,17 @@ require_once 'Zend/Validate/Abstract.php';
  */
 class Zend_Validate_Regex extends Zend_Validate_Abstract
 {
-    const INVALID   = 'regexInvalid';
+    const INVALID = 'regexInvalid';
     const NOT_MATCH = 'regexNotMatch';
-    const ERROROUS  = 'regexErrorous';
+    const ERROROUS = 'regexErrorous';
 
     /**
      * @var array
      */
     protected $_messageTemplates = array(
-        self::INVALID   => "Invalid type given. String, integer or float expected",
+        self::INVALID => "Invalid type given. String, integer or float expected",
         self::NOT_MATCH => "'%value%' does not match against pattern '%pattern%'",
-        self::ERROROUS  => "There was an internal error while using the pattern '%pattern%'",
+        self::ERROROUS => "There was an internal error while using the pattern '%pattern%'",
     );
 
     /**
@@ -58,15 +58,13 @@ class Zend_Validate_Regex extends Zend_Validate_Abstract
      * @var string
      */
     protected $_pattern;
+
     /*
      * This function is used to return validator messages.Added by K.Rama krishna on 08-aug-2013
      * 
      * returns Array of messages.
      */
-    public function getValidatorMessages()
-    {
-        return $this->_messageTemplates;
-    }
+
     /**
      * Sets validator options
      *
@@ -92,6 +90,11 @@ class Zend_Validate_Regex extends Zend_Validate_Abstract
         $this->setPattern($pattern);
     }
 
+    public function getValidatorMessages()
+    {
+        return $this->_messageTemplates;
+    }
+
     /**
      * Returns the pattern option
      *
@@ -111,8 +114,8 @@ class Zend_Validate_Regex extends Zend_Validate_Abstract
      */
     public function setPattern($pattern)
     {
-        $this->_pattern = (string) $pattern;
-        $status         = @preg_match($this->_pattern, "Test");
+        $this->_pattern = (string)$pattern;
+        $status = @preg_match($this->_pattern, "Test");
 
         if (false === $status) {
             require_once 'Zend/Validate/Exception.php';

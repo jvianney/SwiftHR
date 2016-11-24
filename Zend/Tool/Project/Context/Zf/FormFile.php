@@ -69,7 +69,12 @@ class Zend_Tool_Project_Context_Zf_FormFile extends Zend_Tool_Project_Context_Zf
     {
         return array(
             'formName' => $this->getFormName()
-            );
+        );
+    }
+
+    public function getFormName()
+    {
+        return $this->_formName;
     }
 
     /**
@@ -80,11 +85,6 @@ class Zend_Tool_Project_Context_Zf_FormFile extends Zend_Tool_Project_Context_Zf
     public function getName()
     {
         return 'FormFile';
-    }
-
-    public function getFormName()
-    {
-        return $this->_formName;
     }
 
     public function getContents()
@@ -102,12 +102,12 @@ class Zend_Tool_Project_Context_Zf_FormFile extends Zend_Tool_Project_Context_Zf
                         new Zend_CodeGenerator_Php_Method(array(
                             'name' => 'init',
                             'body' => '/* Form Elements & Other Definitions Here ... */',
-                            ))
-                        )
+                        ))
+                    )
 
-                    ))
-                )
-            ));
+                ))
+            )
+        ));
         return $codeGenFile->generate();
     }
 }
