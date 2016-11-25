@@ -555,7 +555,8 @@ nav ul li a:hover, nav ul li a.active {
 }
 
 .login-button input[type="button"], .login-button input[type="submit"] {
-    background-color: #f38a28;
+    background-color: #3a8cb1;
+    /*background-color: #f38a28;*/
     border: 0 none;
     height: 39px;
     padding: 0 17px;
@@ -890,10 +891,9 @@ nav ul li a:hover, nav ul li a.active {
     position: absolute;
     height: 50%;
     width: 100%;
-    background: url(../images/login-bg-new.jpg);
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: bottom;
+    /*background-size: cover;*/
+    /*background-repeat: no-repeat;*/
+    background: url(../images/login-bg-new-2.jpeg) bottom;
 }
 
 .logonew {
@@ -909,7 +909,7 @@ nav ul li a:hover, nav ul li a.active {
     margin: 0 auto;
     width: 238px;
     height: 52px;
-    background: url(../images/sentrifugo-login-logo.png);
+    background: url(../images/sentrifugo-login-logo-3.png);
     position: relative;
     top: 20px;
     background-size: 100%;
