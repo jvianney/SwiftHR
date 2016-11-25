@@ -2,8 +2,8 @@
 Sample grant for SQLite
 
 CREATE ROLE queue LOGIN
-  PASSWORD '[CHANGE ME]'
-  NOSUPERUSER NOINHERIT NOCREATEDB NOCREATEROLE;
+PASSWORD '[CHANGE ME]'
+NOSUPERUSER NOINHERIT NOCREATEDB NOCREATEROLE;
 
 */
 
@@ -13,12 +13,10 @@ CREATE ROLE queue LOGIN
 
 CREATE TABLE queue
 (
-  queue_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  queue_name VARCHAR(100) NOT NULL,
-  timeout INTEGER NOT NULL DEFAULT 30
+queue_id INTEGER PRIMARY KEY AUTOINCREMENT,
+queue_name VARCHAR(100) NOT NULL,
+timeout INTEGER NOT NULL DEFAULT 30
 );
-
-
 
 
 -- --------------------------------------------------------
@@ -28,13 +26,13 @@ CREATE TABLE queue
 
 CREATE TABLE message
 (
-  message_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  queue_id INTEGER PRIMARY KEY,
-  handle CHAR(32),
-  body VARCHAR(8192) NOT NULL,
-  md5 CHAR(32) NOT NULL,
-  timeout REAL,
-  created INTEGER,
-  FOREIGN KEY (queue_id) REFERENCES queue(queue_id)
+message_id INTEGER PRIMARY KEY AUTOINCREMENT,
+queue_id INTEGER PRIMARY KEY,
+handle CHAR(32),
+body VARCHAR(8192) NOT NULL,
+md5 CHAR(32) NOT NULL,
+timeout REAL,
+created INTEGER,
+FOREIGN KEY (queue_id) REFERENCES queue(queue_id)
 );
 

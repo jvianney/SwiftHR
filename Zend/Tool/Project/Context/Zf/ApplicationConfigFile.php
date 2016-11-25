@@ -81,28 +81,48 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
         return array('type' => $this->_type);
     }
 
-    /**
-     * getContents()
-     *
-     * @return string
-     */
-    public function getContents()
-    {
-        if ($this->_content === null) {
-            if (file_exists($this->getPath())) {
-                $this->_content = file_get_contents($this->getPath());
-            } else {
-                $this->_content = $this->_getDefaultContents();
-            }
-
-        }
-
-        return $this->_content;
-    }
-
     public function getAsZendConfig($section = 'production')
     {
         return new Zend_Config_Ini($this->getPath(), $section);
+    }
+
+    /**
+     *
+     * @param array $item
+     * @param string $section
+     * @param bool $quoteValue
+     * @return Zend_Tool_Project_Context_Zf_ApplicationConfigFile
+     */
+    public function addItem($item, $section = 'production', $quoteValue = true)
+    {
+        $stringItems = array();
+        $stringValues = array();
+        $configKeyNames = array();
+
+        $rii = new RecursiveIteratorIterator(
+            new RecursiveArrayIterator($item),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        $lastDepth = 0;
+
+        // loop through array structure recursively to create proper keys
+        foreach ($rii as $name => $value) {
+            $lastDepth = $rii->getDepth();
+
+            if (is_array($value)) {
+                array_push($configKeyNames, $name);
+            } else {
+                $stringItems[] = implode('.', $configKeyNames) . '.' . $name;
+                $stringValues[] = $value;
+            }
+        }
+
+        foreach ($stringItems as $stringItemIndex => $stringItem) {
+            $this->addStringItem($stringItem, $stringValues[$stringItemIndex], $section, $quoteValue);
+        }
+
+        return $this;
     }
 
     /**
@@ -111,7 +131,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
      * @param string $key
      * @param string $value
      * @param string $section
-     * @param bool   $quoteValue
+     * @param bool $quoteValue
      * @return Zend_Tool_Project_Context_Zf_ApplicationConfigFile
      */
     public function addStringItem($key, $value, $section = 'production', $quoteValue = true)
@@ -142,7 +162,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
                 if (isset($contentLines[$contentLineIndex + 1]{0}) && $contentLines[$contentLineIndex + 1]{0} == '[') {
                     $newLines[] = $key . ' = ' . $value;
                     $insideSection = null;
-                } else if (!isset($contentLines[$contentLineIndex + 1])){
+                } else if (!isset($contentLines[$contentLineIndex + 1])) {
                     $newLines[] = $key . ' = ' . $value;
                     $insideSection = null;
                 }
@@ -154,13 +174,55 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
     }
 
     /**
+     * getContents()
      *
-     * @param array $item
-     * @param string $section
-     * @param bool $quoteValue
-     * @return Zend_Tool_Project_Context_Zf_ApplicationConfigFile
+     * @return string
      */
-    public function addItem($item, $section = 'production', $quoteValue = true)
+    public function getContents()
+    {
+        if ($this->_content === null) {
+            if (file_exists($this->getPath())) {
+                $this->_content = file_get_contents($this->getPath());
+            } else {
+                $this->_content = $this->_getDefaultContents();
+            }
+
+        }
+
+        return $this->_content;
+    }
+
+    protected function _getDefaultContents()
+    {
+
+        $contents = <<<EOS
+[production]
+phpSettings.display_startup_errors = 0
+phpSettings.display_errors = 0
+includePaths.library = APPLICATION_PATH "/../library"
+bootstrap.path = APPLICATION_PATH "/Bootstrap.php"
+bootstrap.class = "Bootstrap"
+appnamespace = "Application"
+resources.frontController.controllerDirectory = APPLICATION_PATH "/controllers"
+resources.frontController.params.displayExceptions = 0
+
+[staging : production]
+
+[testing : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+
+[development : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+resources.frontController.params.displayExceptions = 1
+
+EOS;
+
+        return $contents;
+    }
+
+    public function removeItem($item, $section = 'production')
     {
         $stringItems = array();
         $stringValues = array();
@@ -169,7 +231,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
         $rii = new RecursiveIteratorIterator(
             new RecursiveArrayIterator($item),
             RecursiveIteratorIterator::SELF_FIRST
-            );
+        );
 
         $lastDepth = 0;
 
@@ -186,7 +248,7 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
         }
 
         foreach ($stringItems as $stringItemIndex => $stringItem) {
-            $this->addStringItem($stringItem, $stringValues[$stringItemIndex], $section, $quoteValue);
+            $this->removeStringItem($stringItem, $section);
         }
 
         return $this;
@@ -218,68 +280,6 @@ class Zend_Tool_Project_Context_Zf_ApplicationConfigFile extends Zend_Tool_Proje
         }
 
         $this->_content = implode('', $newLines);
-    }
-
-    public function removeItem($item, $section = 'production')
-    {
-        $stringItems = array();
-        $stringValues = array();
-        $configKeyNames = array();
-
-        $rii = new RecursiveIteratorIterator(
-            new RecursiveArrayIterator($item),
-            RecursiveIteratorIterator::SELF_FIRST
-            );
-
-        $lastDepth = 0;
-
-        // loop through array structure recursively to create proper keys
-        foreach ($rii as $name => $value) {
-            $lastDepth = $rii->getDepth();
-
-            if (is_array($value)) {
-                array_push($configKeyNames, $name);
-            } else {
-                $stringItems[] = implode('.', $configKeyNames) . '.' . $name;
-                $stringValues[] = $value;
-            }
-        }
-
-        foreach ($stringItems as $stringItemIndex => $stringItem) {
-            $this->removeStringItem($stringItem, $section);
-        }
-
-        return $this;
-    }
-
-    protected function _getDefaultContents()
-    {
-
-        $contents =<<<EOS
-[production]
-phpSettings.display_startup_errors = 0
-phpSettings.display_errors = 0
-includePaths.library = APPLICATION_PATH "/../library"
-bootstrap.path = APPLICATION_PATH "/Bootstrap.php"
-bootstrap.class = "Bootstrap"
-appnamespace = "Application"
-resources.frontController.controllerDirectory = APPLICATION_PATH "/controllers"
-resources.frontController.params.displayExceptions = 0
-
-[staging : production]
-
-[testing : production]
-phpSettings.display_startup_errors = 1
-phpSettings.display_errors = 1
-
-[development : production]
-phpSettings.display_startup_errors = 1
-phpSettings.display_errors = 1
-resources.frontController.params.displayExceptions = 1
-
-EOS;
-
-        return $contents;
     }
 
 }

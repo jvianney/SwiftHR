@@ -6,7 +6,8 @@
 class HTMLPurifier_AttrDef_CSS_Color extends HTMLPurifier_AttrDef
 {
 
-    public function validate($color, $config, $context) {
+    public function validate($color, $config, $context)
+    {
 
         static $colors = null;
         if ($colors === null) $colors = $config->get('Core.ColorKeywords');
@@ -37,7 +38,7 @@ class HTMLPurifier_AttrDef_CSS_Color extends HTMLPurifier_AttrDef
                     } elseif ($type !== 'percentage') {
                         return false;
                     }
-                    $num = (float) substr($part, 0, $length - 1);
+                    $num = (float)substr($part, 0, $length - 1);
                     if ($num < 0) $num = 0;
                     if ($num > 100) $num = 100;
                     $new_parts[] = "$num%";
@@ -48,10 +49,10 @@ class HTMLPurifier_AttrDef_CSS_Color extends HTMLPurifier_AttrDef
                     } elseif ($type !== 'integer') {
                         return false;
                     }
-                    $num = (int) $part;
+                    $num = (int)$part;
                     if ($num < 0) $num = 0;
                     if ($num > 255) $num = 255;
-                    $new_parts[] = (string) $num;
+                    $new_parts[] = (string)$num;
                 }
             }
             $new_triad = implode(',', $new_parts);

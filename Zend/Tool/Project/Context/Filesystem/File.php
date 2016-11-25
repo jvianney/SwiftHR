@@ -46,16 +46,6 @@ class Zend_Tool_Project_Context_Filesystem_File extends Zend_Tool_Project_Contex
     protected $_content = null;
 
     /**
-     * getName()
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return 'file';
-    }
-
-    /**
      * init()
      *
      * @return Zend_Tool_Project_Context_Filesystem_File
@@ -74,6 +64,29 @@ class Zend_Tool_Project_Context_Filesystem_File extends Zend_Tool_Project_Contex
         // @potential-todo check to ensure that this 'file' resource has no children
         parent::init();
         return $this;
+    }
+
+    /**
+     * getName()
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return 'file';
+    }
+
+    protected function _initFileOnlyContext()
+    {
+        if ($this->_resource->hasAttribute('defaultContentCallback')) {
+            $contentFunc = $this->_resource->getAttribute('defaultContentCallback');
+            if (is_callable($contentFunc)) {
+                $this->_content = call_user_func_array($contentFunc, array($this));
+            }
+        }
+        if ($this->_filesystemName == null) {
+            $this->_filesystemName = 'file.txt';
+        }
     }
 
     /**
@@ -122,7 +135,8 @@ class Zend_Tool_Project_Context_Filesystem_File extends Zend_Tool_Project_Contex
         // check to ensure the parent exists, if not, call it and create it
         if (($parentResource = $this->_resource->getParentResource()) instanceof Zend_Tool_Project_Profile_Resource) {
             if ((($parentContext = $parentResource->getContext()) instanceof Zend_Tool_Project_Context_Filesystem_Abstract)
-                && (!$parentContext->exists())) {
+                && (!$parentContext->exists())
+            ) {
                 $parentResource->create();
             }
         }
@@ -137,18 +151,6 @@ class Zend_Tool_Project_Context_Filesystem_File extends Zend_Tool_Project_Contex
     }
 
     /**
-     * delete()
-     *
-     * @return Zend_Tool_Project_Context_Filesystem_File
-     */
-    public function delete()
-    {
-        unlink($this->getPath());
-        $this->_resource->setDeleted(true);
-        return $this;
-    }
-
-    /**
      * getContents()
      *
      * @return null
@@ -158,17 +160,16 @@ class Zend_Tool_Project_Context_Filesystem_File extends Zend_Tool_Project_Contex
         return $this->_content;
     }
 
-    protected function _initFileOnlyContext()
+    /**
+     * delete()
+     *
+     * @return Zend_Tool_Project_Context_Filesystem_File
+     */
+    public function delete()
     {
-        if ($this->_resource->hasAttribute('defaultContentCallback')) {
-            $contentFunc = $this->_resource->getAttribute('defaultContentCallback');
-            if (is_callable($contentFunc)) {
-                $this->_content = call_user_func_array($contentFunc, array($this));
-            }
-        }
-        if ($this->_filesystemName == null) {
-            $this->_filesystemName = 'file.txt';
-        }
+        unlink($this->getPath());
+        $this->_resource->setDeleted(true);
+        return $this;
     }
 
 }

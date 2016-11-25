@@ -100,18 +100,6 @@ abstract class Zend_Server_Abstract implements Zend_Server_Interface
     }
 
     /**
-     * Returns a list of registered methods
-     *
-     * Returns an array of method definitions.
-     *
-     * @return Zend_Server_Definition
-     */
-    public function getFunctions()
-    {
-        return $this->_table;
-    }
-
-    /**
      * Lowercase a string
      *
      * Lowercase's a string by reference
@@ -128,23 +116,15 @@ abstract class Zend_Server_Abstract implements Zend_Server_Interface
     }
 
     /**
-     * Build callback for method signature
+     * Returns a list of registered methods
      *
-     * @param  Zend_Server_Reflection_Function_Abstract $reflection
-     * @return Zend_Server_Method_Callback
+     * Returns an array of method definitions.
+     *
+     * @return Zend_Server_Definition
      */
-    protected function _buildCallback(Zend_Server_Reflection_Function_Abstract $reflection)
+    public function getFunctions()
     {
-        $callback = new Zend_Server_Method_Callback();
-        if ($reflection instanceof Zend_Server_Reflection_Method) {
-            $callback->setType($reflection->isStatic() ? 'static' : 'instance')
-                     ->setClass($reflection->getDeclaringClass()->getName())
-                     ->setMethod($reflection->getName());
-        } elseif ($reflection instanceof Zend_Server_Reflection_Function) {
-            $callback->setType('function')
-                     ->setFunction($reflection->getName());
-        }
-        return $callback;
+        return $this->_table;
     }
 
     /**
@@ -157,9 +137,9 @@ abstract class Zend_Server_Abstract implements Zend_Server_Interface
      */
     protected function _buildSignature(Zend_Server_Reflection_Function_Abstract $reflection, $class = null)
     {
-        $ns         = $reflection->getNamespace();
-        $name       = $reflection->getName();
-        $method     = empty($ns) ? $name : $ns . '.' . $name;
+        $ns = $reflection->getNamespace();
+        $name = $reflection->getName();
+        $method = empty($ns) ? $name : $ns . '.' . $name;
 
         if (!$this->_overwriteExistingMethods && $this->_table->hasMethod($method)) {
             require_once 'Zend/Server/Exception.php';
@@ -168,17 +148,17 @@ abstract class Zend_Server_Abstract implements Zend_Server_Interface
 
         $definition = new Zend_Server_Method_Definition();
         $definition->setName($method)
-                   ->setCallback($this->_buildCallback($reflection))
-                   ->setMethodHelp($reflection->getDescription())
-                   ->setInvokeArguments($reflection->getInvokeArguments());
+            ->setCallback($this->_buildCallback($reflection))
+            ->setMethodHelp($reflection->getDescription())
+            ->setInvokeArguments($reflection->getInvokeArguments());
 
         foreach ($reflection->getPrototypes() as $proto) {
             $prototype = new Zend_Server_Method_Prototype();
             $prototype->setReturnType($this->_fixType($proto->getReturnType()));
             foreach ($proto->getParameters() as $parameter) {
                 $param = new Zend_Server_Method_Parameter(array(
-                    'type'     => $this->_fixType($parameter->getType()),
-                    'name'     => $parameter->getName(),
+                    'type' => $this->_fixType($parameter->getType()),
+                    'name' => $parameter->getName(),
                     'optional' => $parameter->isOptional(),
                 ));
                 if ($parameter->isDefaultValueAvailable()) {
@@ -196,6 +176,34 @@ abstract class Zend_Server_Abstract implements Zend_Server_Interface
     }
 
     /**
+     * Build callback for method signature
+     *
+     * @param  Zend_Server_Reflection_Function_Abstract $reflection
+     * @return Zend_Server_Method_Callback
+     */
+    protected function _buildCallback(Zend_Server_Reflection_Function_Abstract $reflection)
+    {
+        $callback = new Zend_Server_Method_Callback();
+        if ($reflection instanceof Zend_Server_Reflection_Method) {
+            $callback->setType($reflection->isStatic() ? 'static' : 'instance')
+                ->setClass($reflection->getDeclaringClass()->getName())
+                ->setMethod($reflection->getName());
+        } elseif ($reflection instanceof Zend_Server_Reflection_Function) {
+            $callback->setType('function')
+                ->setFunction($reflection->getName());
+        }
+        return $callback;
+    }
+
+    /**
+     * Map PHP type to protocol type
+     *
+     * @param  string $type
+     * @return string
+     */
+    abstract protected function _fixType($type);
+
+    /**
      * Dispatch method
      *
      * @param  Zend_Server_Method_Definition $invocable
@@ -205,14 +213,14 @@ abstract class Zend_Server_Abstract implements Zend_Server_Interface
     protected function _dispatch(Zend_Server_Method_Definition $invocable, array $params)
     {
         $callback = $invocable->getCallback();
-        $type     = $callback->getType();
+        $type = $callback->getType();
 
         if ('function' == $type) {
             $function = $callback->getFunction();
             return call_user_func_array($function, $params);
         }
 
-        $class  = $callback->getClass();
+        $class = $callback->getClass();
         $method = $callback->getMethod();
 
         if ('static' == $type) {
@@ -224,19 +232,11 @@ abstract class Zend_Server_Abstract implements Zend_Server_Interface
             $invokeArgs = $invocable->getInvokeArguments();
             if (!empty($invokeArgs)) {
                 $reflection = new ReflectionClass($class);
-                $object     = $reflection->newInstanceArgs($invokeArgs);
+                $object = $reflection->newInstanceArgs($invokeArgs);
             } else {
                 $object = new $class;
             }
         }
         return call_user_func_array(array($object, $method), $params);
     }
-
-    /**
-     * Map PHP type to protocol type
-     *
-     * @param  string $type
-     * @return string
-     */
-    abstract protected function _fixType($type);
 }

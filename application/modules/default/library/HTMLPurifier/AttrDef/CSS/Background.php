@@ -13,7 +13,8 @@ class HTMLPurifier_AttrDef_CSS_Background extends HTMLPurifier_AttrDef
      */
     protected $info;
 
-    public function __construct($config) {
+    public function __construct($config)
+    {
         $def = $config->getCSSDefinition();
         $this->info['background-color'] = $def->info['background-color'];
         $this->info['background-image'] = $def->info['background-image'];
@@ -22,7 +23,8 @@ class HTMLPurifier_AttrDef_CSS_Background extends HTMLPurifier_AttrDef
         $this->info['background-position'] = $def->info['background-position'];
     }
 
-    public function validate($string, $config, $context) {
+    public function validate($string, $config, $context)
+    {
 
         // regular pre-processing
         $string = $this->parseCDATA($string);
@@ -35,9 +37,9 @@ class HTMLPurifier_AttrDef_CSS_Background extends HTMLPurifier_AttrDef
         $bits = explode(' ', strtolower($string)); // bits to process
 
         $caught = array();
-        $caught['color']    = false;
-        $caught['image']    = false;
-        $caught['repeat']   = false;
+        $caught['color'] = false;
+        $caught['image'] = false;
+        $caught['repeat'] = false;
         $caught['attachment'] = false;
         $caught['position'] = false;
 
@@ -68,7 +70,7 @@ class HTMLPurifier_AttrDef_CSS_Background extends HTMLPurifier_AttrDef
         if (!$i) return false;
         if ($caught['position'] !== false) {
             $caught['position'] = $this->info['background-position']->
-                validate($caught['position'], $config, $context);
+            validate($caught['position'], $config, $context);
         }
 
         $ret = array();

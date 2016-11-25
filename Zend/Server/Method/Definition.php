@@ -92,14 +92,48 @@ class Zend_Server_Method_Definition
     }
 
     /**
-     * Set method name
+     * Serialize to array
      *
-     * @param  string $name
+     * @return array
+     */
+    public function toArray()
+    {
+        $prototypes = $this->getPrototypes();
+        $signatures = array();
+        foreach ($prototypes as $prototype) {
+            $signatures[] = $prototype->toArray();
+        }
+
+        return array(
+            'name' => $this->getName(),
+            'callback' => $this->getCallback()->toArray(),
+            'prototypes' => $signatures,
+            'methodHelp' => $this->getMethodHelp(),
+            'invokeArguments' => $this->getInvokeArguments(),
+            'object' => $this->getObject(),
+        );
+    }
+
+    /**
+     * Get all prototypes
+     *
+     * @return array $prototypes Array of Zend_Server_Method_Prototype objects or arrays
+     */
+    public function getPrototypes()
+    {
+        return $this->_prototypes;
+    }
+
+    /**
+     * Set all prototypes at once (overwrites)
+     *
+     * @param  array $prototypes Array of Zend_Server_Method_Prototype objects or arrays
      * @return Zend_Server_Method_Definition
      */
-    public function setName($name)
+    public function setPrototypes(array $prototypes)
     {
-        $this->_name = (string) $name;
+        $this->_prototypes = array();
+        $this->addPrototypes($prototypes);
         return $this;
     }
 
@@ -111,6 +145,28 @@ class Zend_Server_Method_Definition
     public function getName()
     {
         return $this->_name;
+    }
+
+    /**
+     * Set method name
+     *
+     * @param  string $name
+     * @return Zend_Server_Method_Definition
+     */
+    public function setName($name)
+    {
+        $this->_name = (string)$name;
+        return $this;
+    }
+
+    /**
+     * Get method callback
+     *
+     * @return Zend_Server_Method_Callback
+     */
+    public function getCallback()
+    {
+        return $this->_callback;
     }
 
     /**
@@ -133,13 +189,71 @@ class Zend_Server_Method_Definition
     }
 
     /**
-     * Get method callback
+     * Get method help
      *
-     * @return Zend_Server_Method_Callback
+     * @return string
      */
-    public function getCallback()
+    public function getMethodHelp()
     {
-        return $this->_callback;
+        return $this->_methodHelp;
+    }
+
+    /**
+     * Set method help
+     *
+     * @param  string $methodHelp
+     * @return Zend_Server_Method_Definition
+     */
+    public function setMethodHelp($methodHelp)
+    {
+        $this->_methodHelp = (string)$methodHelp;
+        return $this;
+    }
+
+    /**
+     * Retrieve invoke arguments
+     *
+     * @return array
+     */
+    public function getInvokeArguments()
+    {
+        return $this->_invokeArguments;
+    }
+
+    /**
+     * Set invoke arguments
+     *
+     * @param  array $invokeArguments
+     * @return Zend_Server_Method_Definition
+     */
+    public function setInvokeArguments(array $invokeArguments)
+    {
+        $this->_invokeArguments = $invokeArguments;
+        return $this;
+    }
+
+    /**
+     * Get object to use with method calls
+     *
+     * @return null|object
+     */
+    public function getObject()
+    {
+        return $this->_object;
+    }
+
+    /**
+     * Add multiple prototypes at once
+     *
+     * @param  array $prototypes Array of Zend_Server_Method_Prototype objects or arrays
+     * @return Zend_Server_Method_Definition
+     */
+    public function addPrototypes(array $prototypes)
+    {
+        foreach ($prototypes as $prototype) {
+            $this->addPrototype($prototype);
+        }
+        return $this;
     }
 
     /**
@@ -162,65 +276,6 @@ class Zend_Server_Method_Definition
     }
 
     /**
-     * Add multiple prototypes at once
-     *
-     * @param  array $prototypes Array of Zend_Server_Method_Prototype objects or arrays
-     * @return Zend_Server_Method_Definition
-     */
-    public function addPrototypes(array $prototypes)
-    {
-        foreach ($prototypes as $prototype) {
-            $this->addPrototype($prototype);
-        }
-        return $this;
-    }
-
-    /**
-     * Set all prototypes at once (overwrites)
-     *
-     * @param  array $prototypes Array of Zend_Server_Method_Prototype objects or arrays
-     * @return Zend_Server_Method_Definition
-     */
-    public function setPrototypes(array $prototypes)
-    {
-        $this->_prototypes = array();
-        $this->addPrototypes($prototypes);
-        return $this;
-    }
-
-    /**
-     * Get all prototypes
-     *
-     * @return array $prototypes Array of Zend_Server_Method_Prototype objects or arrays
-     */
-    public function getPrototypes()
-    {
-        return $this->_prototypes;
-    }
-
-    /**
-     * Set method help
-     *
-     * @param  string $methodHelp
-     * @return Zend_Server_Method_Definition
-     */
-    public function setMethodHelp($methodHelp)
-    {
-        $this->_methodHelp = (string) $methodHelp;
-        return $this;
-    }
-
-    /**
-     * Get method help
-     *
-     * @return string
-     */
-    public function getMethodHelp()
-    {
-        return $this->_methodHelp;
-    }
-
-    /**
      * Set object to use with method calls
      *
      * @param  object $object
@@ -234,60 +289,5 @@ class Zend_Server_Method_Definition
         }
         $this->_object = $object;
         return $this;
-    }
-
-    /**
-     * Get object to use with method calls
-     *
-     * @return null|object
-     */
-    public function getObject()
-    {
-        return $this->_object;
-    }
-
-    /**
-     * Set invoke arguments
-     *
-     * @param  array $invokeArguments
-     * @return Zend_Server_Method_Definition
-     */
-    public function setInvokeArguments(array $invokeArguments)
-    {
-        $this->_invokeArguments = $invokeArguments;
-        return $this;
-    }
-
-    /**
-     * Retrieve invoke arguments
-     *
-     * @return array
-     */
-    public function getInvokeArguments()
-    {
-        return $this->_invokeArguments;
-    }
-
-    /**
-     * Serialize to array
-     *
-     * @return array
-     */
-    public function toArray()
-    {
-        $prototypes = $this->getPrototypes();
-        $signatures = array();
-        foreach ($prototypes as $prototype) {
-            $signatures[] = $prototype->toArray();
-        }
-
-        return array(
-            'name'            => $this->getName(),
-            'callback'        => $this->getCallback()->toArray(),
-            'prototypes'      => $signatures,
-            'methodHelp'      => $this->getMethodHelp(),
-            'invokeArguments' => $this->getInvokeArguments(),
-            'object'          => $this->getObject(),
-        );
     }
 }

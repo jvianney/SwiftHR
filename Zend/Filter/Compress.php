@@ -84,6 +84,16 @@ class Zend_Filter_Compress implements Zend_Filter_Interface
     }
 
     /**
+     * Retrieve adapter name
+     *
+     * @return string
+     */
+    public function getAdapterName()
+    {
+        return $this->getAdapter()->toString();
+    }
+
+    /**
      * Returns the current adapter, instantiating it if necessary
      *
      * @return string
@@ -110,16 +120,6 @@ class Zend_Filter_Compress implements Zend_Filter_Interface
             throw new Zend_Filter_Exception("Compression adapter '" . $adapter . "' does not implement Zend_Filter_Compress_CompressInterface");
         }
         return $this->_adapter;
-    }
-
-    /**
-     * Retrieve adapter name
-     *
-     * @return string
-     */
-    public function getAdapterName()
-    {
-        return $this->getAdapter()->toString();
     }
 
     /**
@@ -168,7 +168,7 @@ class Zend_Filter_Compress implements Zend_Filter_Interface
     /**
      * Calls adapter methods
      *
-     * @param string       $method  Method to call
+     * @param string $method Method to call
      * @param string|array $options Options for this method
      */
     public function __call($method, $options)

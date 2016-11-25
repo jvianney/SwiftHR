@@ -31,22 +31,6 @@ class Zend_Amf_Adobe_DbInspector
 {
 
     /**
-     * Connect to the database
-     *
-     * @param string $dbType Database adapter type for Zend_Db
-     * @param array|object $dbDescription Adapter-specific connection settings
-     * @return Zend_Db_Adapter_Abstract
-     * @see Zend_Db::factory()
-     */
-    protected function _connect($dbType, $dbDescription)
-    {
-        if(is_object($dbDescription)) {
-            $dbDescription = get_object_vars($dbDescription);
-        }
-        return Zend_Db::factory($dbType, $dbDescription);
-    }
-
-    /**
      * Describe database object.
      *
      * Usage example:
@@ -71,6 +55,22 @@ class Zend_Amf_Adobe_DbInspector
     {
         $db = $this->_connect($dbType, $dbDescription);
         return $db->describeTable($tableName);
+    }
+
+    /**
+     * Connect to the database
+     *
+     * @param string $dbType Database adapter type for Zend_Db
+     * @param array|object $dbDescription Adapter-specific connection settings
+     * @return Zend_Db_Adapter_Abstract
+     * @see Zend_Db::factory()
+     */
+    protected function _connect($dbType, $dbDescription)
+    {
+        if (is_object($dbDescription)) {
+            $dbDescription = get_object_vars($dbDescription);
+        }
+        return Zend_Db::factory($dbType, $dbDescription);
     }
 
     /**

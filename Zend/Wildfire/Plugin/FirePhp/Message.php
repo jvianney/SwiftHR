@@ -89,7 +89,17 @@ class Zend_Wildfire_Plugin_FirePhp_Message
     {
         $this->_style = $style;
         $this->_message = $message;
-        $this->_ruid = md5(microtime().mt_rand());
+        $this->_ruid = md5(microtime() . mt_rand());
+    }
+
+    /**
+     * Get the label of the message
+     *
+     * @return string The label of the message
+     */
+    public function getLabel()
+    {
+        return $this->_label;
     }
 
     /**
@@ -104,13 +114,13 @@ class Zend_Wildfire_Plugin_FirePhp_Message
     }
 
     /**
-     * Get the label of the message
+     * Determine if buffering is enabled or disabled
      *
-     * @return string The label of the message
+     * @return boolean Returns TRUE if buffering is enabled, FALSE otherwise.
      */
-    public function getLabel()
+    public function getBuffered()
     {
-        return $this->_label;
+        return $this->_buffered;
     }
 
     /**
@@ -130,13 +140,13 @@ class Zend_Wildfire_Plugin_FirePhp_Message
     }
 
     /**
-     * Determine if buffering is enabled or disabled
+     * Determine if message should be destroyed
      *
-     * @return boolean Returns TRUE if buffering is enabled, FALSE otherwise.
+     * @return boolean Returns TRUE if message should be destroyed, FALSE otherwise.
      */
-    public function getBuffered()
+    public function getDestroy()
     {
-        return $this->_buffered;
+        return $this->_destroy;
     }
 
     /**
@@ -153,13 +163,13 @@ class Zend_Wildfire_Plugin_FirePhp_Message
     }
 
     /**
-     * Determine if message should be destroyed
+     * Get the style of the message
      *
-     * @return boolean Returns TRUE if message should be destroyed, FALSE otherwise.
+     * @return string The style of the message
      */
-    public function getDestroy()
+    public function getStyle()
     {
-        return $this->_destroy;
+        return $this->_style;
     }
 
     /**
@@ -173,13 +183,13 @@ class Zend_Wildfire_Plugin_FirePhp_Message
     }
 
     /**
-     * Get the style of the message
+     * Get the actual message to be sent in its final format.
      *
-     * @return string The style of the message
+     * @return mixed Returns the message to be sent.
      */
-    public function getStyle()
+    public function getMessage()
     {
-        return $this->_style;
+        return $this->_message;
     }
 
     /**
@@ -193,16 +203,6 @@ class Zend_Wildfire_Plugin_FirePhp_Message
     }
 
     /**
-     * Get the actual message to be sent in its final format.
-     *
-     * @return mixed Returns the message to be sent.
-     */
-    public function getMessage()
-    {
-        return $this->_message;
-    }
-
-    /**
      * Set a single option
      *
      * @param  string $key The name of the option
@@ -211,12 +211,12 @@ class Zend_Wildfire_Plugin_FirePhp_Message
      */
     public function setOption($key, $value)
     {
-      if(!array_key_exists($key,$this->_options)) {
-        throw new Zend_Wildfire_Exception('Option with name "'.$key.'" does not exist!');
-      }
-      $previous = $this->_options[$key];
-      $this->_options[$key] = $value;
-      return $previous;
+        if (!array_key_exists($key, $this->_options)) {
+            throw new Zend_Wildfire_Exception('Option with name "' . $key . '" does not exist!');
+        }
+        $previous = $this->_options[$key];
+        $this->_options[$key] = $value;
+        return $previous;
     }
 
     /**
@@ -227,10 +227,10 @@ class Zend_Wildfire_Plugin_FirePhp_Message
      */
     public function getOption($key)
     {
-      if(!array_key_exists($key,$this->_options)) {
-        throw new Zend_Wildfire_Exception('Option with name "'.$key.'" does not exist!');
-      }
-      return $this->_options[$key];
+        if (!array_key_exists($key, $this->_options)) {
+            throw new Zend_Wildfire_Exception('Option with name "' . $key . '" does not exist!');
+        }
+        return $this->_options[$key];
     }
 
     /**
@@ -240,7 +240,7 @@ class Zend_Wildfire_Plugin_FirePhp_Message
      */
     public function getOptions()
     {
-      return $this->_options;
+        return $this->_options;
     }
 }
 

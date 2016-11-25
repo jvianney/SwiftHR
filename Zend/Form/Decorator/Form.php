@@ -50,15 +50,26 @@ class Zend_Form_Decorator_Form extends Zend_Form_Decorator_Abstract
     protected $_helper = 'form';
 
     /**
-     * Set view helper for rendering form
+     * Render a form
      *
-     * @param  string $helper
-     * @return Zend_Form_Decorator_Form
+     * Replaces $content entirely from currently set element.
+     *
+     * @param  string $content
+     * @return string
      */
-    public function setHelper($helper)
+    public function render($content)
     {
-        $this->_helper = (string) $helper;
-        return $this;
+        $form = $this->getElement();
+        $view = $form->getView();
+        if (null === $view) {
+            return $content;
+        }
+
+        $helper = $this->getHelper();
+        $attribs = $this->getOptions();
+        $name = $form->getFullyQualifiedName();
+        $attribs['id'] = $form->getId();
+        return $view->$helper($name, $attribs, $content);
     }
 
     /**
@@ -73,6 +84,18 @@ class Zend_Form_Decorator_Form extends Zend_Form_Decorator_Abstract
             $this->removeOption('helper');
         }
         return $this->_helper;
+    }
+
+    /**
+     * Set view helper for rendering form
+     *
+     * @param  string $helper
+     * @return Zend_Form_Decorator_Form
+     */
+    public function setHelper($helper)
+    {
+        $this->_helper = (string)$helper;
+        return $this;
     }
 
     /**
@@ -107,28 +130,5 @@ class Zend_Form_Decorator_Form extends Zend_Form_Decorator_Abstract
         }
 
         return $this->_options;
-    }
-
-    /**
-     * Render a form
-     *
-     * Replaces $content entirely from currently set element.
-     *
-     * @param  string $content
-     * @return string
-     */
-    public function render($content)
-    {
-        $form    = $this->getElement();
-        $view    = $form->getView();
-        if (null === $view) {
-            return $content;
-        }
-
-        $helper        = $this->getHelper();
-        $attribs       = $this->getOptions();
-        $name          = $form->getFullyQualifiedName();
-        $attribs['id'] = $form->getId();
-        return $view->$helper($name, $attribs, $content);
     }
 }

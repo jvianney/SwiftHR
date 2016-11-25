@@ -1,4 +1,5 @@
 <?php
+
 /*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
@@ -18,21 +19,20 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
 class Assets_IndexController extends Zend_Controller_Action
 {
-	public function preDispatch()
-	{
-		
-	}
-	
-	/**
-	 * default action
-	 */
-	public function indexAction()
-	{
-		//echo " echoed";exit;
+    public function preDispatch()
+    {
 
-	}	
+    }
+
+    /**
+     * default action
+     */
+    public function indexAction()
+    {
+        //echo " echoed";exit;
+
+    }
 }
 

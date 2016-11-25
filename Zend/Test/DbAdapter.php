@@ -111,14 +111,6 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     }
 
     /**
-     * @var string
-     */
-    public function setQuoteIdentifierSymbol($symbol)
-    {
-        $this->_quoteIdentifierSymbol = $symbol;
-    }
-
-    /**
      * Returns the symbol the adapter uses for delimited identifiers.
      *
      * @return string
@@ -126,6 +118,14 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     public function getQuoteIdentifierSymbol()
     {
         return $this->_quoteIdentifierSymbol;
+    }
+
+    /**
+     * @var string
+     */
+    public function setQuoteIdentifierSymbol($symbol)
+    {
+        $this->_quoteIdentifierSymbol = $symbol;
     }
 
     /**
@@ -145,7 +145,7 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
      */
     public function listTables()
     {
-       return $this->_listTables;
+        return $this->_listTables;
     }
 
     /**
@@ -189,21 +189,11 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
      */
     public function describeTable($tableName, $schemaName = null)
     {
-        if(isset($this->_describeTables[$tableName])) {
+        if (isset($this->_describeTables[$tableName])) {
             return $this->_describeTables[$tableName];
         } else {
             return array();
         }
-    }
-
-    /**
-     * Creates a connection to the database.
-     *
-     * @return void
-     */
-    protected function _connect()
-    {
-        $this->_connected = true;
     }
 
     /**
@@ -236,13 +226,13 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     {
         $queryId = $this->getProfiler()->queryStart($sql);
 
-        if(count($this->_statementStack)) {
+        if (count($this->_statementStack)) {
             $stmt = array_pop($this->_statementStack);
         } else {
             $stmt = new Zend_Test_DbStatement();
         }
 
-        if($this->getProfiler()->getEnabled() == true) {
+        if ($this->getProfiler()->getEnabled() == true) {
             $qp = $this->getProfiler()->getQueryProfile($queryId);
             $stmt->setQueryProfile($qp);
         }
@@ -260,41 +250,17 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
      * returns the last value generated for such a column, and the table name
      * argument is disregarded.
      *
-     * @param string $tableName   OPTIONAL Name of table.
-     * @param string $primaryKey  OPTIONAL Name of primary key column.
+     * @param string $tableName OPTIONAL Name of table.
+     * @param string $primaryKey OPTIONAL Name of primary key column.
      * @return string
      */
     public function lastInsertId($tableName = null, $primaryKey = null)
     {
-        if(count($this->_lastInsertIdStack)) {
+        if (count($this->_lastInsertIdStack)) {
             return array_pop($this->_lastInsertIdStack);
         } else {
             return false;
         }
-    }
-
-    /**
-     * Begin a transaction.
-     */
-    protected function _beginTransaction()
-    {
-        return;
-    }
-
-    /**
-     * Commit a transaction.
-     */
-    protected function _commit()
-    {
-        return;
-    }
-
-    /**
-     * Roll-back a transaction.
-     */
-    protected function _rollBack()
-    {
-
     }
 
     /**
@@ -341,5 +307,39 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     function getServerVersion()
     {
         return "1.0.0";
+    }
+
+    /**
+     * Creates a connection to the database.
+     *
+     * @return void
+     */
+    protected function _connect()
+    {
+        $this->_connected = true;
+    }
+
+    /**
+     * Begin a transaction.
+     */
+    protected function _beginTransaction()
+    {
+        return;
+    }
+
+    /**
+     * Commit a transaction.
+     */
+    protected function _commit()
+    {
+        return;
+    }
+
+    /**
+     * Roll-back a transaction.
+     */
+    protected function _rollBack()
+    {
+
     }
 }

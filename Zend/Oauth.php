@@ -30,14 +30,14 @@ require_once 'Zend/Http/Client.php';
  */
 class Zend_Oauth
 {
-    const REQUEST_SCHEME_HEADER      = 'header';
-    const REQUEST_SCHEME_POSTBODY    = 'postbody';
+    const REQUEST_SCHEME_HEADER = 'header';
+    const REQUEST_SCHEME_POSTBODY = 'postbody';
     const REQUEST_SCHEME_QUERYSTRING = 'querystring';
-    const GET                        = 'GET';
-    const POST                       = 'POST';
-    const PUT                        = 'PUT';
-    const DELETE                     = 'DELETE';
-    const HEAD                       = 'HEAD';
+    const GET = 'GET';
+    const POST = 'POST';
+    const PUT = 'PUT';
+    const DELETE = 'DELETE';
+    const HEAD = 'HEAD';
 
     /**
      * Singleton instance if required of the HTTP client
@@ -45,18 +45,6 @@ class Zend_Oauth
      * @var Zend_Http_Client
      */
     protected static $httpClient = null;
-
-    /**
-     * Allows the external environment to make Zend_Oauth use a specific
-     * Client instance.
-     *
-     * @param Zend_Http_Client $httpClient
-     * @return void
-     */
-    public static function setHttpClient(Zend_Http_Client $httpClient)
-    {
-        self::$httpClient = $httpClient;
-    }
 
     /**
      * Return the singleton instance of the HTTP Client. Note that
@@ -74,6 +62,18 @@ class Zend_Oauth
             self::$httpClient->resetParameters();
         }
         return self::$httpClient;
+    }
+
+    /**
+     * Allows the external environment to make Zend_Oauth use a specific
+     * Client instance.
+     *
+     * @param Zend_Http_Client $httpClient
+     * @return void
+     */
+    public static function setHttpClient(Zend_Http_Client $httpClient)
+    {
+        self::$httpClient = $httpClient;
     }
 
     /**

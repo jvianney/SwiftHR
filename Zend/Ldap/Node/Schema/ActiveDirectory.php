@@ -59,29 +59,6 @@ class Zend_Ldap_Node_Schema_ActiveDirectory extends Zend_Ldap_Node_Schema
     protected $_objectClasses = array();
 
     /**
-     * Parses the schema
-     *
-     * @param  Zend_Ldap_Dn $dn
-     * @param  Zend_Ldap    $ldap
-     * @return Zend_Ldap_Node_Schema Provides a fluid interface
-     */
-    protected function _parseSchema(Zend_Ldap_Dn $dn, Zend_Ldap $ldap)
-    {
-        parent::_parseSchema($dn, $ldap);
-        foreach ($ldap->search('(objectClass=classSchema)', $dn,
-                Zend_Ldap::SEARCH_SCOPE_ONE) as $node) {
-            $val = new Zend_Ldap_Node_Schema_ObjectClass_ActiveDirectory($node);
-            $this->_objectClasses[$val->getName()] = $val;
-        }
-        foreach ($ldap->search('(objectClass=attributeSchema)', $dn,
-                Zend_Ldap::SEARCH_SCOPE_ONE) as $node) {
-            $val = new Zend_Ldap_Node_Schema_AttributeType_ActiveDirectory($node);
-            $this->_attributeTypes[$val->getName()] = $val;
-        }
-        return $this;
-    }
-
-    /**
      * Gets the attribute Types
      *
      * @return array
@@ -99,5 +76,28 @@ class Zend_Ldap_Node_Schema_ActiveDirectory extends Zend_Ldap_Node_Schema
     public function getObjectClasses()
     {
         return $this->_objectClasses;
+    }
+
+    /**
+     * Parses the schema
+     *
+     * @param  Zend_Ldap_Dn $dn
+     * @param  Zend_Ldap $ldap
+     * @return Zend_Ldap_Node_Schema Provides a fluid interface
+     */
+    protected function _parseSchema(Zend_Ldap_Dn $dn, Zend_Ldap $ldap)
+    {
+        parent::_parseSchema($dn, $ldap);
+        foreach ($ldap->search('(objectClass=classSchema)', $dn,
+            Zend_Ldap::SEARCH_SCOPE_ONE) as $node) {
+            $val = new Zend_Ldap_Node_Schema_ObjectClass_ActiveDirectory($node);
+            $this->_objectClasses[$val->getName()] = $val;
+        }
+        foreach ($ldap->search('(objectClass=attributeSchema)', $dn,
+            Zend_Ldap::SEARCH_SCOPE_ONE) as $node) {
+            $val = new Zend_Ldap_Node_Schema_AttributeType_ActiveDirectory($node);
+            $this->_attributeTypes[$val->getName()] = $val;
+        }
+        return $this;
     }
 }

@@ -66,34 +66,43 @@ abstract class Zend_Dojo_Form_Decorator_DijitContainer extends Zend_Form_Decorat
     protected $_title;
 
     /**
-     * Get view helper for rendering container
+     * Render a dijit layout container
      *
+     * Replaces $content entirely from currently set element.
+     *
+     * @param  string $content
      * @return string
      */
-    public function getHelper()
+    public function render($content)
     {
-        if (null === $this->_helper) {
-            require_once 'Zend/Form/Decorator/Exception.php';
-            throw new Zend_Form_Decorator_Exception('No view helper specified fo DijitContainer decorator');
+        $element = $this->getElement();
+        $view = $element->getView();
+        if (null === $view) {
+            return $content;
         }
-        return $this->_helper;
-    }
 
-    /**
-     * Get element attributes
-     *
-     * @return array
-     */
-    public function getAttribs()
-    {
-        if (null === $this->_attribs) {
-            $attribs = $this->getElement()->getAttribs();
-            if (array_key_exists('dijitParams', $attribs)) {
-                unset($attribs['dijitParams']);
+        $dijitParams = $this->getDijitParams();
+        $attribs = array_merge($this->getAttribs(), $this->getOptions());
+
+        if (array_key_exists('legend', $attribs)) {
+            if (!array_key_exists('title', $dijitParams) || empty($dijitParams['title'])) {
+                $dijitParams['title'] = $attribs['legend'];
             }
-            $this->_attribs = $attribs;
+            unset($attribs['legend']);
         }
-        return $this->_attribs;
+
+        $helper = $this->getHelper();
+        $id = $element->getId() . '-' . $helper;
+
+        if ($view->dojo()->hasDijit($id)) {
+            trigger_error(sprintf('Duplicate dijit ID detected for id "%s; temporarily generating uniqid"', $id), E_USER_WARNING);
+            $base = $id;
+            do {
+                $id = $base . '-' . uniqid();
+            } while ($view->dojo()->hasDijit($id));
+        }
+
+        return $view->$helper($id, $content, $dijitParams, $attribs);
     }
 
     /**
@@ -159,42 +168,33 @@ abstract class Zend_Dojo_Form_Decorator_DijitContainer extends Zend_Form_Decorat
     }
 
     /**
-     * Render a dijit layout container
+     * Get element attributes
      *
-     * Replaces $content entirely from currently set element.
+     * @return array
+     */
+    public function getAttribs()
+    {
+        if (null === $this->_attribs) {
+            $attribs = $this->getElement()->getAttribs();
+            if (array_key_exists('dijitParams', $attribs)) {
+                unset($attribs['dijitParams']);
+            }
+            $this->_attribs = $attribs;
+        }
+        return $this->_attribs;
+    }
+
+    /**
+     * Get view helper for rendering container
      *
-     * @param  string $content
      * @return string
      */
-    public function render($content)
+    public function getHelper()
     {
-        $element = $this->getElement();
-        $view    = $element->getView();
-        if (null === $view) {
-            return $content;
+        if (null === $this->_helper) {
+            require_once 'Zend/Form/Decorator/Exception.php';
+            throw new Zend_Form_Decorator_Exception('No view helper specified fo DijitContainer decorator');
         }
-
-        $dijitParams = $this->getDijitParams();
-        $attribs     = array_merge($this->getAttribs(), $this->getOptions());
-
-        if (array_key_exists('legend', $attribs)) {
-            if (!array_key_exists('title', $dijitParams) || empty($dijitParams['title'])) {
-                $dijitParams['title'] = $attribs['legend'];
-            }
-            unset($attribs['legend']);
-        }
-
-        $helper      = $this->getHelper();
-        $id          = $element->getId() . '-' . $helper;
-
-        if ($view->dojo()->hasDijit($id)) {
-            trigger_error(sprintf('Duplicate dijit ID detected for id "%s; temporarily generating uniqid"', $id), E_USER_WARNING);
-            $base = $id;
-            do {
-                $id = $base . '-' . uniqid();
-            } while ($view->dojo()->hasDijit($id));
-        }
-
-        return $view->$helper($id, $content, $dijitParams, $attribs);
+        return $this->_helper;
     }
 }

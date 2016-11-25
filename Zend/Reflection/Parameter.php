@@ -33,24 +33,6 @@ class Zend_Reflection_Parameter extends ReflectionParameter
     protected $_isFromMethod = false;
 
     /**
-     * Get declaring class reflection object
-     *
-     * @param  string $reflectionClass Reflection class to use
-     * @return Zend_Reflection_Class
-     */
-    public function getDeclaringClass($reflectionClass = 'Zend_Reflection_Class')
-    {
-        $phpReflection  = parent::getDeclaringClass();
-        $zendReflection = new $reflectionClass($phpReflection->getName());
-        if (!$zendReflection instanceof Zend_Reflection_Class) {
-            require_once 'Zend/Reflection/Exception.php';
-            throw new Zend_Reflection_Exception('Invalid reflection class provided; must extend Zend_Reflection_Class');
-        }
-        unset($phpReflection);
-        return $zendReflection;
-    }
-
-    /**
      * Get class reflection object
      *
      * @param  string $reflectionClass Reflection class to use
@@ -58,8 +40,8 @@ class Zend_Reflection_Parameter extends ReflectionParameter
      */
     public function getClass($reflectionClass = 'Zend_Reflection_Class')
     {
-        $phpReflection  = parent::getClass();
-        if($phpReflection == null) {
+        $phpReflection = parent::getClass();
+        if ($phpReflection == null) {
             return null;
         }
 
@@ -70,6 +52,25 @@ class Zend_Reflection_Parameter extends ReflectionParameter
         }
         unset($phpReflection);
         return $zendReflection;
+    }
+
+    /**
+     * Get parameter type
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        if ($docblock = $this->getDeclaringFunction()->getDocblock()) {
+            $params = $docblock->getTags('param');
+
+            if (isset($params[$this->getPosition()])) {
+                return $params[$this->getPosition()]->getType();
+            }
+
+        }
+
+        return null;
     }
 
     /**
@@ -103,21 +104,20 @@ class Zend_Reflection_Parameter extends ReflectionParameter
     }
 
     /**
-     * Get parameter type
+     * Get declaring class reflection object
      *
-     * @return string
+     * @param  string $reflectionClass Reflection class to use
+     * @return Zend_Reflection_Class
      */
-    public function getType()
+    public function getDeclaringClass($reflectionClass = 'Zend_Reflection_Class')
     {
-        if ($docblock = $this->getDeclaringFunction()->getDocblock()) {
-            $params = $docblock->getTags('param');
-
-            if (isset($params[$this->getPosition()])) {
-                return $params[$this->getPosition()]->getType();
-            }
-
+        $phpReflection = parent::getDeclaringClass();
+        $zendReflection = new $reflectionClass($phpReflection->getName());
+        if (!$zendReflection instanceof Zend_Reflection_Class) {
+            require_once 'Zend/Reflection/Exception.php';
+            throw new Zend_Reflection_Exception('Invalid reflection class provided; must extend Zend_Reflection_Class');
         }
-
-        return null;
+        unset($phpReflection);
+        return $zendReflection;
     }
 }

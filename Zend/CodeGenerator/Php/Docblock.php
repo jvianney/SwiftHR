@@ -82,65 +82,6 @@ class Zend_CodeGenerator_Php_Docblock extends Zend_CodeGenerator_Php_Abstract
     }
 
     /**
-     * setShortDescription()
-     *
-     * @param string $shortDescription
-     * @return Zend_CodeGenerator_Php_Docblock
-     */
-    public function setShortDescription($shortDescription)
-    {
-        $this->_shortDescription = $shortDescription;
-        return $this;
-    }
-
-    /**
-     * getShortDescription()
-     *
-     * @return string
-     */
-    public function getShortDescription()
-    {
-        return $this->_shortDescription;
-    }
-
-    /**
-     * setLongDescription()
-     *
-     * @param string $longDescription
-     * @return Zend_CodeGenerator_Php_Docblock
-     */
-    public function setLongDescription($longDescription)
-    {
-        $this->_longDescription = $longDescription;
-        return $this;
-    }
-
-    /**
-     * getLongDescription()
-     *
-     * @return string
-     */
-    public function getLongDescription()
-    {
-        return $this->_longDescription;
-    }
-
-    /**
-     * setTags()
-     *
-     * @param array $tags
-     * @return Zend_CodeGenerator_Php_Docblock
-     */
-    public function setTags(Array $tags)
-    {
-        foreach ($tags as $tag) {
-            $this->setTag($tag);
-        }
-
-        return $this;
-    }
-
-    /**
      * setTag()
      *
      * @param array|Zend_CodeGenerator_Php_Docblock_Tag $tag
@@ -155,21 +96,11 @@ class Zend_CodeGenerator_Php_Docblock extends Zend_CodeGenerator_Php_Abstract
             throw new Zend_CodeGenerator_Php_Exception(
                 'setTag() expects either an array of method options or an '
                 . 'instance of Zend_CodeGenerator_Php_Docblock_Tag'
-                );
+            );
         }
 
         $this->_tags[] = $tag;
         return $this;
-    }
-
-    /**
-     * getTags
-     *
-     * @return array Array of Zend_CodeGenerator_Php_Docblock_Tag
-     */
-    public function getTags()
-    {
-        return $this->_tags;
     }
 
     /**
@@ -183,7 +114,7 @@ class Zend_CodeGenerator_Php_Docblock extends Zend_CodeGenerator_Php_Abstract
             return $this->_docCommentize($this->getSourceContent());
         }
 
-        $output  = '';
+        $output = '';
         if (null !== ($sd = $this->getShortDescription())) {
             $output .= $sd . self::LINE_FEED . self::LINE_FEED;
         }
@@ -219,6 +150,75 @@ class Zend_CodeGenerator_Php_Docblock extends Zend_CodeGenerator_Php_Abstract
         }
         $output .= $indent . ' */' . self::LINE_FEED;
         return $output;
+    }
+
+    /**
+     * getShortDescription()
+     *
+     * @return string
+     */
+    public function getShortDescription()
+    {
+        return $this->_shortDescription;
+    }
+
+    /**
+     * setShortDescription()
+     *
+     * @param string $shortDescription
+     * @return Zend_CodeGenerator_Php_Docblock
+     */
+    public function setShortDescription($shortDescription)
+    {
+        $this->_shortDescription = $shortDescription;
+        return $this;
+    }
+
+    /**
+     * getLongDescription()
+     *
+     * @return string
+     */
+    public function getLongDescription()
+    {
+        return $this->_longDescription;
+    }
+
+    /**
+     * setLongDescription()
+     *
+     * @param string $longDescription
+     * @return Zend_CodeGenerator_Php_Docblock
+     */
+    public function setLongDescription($longDescription)
+    {
+        $this->_longDescription = $longDescription;
+        return $this;
+    }
+
+    /**
+     * getTags
+     *
+     * @return array Array of Zend_CodeGenerator_Php_Docblock_Tag
+     */
+    public function getTags()
+    {
+        return $this->_tags;
+    }
+
+    /**
+     * setTags()
+     *
+     * @param array $tags
+     * @return Zend_CodeGenerator_Php_Docblock
+     */
+    public function setTags(Array $tags)
+    {
+        foreach ($tags as $tag) {
+            $this->setTag($tag);
+        }
+
+        return $this;
     }
 
 }

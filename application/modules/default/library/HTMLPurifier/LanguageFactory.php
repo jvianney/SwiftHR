@@ -54,7 +54,8 @@ class HTMLPurifier_LanguageFactory
      * @param $prototype Optional prototype to overload sole instance with,
      *                   or bool true to reset to default factory.
      */
-    public static function instance($prototype = null) {
+    public static function instance($prototype = null)
+    {
         static $instance = null;
         if ($prototype !== null) {
             $instance = $prototype;
@@ -69,7 +70,8 @@ class HTMLPurifier_LanguageFactory
      * Sets up the singleton, much like a constructor
      * @note Prevents people from getting this outside of the singleton
      */
-    public function setup() {
+    public function setup()
+    {
         $this->validator = new HTMLPurifier_AttrDef_Lang();
         $this->dir = HTMLPURIFIER_PREFIX . '/HTMLPurifier';
     }
@@ -80,12 +82,13 @@ class HTMLPurifier_LanguageFactory
      * @param $context Instance of HTMLPurifier_Context
      * @param $code Code to override configuration with. Private parameter.
      */
-    public function create($config, $context, $code = false) {
+    public function create($config, $context, $code = false)
+    {
 
         // validate language code
         if ($code === false) {
             $code = $this->validator->validate(
-              $config->get('Core.Language'), $config, $context
+                $config->get('Core.Language'), $config, $context
             );
         } else {
             $code = $this->validator->validate($code, $config, $context);
@@ -99,7 +102,7 @@ class HTMLPurifier_LanguageFactory
             $lang = new HTMLPurifier_Language($config, $context);
         } else {
             $class = 'HTMLPurifier_Language_' . $pcode;
-            $file  = $this->dir . '/Language/classes/' . $code . '.php';
+            $file = $this->dir . '/Language/classes/' . $code . '.php';
             if (file_exists($file) || class_exists($class, false)) {
                 $lang = new $class($config, $context);
             } else {
@@ -126,7 +129,8 @@ class HTMLPurifier_LanguageFactory
      * @note Loads the original language into cache
      * @param $code string language code
      */
-    public function getFallbackFor($code) {
+    public function getFallbackFor($code)
+    {
         $this->loadLanguage($code);
         return $this->cache[$code]['fallback'];
     }
@@ -135,7 +139,8 @@ class HTMLPurifier_LanguageFactory
      * Loads language into the cache, handles message file and fallbacks
      * @param $code string language code
      */
-    public function loadLanguage($code) {
+    public function loadLanguage($code)
+    {
         static $languages_seen = array(); // recursion guard
 
         // abort if we've already loaded it
@@ -173,12 +178,12 @@ class HTMLPurifier_LanguageFactory
             $fallback_cache = $this->cache[$fallback];
 
             // merge fallback with current language
-            foreach ( $this->keys as $key ) {
+            foreach ($this->keys as $key) {
                 if (isset($cache[$key]) && isset($fallback_cache[$key])) {
                     if (isset($this->mergeable_keys_map[$key])) {
                         $cache[$key] = $cache[$key] + $fallback_cache[$key];
                     } elseif (isset($this->mergeable_keys_list[$key])) {
-                        $cache[$key] = array_merge( $fallback_cache[$key], $cache[$key] );
+                        $cache[$key] = array_merge($fallback_cache[$key], $cache[$key]);
                     }
                 } else {
                     $cache[$key] = $fallback_cache[$key];

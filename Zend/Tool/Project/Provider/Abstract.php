@@ -59,7 +59,7 @@ abstract class Zend_Tool_Project_Provider_Abstract
 {
 
     const NO_PROFILE_THROW_EXCEPTION = true;
-    const NO_PROFILE_RETURN_FALSE    = false;
+    const NO_PROFILE_RETURN_FALSE = false;
 
     /**
      * @var bool
@@ -106,42 +106,6 @@ abstract class Zend_Tool_Project_Provider_Abstract
 
     }
 
-    public function getContextClasses()
-    {
-        return array();
-    }
-
-    /**
-     * _getProject is designed to find if there is project file in the context of where
-     * the client has been called from..   The search order is as follows..
-     *    - traversing downwards from (PWD) - current working directory
-     *    - if an enpoint variable has been registered in teh client registry - key=workingDirectory
-     *    - if an ENV variable with the key ZFPROJECT_PATH is found
-     *
-     * @param bool   $loadProfileFlag         Whether or not to throw an exception when no profile is found
-     * @param string $projectDirectory        The project directory to use to search
-     * @param bool   $searchParentDirectories Whether or not to search upper level direcotries
-     * @return Zend_Tool_Project_Profile
-     */
-    protected function _loadProfile($loadProfileFlag = self::NO_PROFILE_THROW_EXCEPTION, $projectDirectory = null, $searchParentDirectories = true)
-    {
-        $foundPath = $this->_findProfileDirectory($projectDirectory, $searchParentDirectories);
-
-        if ($foundPath == false) {
-            if ($loadProfileFlag == self::NO_PROFILE_THROW_EXCEPTION) {
-                throw new Zend_Tool_Project_Provider_Exception('A project profile was not found.');
-            } else {
-                return false;
-            }
-        }
-
-        $profile = new Zend_Tool_Project_Profile();
-        $profile->setAttribute('projectDirectory', $foundPath);
-        $profile->loadFromFile();
-        $this->_loadedProfile = $profile;
-        return $profile;
-    }
-
     protected function _findProfileDirectory($projectDirectory = null, $searchParentDirectories = true)
     {
         // use the cwd if no directory was provided
@@ -176,6 +140,78 @@ abstract class Zend_Tool_Project_Provider_Abstract
         }
 
         return false;
+    }
+
+    protected function _hasProjectProviderDirectory($pathToProfileFile)
+    {
+        // do some static analysis of the file so that we can determin whether or not to incure
+        // the cost of loading the profile before the system is fully bootstrapped
+        if (!file_exists($pathToProfileFile)) {
+            return false;
+        }
+
+        $contents = file_get_contents($pathToProfileFile);
+        if (strstr($contents, '<projectProvidersDirectory') === false) {
+            return false;
+        }
+
+        if (strstr($contents, '<projectProvidersDirectory enabled="false"')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * _getProject is designed to find if there is project file in the context of where
+     * the client has been called from..   The search order is as follows..
+     *    - traversing downwards from (PWD) - current working directory
+     *    - if an enpoint variable has been registered in teh client registry - key=workingDirectory
+     *    - if an ENV variable with the key ZFPROJECT_PATH is found
+     *
+     * @param bool $loadProfileFlag Whether or not to throw an exception when no profile is found
+     * @param string $projectDirectory The project directory to use to search
+     * @param bool $searchParentDirectories Whether or not to search upper level direcotries
+     * @return Zend_Tool_Project_Profile
+     */
+    protected function _loadProfile($loadProfileFlag = self::NO_PROFILE_THROW_EXCEPTION, $projectDirectory = null, $searchParentDirectories = true)
+    {
+        $foundPath = $this->_findProfileDirectory($projectDirectory, $searchParentDirectories);
+
+        if ($foundPath == false) {
+            if ($loadProfileFlag == self::NO_PROFILE_THROW_EXCEPTION) {
+                throw new Zend_Tool_Project_Provider_Exception('A project profile was not found.');
+            } else {
+                return false;
+            }
+        }
+
+        $profile = new Zend_Tool_Project_Profile();
+        $profile->setAttribute('projectDirectory', $foundPath);
+        $profile->loadFromFile();
+        $this->_loadedProfile = $profile;
+        return $profile;
+    }
+
+    public function getContextClasses()
+    {
+        return array();
+    }
+
+    /**
+     * _loadContextClassesIntoRegistry() - This is called by the constructor
+     * so that child providers can provide a list of contexts to load into the
+     * context repository
+     *
+     * @param array $contextClasses
+     */
+    private function _loadContextClassesIntoRegistry($contextClasses)
+    {
+        $registry = Zend_Tool_Project_Context_Repository::getInstance();
+
+        foreach ($contextClasses as $contextClass) {
+            $registry->addContextClass($contextClass);
+        }
     }
 
     /**
@@ -239,41 +275,5 @@ abstract class Zend_Tool_Project_Provider_Abstract
 
         $engine = new Zend_Tool_Project_Context_Content_Engine($storage);
         return $engine->getContent($context, $methodName, $parameters);
-    }
-
-    protected function _hasProjectProviderDirectory($pathToProfileFile)
-    {
-        // do some static analysis of the file so that we can determin whether or not to incure
-        // the cost of loading the profile before the system is fully bootstrapped
-        if (!file_exists($pathToProfileFile)) {
-            return false;
-        }
-
-        $contents = file_get_contents($pathToProfileFile);
-        if (strstr($contents, '<projectProvidersDirectory') === false) {
-            return false;
-        }
-
-        if (strstr($contents, '<projectProvidersDirectory enabled="false"')) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * _loadContextClassesIntoRegistry() - This is called by the constructor
-     * so that child providers can provide a list of contexts to load into the
-     * context repository
-     *
-     * @param array $contextClasses
-     */
-    private function _loadContextClassesIntoRegistry($contextClasses)
-    {
-        $registry = Zend_Tool_Project_Context_Repository::getInstance();
-
-        foreach ($contextClasses as $contextClass) {
-            $registry->addContextClass($contextClass);
-        }
     }
 }

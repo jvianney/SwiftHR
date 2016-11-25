@@ -41,22 +41,6 @@ class Zend_Dojo_Form_Element_TimeTextBox extends Zend_Dojo_Form_Element_DateText
     public $helper = 'TimeTextBox';
 
     /**
-     * Validate ISO 8601 time format
-     *
-     * @param  string $format
-     * @return true
-     * @throws Zend_Form_Element_Exception
-     */
-    protected function _validateIso8601($format)
-    {
-        if (!preg_match('/^T\d{2}:\d{2}:\d{2}$/', $format)) {
-            require_once 'Zend/Form/Element/Exception.php';
-            throw new Zend_Form_Element_Exception(sprintf('Invalid format "%s" provided; must match T:00:00:00 format', $format));
-        }
-        return true;
-    }
-
-    /**
      * Set time format pattern
      *
      * @param  string $pattern
@@ -64,7 +48,7 @@ class Zend_Dojo_Form_Element_TimeTextBox extends Zend_Dojo_Form_Element_DateText
      */
     public function setTimePattern($pattern)
     {
-        $this->setConstraint('timePattern', (string) $pattern);
+        $this->setConstraint('timePattern', (string)$pattern);
         return $this;
     }
 
@@ -86,10 +70,26 @@ class Zend_Dojo_Form_Element_TimeTextBox extends Zend_Dojo_Form_Element_DateText
      */
     public function setClickableIncrement($format)
     {
-        $format = (string) $format;
+        $format = (string)$format;
         $this->_validateIso8601($format);
         $this->setConstraint('clickableIncrement', $format);
         return $this;
+    }
+
+    /**
+     * Validate ISO 8601 time format
+     *
+     * @param  string $format
+     * @return true
+     * @throws Zend_Form_Element_Exception
+     */
+    protected function _validateIso8601($format)
+    {
+        if (!preg_match('/^T\d{2}:\d{2}:\d{2}$/', $format)) {
+            require_once 'Zend/Form/Element/Exception.php';
+            throw new Zend_Form_Element_Exception(sprintf('Invalid format "%s" provided; must match T:00:00:00 format', $format));
+        }
+        return true;
     }
 
     /**
@@ -110,7 +110,7 @@ class Zend_Dojo_Form_Element_TimeTextBox extends Zend_Dojo_Form_Element_DateText
      */
     public function setVisibleIncrement($format)
     {
-        $format = (string) $format;
+        $format = (string)$format;
         $this->_validateIso8601($format);
         $this->setConstraint('visibleIncrement', $format);
         return $this;
@@ -134,7 +134,7 @@ class Zend_Dojo_Form_Element_TimeTextBox extends Zend_Dojo_Form_Element_DateText
      */
     public function setVisibleRange($format)
     {
-        $format = (string) $format;
+        $format = (string)$format;
         $this->_validateIso8601($format);
         $this->setConstraint('visibleRange', $format);
         return $this;

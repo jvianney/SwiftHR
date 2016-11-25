@@ -111,22 +111,6 @@ class ZendX_Db_Statement_Firebird extends Zend_Db_Statement
     }
 
     /**
-     * Binds a parameter to the specified variable name.
-     *
-     * @param mixed $parameter Name the parameter, either integer or string.
-     * @param mixed $variable  Reference to PHP variable containing the value.
-     * @param mixed $type      OPTIONAL Datatype of SQL parameter.
-     * @param mixed $length    OPTIONAL Length of SQL parameter.
-     * @param mixed $options   OPTIONAL Other options.
-     * @return bool
-     * @throws ZendX_Db_Statement_Firebird_Exception
-     */
-    protected function _bindParam($parameter, &$variable, $type = null, $length = null, $options = null)
-    {
-        return true;
-    }
-
-    /**
      * Closes the cursor and the statement.
      *
      * @return bool
@@ -181,7 +165,7 @@ class ZendX_Db_Statement_Firebird extends Zend_Db_Statement
         if ($this->_stmtPrepared || $this->_stmtResult) {
             return ibase_errcode();
         }
-        return false;        
+        return false;
     }
 
     /**
@@ -234,20 +218,20 @@ class ZendX_Db_Statement_Firebird extends Zend_Db_Statement
         if ($retval === false) {
             $last_error = ibase_errmsg();
             $this->_stmtRowCount = 0;
-        }        
-        
+        }
+
         //Firebird php ibase extension, auto-commit is not after each call, but at
         //end of script. Disabled when transaction is active
         if (!$this->_adapter->getTransaction())
             ibase_commit_ret();
-            
+
         if ($retval === false) {
             /**
              * @see ZendX_Db_Statement_Firebird_Exception
              */
             require_once 'ZendX/Db/Statement/Firebird/Exception.php';
             throw new ZendX_Db_Statement_Firebird_Exception("Firebird statement execute error : " . $last_error);
-        }               
+        }
 
         // statements that have no result set do not return metadata
         if (is_resource($this->_stmtResult)) {
@@ -283,7 +267,7 @@ class ZendX_Db_Statement_Firebird extends Zend_Db_Statement
     /**
      * Fetches a row from the result set.
      *
-     * @param int $style  OPTIONAL Fetch mode for this fetch operation.
+     * @param int $style OPTIONAL Fetch mode for this fetch operation.
      * @param int $cursor OPTIONAL Absolute, relative, or other.
      * @param int $offset OPTIONAL Number for absolute or relative cursors.
      * @return mixed Array, object, or scalar depending on fetch mode.
@@ -298,7 +282,7 @@ class ZendX_Db_Statement_Firebird extends Zend_Db_Statement
         if ($style === null) {
             $style = $this->_fetchMode;
         }
-        
+
         switch ($style) {
             case Zend_Db::FETCH_NUM:
                 $row = ibase_fetch_row($this->_stmtResult, IBASE_TEXT);
@@ -316,7 +300,7 @@ class ZendX_Db_Statement_Firebird extends Zend_Db_Statement
                 break;
             case Zend_Db::FETCH_BOUND:
                 $row = ibase_fetch_assoc($this->_stmtResult, IBASE_TEXT);
-                if ($row !== false){
+                if ($row !== false) {
                     $row = array_merge($row, array_values($row));
                     $row = $this->_fetchBound($row);
                 }
@@ -350,7 +334,7 @@ class ZendX_Db_Statement_Firebird extends Zend_Db_Statement
          * @see ZendX_Db_Statement_Firebird_Exception
          */
         require_once 'ZendX/Db/Statement/Firebird/Exception.php';
-        throw new ZendX_Db_Statement_Firebird_Exception(__FUNCTION__.'() is not implemented');
+        throw new ZendX_Db_Statement_Firebird_Exception(__FUNCTION__ . '() is not implemented');
     }
 
     /**
@@ -364,6 +348,22 @@ class ZendX_Db_Statement_Firebird extends Zend_Db_Statement
     public function rowCount()
     {
         return $this->_stmtRowCount ? $this->_stmtRowCount : 0;
+    }
+
+    /**
+     * Binds a parameter to the specified variable name.
+     *
+     * @param mixed $parameter Name the parameter, either integer or string.
+     * @param mixed $variable Reference to PHP variable containing the value.
+     * @param mixed $type OPTIONAL Datatype of SQL parameter.
+     * @param mixed $length OPTIONAL Length of SQL parameter.
+     * @param mixed $options OPTIONAL Other options.
+     * @return bool
+     * @throws ZendX_Db_Statement_Firebird_Exception
+     */
+    protected function _bindParam($parameter, &$variable, $type = null, $length = null, $options = null)
+    {
+        return true;
     }
 
 }

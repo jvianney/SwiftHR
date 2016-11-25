@@ -7,7 +7,8 @@
 class HTMLPurifier_AttrDef_Lang extends HTMLPurifier_AttrDef
 {
 
-    public function validate($string, $config, $context) {
+    public function validate($string, $config, $context)
+    {
 
         $string = trim($string);
         if (!$string) return false;
@@ -23,15 +24,15 @@ class HTMLPurifier_AttrDef_Lang extends HTMLPurifier_AttrDef
             case 0:
                 return false;
             case 1:
-                if (! ($subtags[0] == 'x' || $subtags[0] == 'i') ) {
+                if (!($subtags[0] == 'x' || $subtags[0] == 'i')) {
                     return false;
                 }
                 break;
             case 2:
             case 3:
-                if (! ctype_alpha($subtags[0]) ) {
+                if (!ctype_alpha($subtags[0])) {
                     return false;
-                } elseif (! ctype_lower($subtags[0]) ) {
+                } elseif (!ctype_lower($subtags[0])) {
                     $subtags[0] = strtolower($subtags[0]);
                 }
                 break;

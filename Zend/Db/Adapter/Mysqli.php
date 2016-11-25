@@ -64,22 +64,22 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
+        Zend_Db::INT_TYPE => Zend_Db::INT_TYPE,
         Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INT'                => Zend_Db::INT_TYPE,
-        'INTEGER'            => Zend_Db::INT_TYPE,
-        'MEDIUMINT'          => Zend_Db::INT_TYPE,
-        'SMALLINT'           => Zend_Db::INT_TYPE,
-        'TINYINT'            => Zend_Db::INT_TYPE,
-        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-        'SERIAL'             => Zend_Db::BIGINT_TYPE,
-        'DEC'                => Zend_Db::FLOAT_TYPE,
-        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-        'DOUBLE'             => Zend_Db::FLOAT_TYPE,
-        'DOUBLE PRECISION'   => Zend_Db::FLOAT_TYPE,
-        'FIXED'              => Zend_Db::FLOAT_TYPE,
-        'FLOAT'              => Zend_Db::FLOAT_TYPE
+        Zend_Db::FLOAT_TYPE => Zend_Db::FLOAT_TYPE,
+        'INT' => Zend_Db::INT_TYPE,
+        'INTEGER' => Zend_Db::INT_TYPE,
+        'MEDIUMINT' => Zend_Db::INT_TYPE,
+        'SMALLINT' => Zend_Db::INT_TYPE,
+        'TINYINT' => Zend_Db::INT_TYPE,
+        'BIGINT' => Zend_Db::BIGINT_TYPE,
+        'SERIAL' => Zend_Db::BIGINT_TYPE,
+        'DEC' => Zend_Db::FLOAT_TYPE,
+        'DECIMAL' => Zend_Db::FLOAT_TYPE,
+        'DOUBLE' => Zend_Db::FLOAT_TYPE,
+        'DOUBLE PRECISION' => Zend_Db::FLOAT_TYPE,
+        'FIXED' => Zend_Db::FLOAT_TYPE,
+        'FLOAT' => Zend_Db::FLOAT_TYPE
     );
 
     /**
@@ -93,22 +93,6 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      * @var string
      */
     protected $_defaultStmtClass = 'Zend_Db_Statement_Mysqli';
-
-    /**
-     * Quote a raw string.
-     *
-     * @param mixed $value Raw string
-     *
-     * @return string           Quoted string
-     */
-    protected function _quote($value)
-    {
-        if (is_int($value) || is_float($value)) {
-            return $value;
-        }
-        $this->_connect();
-        return "'" . $this->_connection->real_escape_string($value) . "'";
-    }
 
     /**
      * Returns the symbol the adapter uses for delimiting identifiers.
@@ -207,13 +191,13 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
         $desc = array();
 
         $row_defaults = array(
-            'Length'          => null,
-            'Scale'           => null,
-            'Precision'       => null,
-            'Unsigned'        => null,
-            'Primary'         => false,
+            'Length' => null,
+            'Scale' => null,
+            'Precision' => null,
+            'Unsigned' => null,
+            'Primary' => false,
             'PrimaryPosition' => null,
-            'Identity'        => false
+            'Identity' => false
         );
         $i = 1;
         $p = 1;
@@ -251,24 +235,50 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
                 ++$p;
             }
             $desc[$this->foldCase($row['Field'])] = array(
-                'SCHEMA_NAME'      => null, // @todo
-                'TABLE_NAME'       => $this->foldCase($tableName),
-                'COLUMN_NAME'      => $this->foldCase($row['Field']),
-                'COLUMN_POSITION'  => $i,
-                'DATA_TYPE'        => $row['Type'],
-                'DEFAULT'          => $row['Default'],
-                'NULLABLE'         => (bool) ($row['Null'] == 'YES'),
-                'LENGTH'           => $row['Length'],
-                'SCALE'            => $row['Scale'],
-                'PRECISION'        => $row['Precision'],
-                'UNSIGNED'         => $row['Unsigned'],
-                'PRIMARY'          => $row['Primary'],
+                'SCHEMA_NAME' => null, // @todo
+                'TABLE_NAME' => $this->foldCase($tableName),
+                'COLUMN_NAME' => $this->foldCase($row['Field']),
+                'COLUMN_POSITION' => $i,
+                'DATA_TYPE' => $row['Type'],
+                'DEFAULT' => $row['Default'],
+                'NULLABLE' => (bool)($row['Null'] == 'YES'),
+                'LENGTH' => $row['Length'],
+                'SCALE' => $row['Scale'],
+                'PRECISION' => $row['Precision'],
+                'UNSIGNED' => $row['Unsigned'],
+                'PRIMARY' => $row['Primary'],
                 'PRIMARY_POSITION' => $row['PrimaryPosition'],
-                'IDENTITY'         => $row['Identity']
+                'IDENTITY' => $row['Identity']
             );
             ++$i;
         }
         return $desc;
+    }
+
+    /**
+     * Prepare a statement and return a PDOStatement-like object.
+     *
+     * @param  string $sql SQL query
+     * @return Zend_Db_Statement_Mysqli
+     */
+    public function prepare($sql)
+    {
+        $this->_connect();
+        if ($this->_stmt) {
+            $this->_stmt->close();
+        }
+        $stmtClass = $this->_defaultStmtClass;
+        if (!class_exists($stmtClass)) {
+            require_once 'Zend/Loader.php';
+            Zend_Loader::loadClass($stmtClass);
+        }
+        $stmt = new $stmtClass($this, $sql);
+        if ($stmt === false) {
+            return false;
+        }
+        $stmt->setFetchMode($this->_fetchMode);
+        $this->_stmt = $stmt;
+        return $stmt;
     }
 
     /**
@@ -292,20 +302,20 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
         }
 
         if (isset($this->_config['port'])) {
-            $port = (integer) $this->_config['port'];
+            $port = (integer)$this->_config['port'];
         } else {
             $port = null;
         }
 
         $this->_connection = mysqli_init();
 
-        if(!empty($this->_config['driver_options'])) {
-            foreach($this->_config['driver_options'] as $option=>$value) {
-                if(is_string($option)) {
+        if (!empty($this->_config['driver_options'])) {
+            foreach ($this->_config['driver_options'] as $option => $value) {
+                if (is_string($option)) {
                     // Suppress warnings here
                     // Ignore it if it's not a valid constant
                     $option = @constant(strtoupper($option));
-                    if($option === null)
+                    if ($option === null)
                         continue;
                 }
                 mysqli_options($this->_connection, $option, $value);
@@ -339,16 +349,6 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
     }
 
     /**
-     * Test if a connection is active
-     *
-     * @return boolean
-     */
-    public function isConnected()
-    {
-        return ((bool) ($this->_connection instanceof mysqli));
-    }
-
-    /**
      * Force the connection to close.
      *
      * @return void
@@ -362,29 +362,13 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
     }
 
     /**
-     * Prepare a statement and return a PDOStatement-like object.
+     * Test if a connection is active
      *
-     * @param  string  $sql  SQL query
-     * @return Zend_Db_Statement_Mysqli
+     * @return boolean
      */
-    public function prepare($sql)
+    public function isConnected()
     {
-        $this->_connect();
-        if ($this->_stmt) {
-            $this->_stmt->close();
-        }
-        $stmtClass = $this->_defaultStmtClass;
-        if (!class_exists($stmtClass)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($stmtClass);
-        }
-        $stmt = new $stmtClass($this, $sql);
-        if ($stmt === false) {
-            return false;
-        }
-        $stmt->setFetchMode($this->_fetchMode);
-        $this->_stmt = $stmt;
-        return $stmt;
+        return ((bool)($this->_connection instanceof mysqli));
     }
 
     /**
@@ -399,50 +383,15 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      *
      * MySQL does not support sequences, so $tableName and $primaryKey are ignored.
      *
-     * @param string $tableName   OPTIONAL Name of table.
-     * @param string $primaryKey  OPTIONAL Name of primary key column.
+     * @param string $tableName OPTIONAL Name of table.
+     * @param string $primaryKey OPTIONAL Name of primary key column.
      * @return string
      * @todo Return value should be int?
      */
     public function lastInsertId($tableName = null, $primaryKey = null)
     {
         $mysqli = $this->_connection;
-        return (string) $mysqli->insert_id;
-    }
-
-    /**
-     * Begin a transaction.
-     *
-     * @return void
-     */
-    protected function _beginTransaction()
-    {
-        $this->_connect();
-        $this->_connection->autocommit(false);
-    }
-
-    /**
-     * Commit a transaction.
-     *
-     * @return void
-     */
-    protected function _commit()
-    {
-        $this->_connect();
-        $this->_connection->commit();
-        $this->_connection->autocommit(true);
-    }
-
-    /**
-     * Roll-back a transaction.
-     *
-     * @return void
-     */
-    protected function _rollBack()
-    {
-        $this->_connect();
-        $this->_connection->rollback();
-        $this->_connection->autocommit(true);
+        return (string)$mysqli->insert_id;
     }
 
     /**
@@ -535,15 +484,66 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
     /**
      * Retrieve server version in PHP style
      *
-     *@return string
+     * @return string
      */
     public function getServerVersion()
     {
         $this->_connect();
         $version = $this->_connection->server_version;
-        $major = (int) ($version / 10000);
-        $minor = (int) ($version % 10000 / 100);
-        $revision = (int) ($version % 100);
+        $major = (int)($version / 10000);
+        $minor = (int)($version % 10000 / 100);
+        $revision = (int)($version % 100);
         return $major . '.' . $minor . '.' . $revision;
+    }
+
+    /**
+     * Quote a raw string.
+     *
+     * @param mixed $value Raw string
+     *
+     * @return string           Quoted string
+     */
+    protected function _quote($value)
+    {
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+        $this->_connect();
+        return "'" . $this->_connection->real_escape_string($value) . "'";
+    }
+
+    /**
+     * Begin a transaction.
+     *
+     * @return void
+     */
+    protected function _beginTransaction()
+    {
+        $this->_connect();
+        $this->_connection->autocommit(false);
+    }
+
+    /**
+     * Commit a transaction.
+     *
+     * @return void
+     */
+    protected function _commit()
+    {
+        $this->_connect();
+        $this->_connection->commit();
+        $this->_connection->autocommit(true);
+    }
+
+    /**
+     * Roll-back a transaction.
+     *
+     * @return void
+     */
+    protected function _rollBack()
+    {
+        $this->_connect();
+        $this->_connection->rollback();
+        $this->_connection->autocommit(true);
     }
 }

@@ -1,8 +1,8 @@
-<?php 
-/********************************************************************************* 
+<?php
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -19,8 +19,8 @@
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
 
-	foreach ($this->targetcurrencydata as $target) {
-	$this->currencyconverterform->targetcurrency->addMultiOption($target['id'].'!@#'.$target['targetcurr'],utf8_encode($target['targetcurr']));
-	}
-	echo $this->currencyconverterform->targetcurrency;
+foreach ($this->targetcurrencydata as $target) {
+    $this->currencyconverterform->targetcurrency->addMultiOption($target['id'] . '!@#' . $target['targetcurr'], utf8_encode($target['targetcurr']));
+}
+echo $this->currencyconverterform->targetcurrency;
 ?>  

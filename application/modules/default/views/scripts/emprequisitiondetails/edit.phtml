@@ -1,8 +1,8 @@
-<?php 
-/********************************************************************************* 
+<?php
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -21,25 +21,25 @@
 ?>
 
 <?php
-$baseUrl = $this->serverUrl().$this->baseUrl();
+$baseUrl = $this->serverUrl() . $this->baseUrl();
 
-if(!empty($this->employeedata))
- {
- 	echo $this->employeedetails($this->employeedata,'edit',$this->id); 
- } 
+if (!empty($this->employeedata)) {
+    echo $this->employeedetails($this->employeedata, 'edit', $this->id);
+}
 ?>
 
-<div class="right-block-data"> 
-	<div id="error_message" style="display:none;"></div>
-		<div class="ml-alert-1-info m1-info-set">
-			<div class="style-1-icon info"></div>Feature will be available soon.
-		</div>	
-</div>	
+<div class="right-block-data">
+    <div id="error_message" style="display:none;"></div>
+    <div class="ml-alert-1-info m1-info-set">
+        <div class="style-1-icon info"></div>
+        Feature will be available soon.
+    </div>
+</div>
 </div>
 <script type='text/javascript'>
-$(document).ready(function(){
-    $("#emp_reqdetails").addClass('active');
-    $("#emp_reqdetails").removeAttr("onclick");
+    $(document).ready(function () {
+        $("#emp_reqdetails").addClass('active');
+        $("#emp_reqdetails").removeAttr("onclick");
 
-});
+    });
 </script>

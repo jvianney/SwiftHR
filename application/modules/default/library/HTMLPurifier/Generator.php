@@ -11,36 +11,34 @@ class HTMLPurifier_Generator
 {
 
     /**
+     * Configuration for the generator
+     */
+    protected $config;
+    /**
      * Whether or not generator should produce XML output
      */
     private $_xhtml = true;
-
     /**
      * :HACK: Whether or not generator should comment the insides of <script> tags
      */
     private $_scriptFix = false;
-
     /**
      * Cache of HTMLDefinition during HTML output to determine whether or
      * not attributes should be minimized.
      */
     private $_def;
-
     /**
      * Cache of %Output.SortAttr
      */
     private $_sortAttr;
-
     /**
      * Cache of %Output.FlashCompat
      */
     private $_flashCompat;
-
     /**
      * Cache of %Output.FixInnerHTML
      */
     private $_innerHTMLFix;
-
     /**
      * Stack for keeping track of object information when outputting IE
      * compatibility code.
@@ -48,15 +46,11 @@ class HTMLPurifier_Generator
     private $_flashStack = array();
 
     /**
-     * Configuration for the generator
-     */
-    protected $config;
-
-    /**
      * @param $config Instance of HTMLPurifier_Config
      * @param $context Instance of HTMLPurifier_Context
      */
-    public function __construct($config, $context) {
+    public function __construct($config, $context)
+    {
         $this->config = $config;
         $this->_scriptFix = $config->get('Output.CommentScriptContents');
         $this->_innerHTMLFix = $config->get('Output.FixInnerHTML');
@@ -72,14 +66,16 @@ class HTMLPurifier_Generator
      * @param $config HTMLPurifier_Config object
      * @return Generated HTML
      */
-    public function generateFromTokens($tokens) {
+    public function generateFromTokens($tokens)
+    {
         if (!$tokens) return '';
 
         // Basic algorithm
         $html = '';
         for ($i = 0, $size = count($tokens); $i < $size; $i++) {
             if ($this->_scriptFix && $tokens[$i]->name === 'script'
-                && $i + 2 < $size && $tokens[$i+2] instanceof HTMLPurifier_Token_End) {
+                && $i + 2 < $size && $tokens[$i + 2] instanceof HTMLPurifier_Token_End
+            ) {
                 // script special case
                 // the contents of the script block must be ONE token
                 // for this to work.
@@ -93,14 +89,14 @@ class HTMLPurifier_Generator
         if (extension_loaded('tidy') && $this->config->get('Output.TidyFormat')) {
             $tidy = new Tidy;
             $tidy->parseString($html, array(
-               'indent'=> true,
-               'output-xhtml' => $this->_xhtml,
-               'show-body-only' => true,
-               'indent-spaces' => 2,
-               'wrap' => 68,
+                'indent' => true,
+                'output-xhtml' => $this->_xhtml,
+                'show-body-only' => true,
+                'indent-spaces' => 2,
+                'wrap' => 68,
             ), 'utf8');
             $tidy->cleanRepair();
-            $html = (string) $tidy; // explicit cast necessary
+            $html = (string)$tidy; // explicit cast necessary
         }
 
         // Normalize newlines to system defined value
@@ -117,7 +113,8 @@ class HTMLPurifier_Generator
      * @param $token HTMLPurifier_Token object.
      * @return Generated HTML
      */
-    public function generateFromToken($token) {
+    public function generateFromToken($token)
+    {
         if (!$token instanceof HTMLPurifier_Token) {
             trigger_error('Cannot generate HTML from non-HTMLPurifier_Token object', E_USER_WARNING);
             return '';
@@ -145,11 +142,11 @@ class HTMLPurifier_Generator
 
         } elseif ($token instanceof HTMLPurifier_Token_Empty) {
             if ($this->_flashCompat && $token->name == "param" && !empty($this->_flashStack)) {
-                $this->_flashStack[count($this->_flashStack)-1]->param[$token->attr['name']] = $token->attr['value'];
+                $this->_flashStack[count($this->_flashStack) - 1]->param[$token->attr['name']] = $token->attr['value'];
             }
             $attr = $this->generateAttributes($token->attr, $token->name);
-             return '<' . $token->name . ($attr ? ' ' : '') . $attr .
-                ( $this->_xhtml ? ' /': '' ) // <br /> v. <br>
+            return '<' . $token->name . ($attr ? ' ' : '') . $attr .
+                ($this->_xhtml ? ' /' : '') // <br /> v. <br>
                 . '>';
 
         } elseif ($token instanceof HTMLPurifier_Token_Text) {
@@ -164,18 +161,6 @@ class HTMLPurifier_Generator
     }
 
     /**
-     * Special case processor for the contents of script tags
-     * @warning This runs into problems if there's already a literal
-     *          --> somewhere inside the script contents.
-     */
-    public function generateScriptFromToken($token) {
-        if (!$token instanceof HTMLPurifier_Token_Text) return $this->generateFromToken($token);
-        // Thanks <http://lachy.id.au/log/2005/05/script-comments>
-        $data = preg_replace('#//\s*$#', '', $token->data);
-        return '<!--//--><![CDATA[//><!--' . "\n" . trim($data) . "\n" . '//--><!]]>';
-    }
-
-    /**
      * Generates attribute declarations from attribute array.
      * @note This does not include the leading or trailing space.
      * @param $assoc_array_of_attributes Attribute array
@@ -183,7 +168,8 @@ class HTMLPurifier_Generator
      *        attribute minimization.
      * @return Generate HTML fragment for insertion.
      */
-    public function generateAttributes($assoc_array_of_attributes, $element = false) {
+    public function generateAttributes($assoc_array_of_attributes, $element = false)
+    {
         $html = '';
         if ($this->_sortAttr) ksort($assoc_array_of_attributes);
         foreach ($assoc_array_of_attributes as $key => $value) {
@@ -227,7 +213,7 @@ class HTMLPurifier_Generator
                     }
                 }
             }
-            $html .= $key.'="'.$this->escape($value).'" ';
+            $html .= $key . '="' . $this->escape($value) . '" ';
         }
         return rtrim($html);
     }
@@ -242,11 +228,25 @@ class HTMLPurifier_Generator
      *               permissible for non-attribute output.
      * @return String escaped data.
      */
-    public function escape($string, $quote = null) {
+    public function escape($string, $quote = null)
+    {
         // Workaround for APC bug on Mac Leopard reported by sidepodcast
         // http://htmlpurifier.org/phorum/read.php?3,4823,4846
         if ($quote === null) $quote = ENT_COMPAT;
         return htmlspecialchars($string, $quote, 'UTF-8');
+    }
+
+    /**
+     * Special case processor for the contents of script tags
+     * @warning This runs into problems if there's already a literal
+     *          --> somewhere inside the script contents.
+     */
+    public function generateScriptFromToken($token)
+    {
+        if (!$token instanceof HTMLPurifier_Token_Text) return $this->generateFromToken($token);
+        // Thanks <http://lachy.id.au/log/2005/05/script-comments>
+        $data = preg_replace('#//\s*$#', '', $token->data);
+        return '<!--//--><![CDATA[//><!--' . "\n" . trim($data) . "\n" . '//--><!]]>';
     }
 
 }

@@ -43,8 +43,8 @@ class Zend_Cache_Backend
      */
     protected $_directives = array(
         'lifetime' => 3600,
-        'logging'  => false,
-        'logger'   => null
+        'logging' => false,
+        'logger' => null
     );
 
     /**
@@ -65,6 +65,25 @@ class Zend_Cache_Backend
     {
         while (list($name, $value) = each($options)) {
             $this->setOption($name, $value);
+        }
+    }
+
+    /**
+     * Set an option
+     *
+     * @param  string $name
+     * @param  mixed $value
+     * @throws Zend_Cache_Exception
+     * @return void
+     */
+    public function setOption($name, $value)
+    {
+        if (!is_string($name)) {
+            Zend_Cache::throwException("Incorrect option name : $name");
+        }
+        $name = strtolower($name);
+        if (array_key_exists($name, $this->_options)) {
+            $this->_options[$name] = $value;
         }
     }
 
@@ -93,22 +112,33 @@ class Zend_Cache_Backend
     }
 
     /**
-     * Set an option
+     * Make sure if we enable logging that the Zend_Log class
+     * is available.
+     * Create a default log object if none is set.
      *
-     * @param  string $name
-     * @param  mixed  $value
      * @throws Zend_Cache_Exception
      * @return void
      */
-    public function setOption($name, $value)
+    protected function _loggerSanity()
     {
-        if (!is_string($name)) {
-            Zend_Cache::throwException("Incorrect option name : $name");
+        if (!isset($this->_directives['logging']) || !$this->_directives['logging']) {
+            return;
         }
-        $name = strtolower($name);
-        if (array_key_exists($name, $this->_options)) {
-            $this->_options[$name] = $value;
+
+        if (isset($this->_directives['logger'])) {
+            if ($this->_directives['logger'] instanceof Zend_Log) {
+                return;
+            }
+            Zend_Cache::throwException('Logger object is not an instance of Zend_Log class.');
         }
+
+        // Create a default logger to the standard output stream
+        require_once 'Zend/Log.php';
+        require_once 'Zend/Log/Writer/Stream.php';
+        require_once 'Zend/Log/Filter/Priority.php';
+        $logger = new Zend_Log(new Zend_Log_Writer_Stream('php://output'));
+        $logger->addFilter(new Zend_Log_Filter_Priority(Zend_Log::WARN, '<='));
+        $this->_directives['logger'] = $logger;
     }
 
     /**
@@ -211,36 +241,6 @@ class Zend_Cache_Backend
             }
         }
         return false;
-    }
-
-    /**
-     * Make sure if we enable logging that the Zend_Log class
-     * is available.
-     * Create a default log object if none is set.
-     *
-     * @throws Zend_Cache_Exception
-     * @return void
-     */
-    protected function _loggerSanity()
-    {
-        if (!isset($this->_directives['logging']) || !$this->_directives['logging']) {
-            return;
-        }
-
-        if (isset($this->_directives['logger'])) {
-            if ($this->_directives['logger'] instanceof Zend_Log) {
-                return;
-            }
-            Zend_Cache::throwException('Logger object is not an instance of Zend_Log class.');
-        }
-
-        // Create a default logger to the standard output stream
-        require_once 'Zend/Log.php';
-        require_once 'Zend/Log/Writer/Stream.php';
-        require_once 'Zend/Log/Filter/Priority.php';
-        $logger = new Zend_Log(new Zend_Log_Writer_Stream('php://output'));
-        $logger->addFilter(new Zend_Log_Filter_Priority(Zend_Log::WARN, '<='));
-        $this->_directives['logger'] = $logger;
     }
 
     /**

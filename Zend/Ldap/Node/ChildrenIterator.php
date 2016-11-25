@@ -66,17 +66,6 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
     }
 
     /**
-     * Return the current child.
-     * Implements Iterator
-     *
-     * @return Zend_Ldap_Node
-     */
-    public function current()
-    {
-        return current($this->_data);
-    }
-
-    /**
      * Return the child'd RDN.
      * Implements Iterator
      *
@@ -114,7 +103,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      */
     public function valid()
     {
-        return (current($this->_data)!==false);
+        return (current($this->_data) !== false);
     }
 
     /**
@@ -130,6 +119,17 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
         } else {
             return false;
         }
+    }
+
+    /**
+     * Return the current child.
+     * Implements Iterator
+     *
+     * @return Zend_Ldap_Node
+     */
+    public function current()
+    {
+        return current($this->_data);
     }
 
     /**
@@ -181,7 +181,9 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      * @param  string $name
      * @return null
      */
-    public function offsetUnset($name) { }
+    public function offsetUnset($name)
+    {
+    }
 
     /**
      * Does nothing.
@@ -191,7 +193,9 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      * @param  mixed $value
      * @return null
      */
-    public function offsetSet($name, $value) { }
+    public function offsetSet($name, $value)
+    {
+    }
 
     /**
      * Get all children as an array

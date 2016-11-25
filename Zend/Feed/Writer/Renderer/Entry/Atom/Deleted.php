@@ -40,7 +40,7 @@ class Zend_Feed_Writer_Renderer_Entry_Atom_Deleted
      * @param  Zend_Feed_Writer_Deleted $container
      * @return void
      */
-    public function __construct (Zend_Feed_Writer_Deleted $container)
+    public function __construct(Zend_Feed_Writer_Deleted $container)
     {
         parent::__construct($container);
     }
@@ -64,25 +64,6 @@ class Zend_Feed_Writer_Renderer_Entry_Atom_Deleted
         $this->_setComment($this->_dom, $entry);
 
         return $this;
-    }
-
-    /**
-     * Set tombstone comment
-     *
-     * @param  DOMDocument $dom
-     * @param  DOMElement $root
-     * @return void
-     */
-    protected function _setComment(DOMDocument $dom, DOMElement $root)
-    {
-        if(!$this->getDataContainer()->getComment()) {
-            return;
-        }
-        $c = $dom->createElement('at:comment');
-        $root->appendChild($c);
-        $c->setAttribute('type', 'html');
-        $cdata = $dom->createCDATASection($this->getDataContainer()->getComment());
-        $c->appendChild($cdata);
     }
 
     /**
@@ -116,6 +97,25 @@ class Zend_Feed_Writer_Renderer_Entry_Atom_Deleted
             $text = $dom->createTextNode($data['uri']);
             $uri->appendChild($text);
         }
+    }
+
+    /**
+     * Set tombstone comment
+     *
+     * @param  DOMDocument $dom
+     * @param  DOMElement $root
+     * @return void
+     */
+    protected function _setComment(DOMDocument $dom, DOMElement $root)
+    {
+        if (!$this->getDataContainer()->getComment()) {
+            return;
+        }
+        $c = $dom->createElement('at:comment');
+        $root->appendChild($c);
+        $c->setAttribute('type', 'html');
+        $cdata = $dom->createCDATASection($this->getDataContainer()->getComment());
+        $c->appendChild($cdata);
     }
 
 }

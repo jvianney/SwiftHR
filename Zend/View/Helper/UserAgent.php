@@ -54,18 +54,6 @@ class Zend_View_Helper_UserAgent extends Zend_View_Helper_Abstract
     }
 
     /**
-     * Set UserAgent instance
-     *
-     * @param  Zend_Http_UserAgent $userAgent
-     * @return Zend_View_Helper_UserAgent
-     */
-    public function setUserAgent(Zend_Http_UserAgent $userAgent)
-    {
-        $this->_userAgent = $userAgent;
-        return $this;
-    }
-
-    /**
      * Retrieve UserAgent instance
      *
      * If none set, instantiates one using no configuration
@@ -79,5 +67,17 @@ class Zend_View_Helper_UserAgent extends Zend_View_Helper_Abstract
             $this->setUserAgent(new Zend_Http_UserAgent());
         }
         return $this->_userAgent;
+    }
+
+    /**
+     * Set UserAgent instance
+     *
+     * @param  Zend_Http_UserAgent $userAgent
+     * @return Zend_View_Helper_UserAgent
+     */
+    public function setUserAgent(Zend_Http_UserAgent $userAgent)
+    {
+        $this->_userAgent = $userAgent;
+        return $this;
     }
 }

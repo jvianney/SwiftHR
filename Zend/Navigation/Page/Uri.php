@@ -44,22 +44,24 @@ class Zend_Navigation_Page_Uri extends Zend_Navigation_Page
     protected $_uri = null;
 
     /**
-     * Sets page URI
+     * Returns href for this page
      *
-     * @param  string $uri                page URI, must a string or null
-     * @return Zend_Navigation_Page_Uri   fluent interface, returns self
-     * @throws Zend_Navigation_Exception  if $uri is invalid
+     * @return string
      */
-    public function setUri($uri)
+    public function getHref()
     {
-        if (null !== $uri && !is_string($uri)) {
-            require_once 'Zend/Navigation/Exception.php';
-            throw new Zend_Navigation_Exception(
-                    'Invalid argument: $uri must be a string or null');
+        $uri = $this->getUri();
+
+        $fragment = $this->getFragment();
+        if (null !== $fragment) {
+            if ('#' == substr($uri, -1)) {
+                return $uri . $fragment;
+            } else {
+                return $uri . '#' . $fragment;
+            }
         }
 
-        $this->_uri = $uri;
-        return $this;
+        return $uri;
     }
 
     /**
@@ -73,24 +75,22 @@ class Zend_Navigation_Page_Uri extends Zend_Navigation_Page
     }
 
     /**
-     * Returns href for this page
+     * Sets page URI
      *
-     * @return string
+     * @param  string $uri page URI, must a string or null
+     * @return Zend_Navigation_Page_Uri   fluent interface, returns self
+     * @throws Zend_Navigation_Exception  if $uri is invalid
      */
-    public function getHref()
+    public function setUri($uri)
     {
-        $uri = $this->getUri();
-        
-        $fragment = $this->getFragment();       
-        if (null !== $fragment) {
-            if ('#' == substr($uri, -1)) {
-                return $uri . $fragment;
-            } else {                
-                return $uri . '#' . $fragment;
-            }
+        if (null !== $uri && !is_string($uri)) {
+            require_once 'Zend/Navigation/Exception.php';
+            throw new Zend_Navigation_Exception(
+                'Invalid argument: $uri must be a string or null');
         }
-        
-        return $uri;
+
+        $this->_uri = $uri;
+        return $this;
     }
 
     // Public methods:

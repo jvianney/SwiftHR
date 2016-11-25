@@ -40,6 +40,16 @@ require_once 'Zend/Loader.php';
 class Zend_Controller_Action_HelperBroker
 {
     /**
+     * @var Zend_Loader_PluginLoader_Interface
+     */
+    protected static $_pluginLoader;
+    /**
+     * $_helpers - Helper array
+     *
+     * @var Zend_Controller_Action_HelperBroker_PriorityStack
+     */
+    protected static $_stack = null;
+    /**
      * $_actionController - ActionController reference
      *
      * @var Zend_Controller_Action
@@ -47,30 +57,44 @@ class Zend_Controller_Action_HelperBroker
     protected $_actionController;
 
     /**
-     * @var Zend_Loader_PluginLoader_Interface
-     */
-    protected static $_pluginLoader;
-
-    /**
-     * $_helpers - Helper array
+     * Constructor
      *
-     * @var Zend_Controller_Action_HelperBroker_PriorityStack
-     */
-    protected static $_stack = null;
-
-    /**
-     * Set PluginLoader for use with broker
-     *
-     * @param  Zend_Loader_PluginLoader_Interface $loader
+     * @param Zend_Controller_Action $actionController
      * @return void
      */
-    public static function setPluginLoader($loader)
+    public function __construct(Zend_Controller_Action $actionController)
     {
-        if ((null !== $loader) && (!$loader instanceof Zend_Loader_PluginLoader_Interface)) {
-            require_once 'Zend/Controller/Action/Exception.php';
-            throw new Zend_Controller_Action_Exception('Invalid plugin loader provided to HelperBroker');
+        $this->_actionController = $actionController;
+        foreach (self::getStack() as $helper) {
+            $helper->setActionController($actionController);
+            $helper->init();
         }
-        self::$_pluginLoader = $loader;
+    }
+
+    /**
+     * Lazy load the priority stack and return it
+     *
+     * @return Zend_Controller_Action_HelperBroker_PriorityStack
+     */
+    public static function getStack()
+    {
+        if (self::$_stack == null) {
+            self::$_stack = new Zend_Controller_Action_HelperBroker_PriorityStack();
+        }
+
+        return self::$_stack;
+    }
+
+    /**
+     * addPrefix() - Add repository of helpers by prefix
+     *
+     * @param string $prefix
+     */
+    static public function addPrefix($prefix)
+    {
+        $prefix = rtrim($prefix, '_');
+        $path = str_replace('_', DIRECTORY_SEPARATOR, $prefix);
+        self::getPluginLoader()->addPrefixPath($prefix, $path);
     }
 
     /**
@@ -90,15 +114,18 @@ class Zend_Controller_Action_HelperBroker
     }
 
     /**
-     * addPrefix() - Add repository of helpers by prefix
+     * Set PluginLoader for use with broker
      *
-     * @param string $prefix
+     * @param  Zend_Loader_PluginLoader_Interface $loader
+     * @return void
      */
-    static public function addPrefix($prefix)
+    public static function setPluginLoader($loader)
     {
-        $prefix = rtrim($prefix, '_');
-        $path   = str_replace('_', DIRECTORY_SEPARATOR, $prefix);
-        self::getPluginLoader()->addPrefixPath($prefix, $path);
+        if ((null !== $loader) && (!$loader instanceof Zend_Loader_PluginLoader_Interface)) {
+            require_once 'Zend/Controller/Action/Exception.php';
+            throw new Zend_Controller_Action_Exception('Invalid plugin loader provided to HelperBroker');
+        }
+        self::$_pluginLoader = $loader;
     }
 
     /**
@@ -148,7 +175,7 @@ class Zend_Controller_Action_HelperBroker
      */
     public static function getStaticHelper($name)
     {
-        $name  = self::_normalizeHelperName($name);
+        $name = self::_normalizeHelperName($name);
         $stack = self::getStack();
 
         if (!isset($stack->{$name})) {
@@ -156,6 +183,46 @@ class Zend_Controller_Action_HelperBroker
         }
 
         return $stack->{$name};
+    }
+
+    /**
+     * Normalize helper name for lookups
+     *
+     * @param  string $name
+     * @return string
+     */
+    protected static function _normalizeHelperName($name)
+    {
+        if (strpos($name, '_') !== false) {
+            $name = str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
+        }
+
+        return ucfirst($name);
+    }
+
+    /**
+     * Load a helper
+     *
+     * @param  string $name
+     * @return void
+     */
+    protected static function _loadHelper($name)
+    {
+        try {
+            $class = self::getPluginLoader()->load($name);
+        } catch (Zend_Loader_PluginLoader_Exception $e) {
+            require_once 'Zend/Controller/Action/Exception.php';
+            throw new Zend_Controller_Action_Exception('Action Helper by name ' . $name . ' not found', 0, $e);
+        }
+
+        $helper = new $class();
+
+        if (!$helper instanceof Zend_Controller_Action_Helper_Abstract) {
+            require_once 'Zend/Controller/Action/Exception.php';
+            throw new Zend_Controller_Action_Exception('Helper name ' . $name . ' -> class ' . $class . ' is not of type Zend_Controller_Action_Helper_Abstract');
+        }
+
+        self::getStack()->push($helper);
     }
 
     /**
@@ -175,7 +242,7 @@ class Zend_Controller_Action_HelperBroker
      */
     public static function getExistingHelper($name)
     {
-        $name  = self::_normalizeHelperName($name);
+        $name = self::_normalizeHelperName($name);
         $stack = self::getStack();
 
         if (!isset($stack->{$name})) {
@@ -226,35 +293,6 @@ class Zend_Controller_Action_HelperBroker
     }
 
     /**
-     * Lazy load the priority stack and return it
-     *
-     * @return Zend_Controller_Action_HelperBroker_PriorityStack
-     */
-    public static function getStack()
-    {
-        if (self::$_stack == null) {
-            self::$_stack = new Zend_Controller_Action_HelperBroker_PriorityStack();
-        }
-
-        return self::$_stack;
-    }
-
-    /**
-     * Constructor
-     *
-     * @param Zend_Controller_Action $actionController
-     * @return void
-     */
-    public function __construct(Zend_Controller_Action $actionController)
-    {
-        $this->_actionController = $actionController;
-        foreach (self::getStack() as $helper) {
-            $helper->setActionController($actionController);
-            $helper->init();
-        }
-    }
-
-    /**
      * notifyPreDispatch() - called by action controller dispatch method
      *
      * @return void
@@ -279,38 +317,6 @@ class Zend_Controller_Action_HelperBroker
     }
 
     /**
-     * getHelper() - get helper by name
-     *
-     * @param  string $name
-     * @return Zend_Controller_Action_Helper_Abstract
-     */
-    public function getHelper($name)
-    {
-        $name  = self::_normalizeHelperName($name);
-        $stack = self::getStack();
-
-        if (!isset($stack->{$name})) {
-            self::_loadHelper($name);
-        }
-
-        $helper = $stack->{$name};
-
-        $initialize = false;
-        if (null === ($actionController = $helper->getActionController())) {
-            $initialize = true;
-        } elseif ($actionController !== $this->_actionController) {
-            $initialize = true;
-        }
-
-        if ($initialize) {
-            $helper->setActionController($this->_actionController)
-                   ->init();
-        }
-
-        return $helper;
-    }
-
-    /**
      * Method overloading
      *
      * @param  string $method
@@ -329,6 +335,38 @@ class Zend_Controller_Action_HelperBroker
     }
 
     /**
+     * getHelper() - get helper by name
+     *
+     * @param  string $name
+     * @return Zend_Controller_Action_Helper_Abstract
+     */
+    public function getHelper($name)
+    {
+        $name = self::_normalizeHelperName($name);
+        $stack = self::getStack();
+
+        if (!isset($stack->{$name})) {
+            self::_loadHelper($name);
+        }
+
+        $helper = $stack->{$name};
+
+        $initialize = false;
+        if (null === ($actionController = $helper->getActionController())) {
+            $initialize = true;
+        } elseif ($actionController !== $this->_actionController) {
+            $initialize = true;
+        }
+
+        if ($initialize) {
+            $helper->setActionController($this->_actionController)
+                ->init();
+        }
+
+        return $helper;
+    }
+
+    /**
      * Retrieve helper by name as object property
      *
      * @param  string $name
@@ -337,45 +375,5 @@ class Zend_Controller_Action_HelperBroker
     public function __get($name)
     {
         return $this->getHelper($name);
-    }
-
-    /**
-     * Normalize helper name for lookups
-     *
-     * @param  string $name
-     * @return string
-     */
-    protected static function _normalizeHelperName($name)
-    {
-        if (strpos($name, '_') !== false) {
-            $name = str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
-        }
-
-        return ucfirst($name);
-    }
-
-    /**
-     * Load a helper
-     *
-     * @param  string $name
-     * @return void
-     */
-    protected static function _loadHelper($name)
-    {
-        try {
-            $class = self::getPluginLoader()->load($name);
-        } catch (Zend_Loader_PluginLoader_Exception $e) {
-            require_once 'Zend/Controller/Action/Exception.php';
-            throw new Zend_Controller_Action_Exception('Action Helper by name ' . $name . ' not found', 0, $e);
-        }
-
-        $helper = new $class();
-
-        if (!$helper instanceof Zend_Controller_Action_Helper_Abstract) {
-            require_once 'Zend/Controller/Action/Exception.php';
-            throw new Zend_Controller_Action_Exception('Helper name ' . $name . ' -> class ' . $class . ' is not of type Zend_Controller_Action_Helper_Abstract');
-        }
-
-        self::getStack()->push($helper);
     }
 }

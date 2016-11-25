@@ -46,13 +46,14 @@ class Zend_Oauth_Http_Utility
         $url,
         Zend_Oauth_Config_ConfigInterface $config,
         array $serviceProviderParams = null
-    ) {
+    )
+    {
         $params = array(
-            'oauth_consumer_key'     => $config->getConsumerKey(),
-            'oauth_nonce'            => $this->generateNonce(),
+            'oauth_consumer_key' => $config->getConsumerKey(),
+            'oauth_nonce' => $this->generateNonce(),
             'oauth_signature_method' => $config->getSignatureMethod(),
-            'oauth_timestamp'        => $this->generateTimestamp(),
-            'oauth_version'          => $config->getVersion(),
+            'oauth_timestamp' => $this->generateTimestamp(),
+            'oauth_version' => $config->getVersion(),
         );
 
         if ($config->getToken()->getToken() != null) {
@@ -77,6 +78,56 @@ class Zend_Oauth_Http_Utility
     }
 
     /**
+     * Generate nonce
+     *
+     * @return string
+     */
+    public function generateNonce()
+    {
+        return md5(uniqid(rand(), true));
+    }
+
+    /**
+     * Generate timestamp
+     *
+     * @return int
+     */
+    public function generateTimestamp()
+    {
+        return time();
+    }
+
+    /**
+     * Sign request
+     *
+     * @param  array $params
+     * @param  string $signatureMethod
+     * @param  string $consumerSecret
+     * @param  null|string $tokenSecret
+     * @param  null|string $method
+     * @param  null|string $url
+     * @return string
+     */
+    public function sign(
+        array $params, $signatureMethod, $consumerSecret, $tokenSecret = null, $method = null, $url = null
+    )
+    {
+        $className = '';
+        $hashAlgo = null;
+        $parts = explode('-', $signatureMethod);
+        if (count($parts) > 1) {
+            $className = 'Zend_Oauth_Signature_' . ucfirst(strtolower($parts[0]));
+            $hashAlgo = $parts[1];
+        } else {
+            $className = 'Zend_Oauth_Signature_' . ucfirst(strtolower($signatureMethod));
+        }
+
+        require_once str_replace('_', '/', $className) . '.php';
+        $signatureObject = new $className($consumerSecret, $tokenSecret, $hashAlgo);
+        return $signatureObject->sign($params, $method, $url);
+    }
+
+    /**
      * Given both OAuth parameters and any custom parametere, generate an
      * encoded query string. This method expects parameters to have been
      * assembled and signed beforehand.
@@ -88,7 +139,7 @@ class Zend_Oauth_Http_Utility
     public function toEncodedQueryString(array $params, $customParamsOnly = false)
     {
         if ($customParamsOnly) {
-            foreach ($params as $key=>$value) {
+            foreach ($params as $key => $value) {
                 if (preg_match("/^oauth_/", $key)) {
                     unset($params[$key]);
                 }
@@ -97,10 +148,23 @@ class Zend_Oauth_Http_Utility
         $encodedParams = array();
         foreach ($params as $key => $value) {
             $encodedParams[] = self::urlEncode($key)
-                             . '='
-                             . self::urlEncode($value);
+                . '='
+                . self::urlEncode($value);
         }
         return implode('&', $encodedParams);
+    }
+
+    /**
+     * urlencode a value
+     *
+     * @param  string $value
+     * @return string
+     */
+    public static function urlEncode($value)
+    {
+        $encoded = rawurlencode($value);
+        $encoded = str_replace('%7E', '~', $encoded);
+        return $encoded;
     }
 
     /**
@@ -124,39 +188,10 @@ class Zend_Oauth_Http_Utility
                 }
             }
             $headerValue[] = self::urlEncode($key)
-                           . '="'
-                           . self::urlEncode($value) . '"';
+                . '="'
+                . self::urlEncode($value) . '"';
         }
         return implode(",", $headerValue);
-    }
-
-    /**
-     * Sign request
-     *
-     * @param  array $params
-     * @param  string $signatureMethod
-     * @param  string $consumerSecret
-     * @param  null|string $tokenSecret
-     * @param  null|string $method
-     * @param  null|string $url
-     * @return string
-     */
-    public function sign(
-        array $params, $signatureMethod, $consumerSecret, $tokenSecret = null, $method = null, $url = null
-    ) {
-        $className = '';
-        $hashAlgo  = null;
-        $parts     = explode('-', $signatureMethod);
-        if (count($parts) > 1) {
-            $className = 'Zend_Oauth_Signature_' . ucfirst(strtolower($parts[0]));
-            $hashAlgo  = $parts[1];
-        } else {
-            $className = 'Zend_Oauth_Signature_' . ucfirst(strtolower($signatureMethod));
-        }
-
-        require_once str_replace('_', '/', $className) . '.php';
-        $signatureObject = new $className($consumerSecret, $tokenSecret, $hashAlgo);
-        return $signatureObject->sign($params, $method, $url);
     }
 
     /**
@@ -180,38 +215,5 @@ class Zend_Oauth_Http_Utility
             $params[rawurldecode($kv[0])] = rawurldecode($kv[1]);
         }
         return $params;
-    }
-
-    /**
-     * Generate nonce
-     *
-     * @return string
-     */
-    public function generateNonce()
-    {
-        return md5(uniqid(rand(), true));
-    }
-
-    /**
-     * Generate timestamp
-     *
-     * @return int
-     */
-    public function generateTimestamp()
-    {
-        return time();
-    }
-
-    /**
-     * urlencode a value
-     *
-     * @param  string $value
-     * @return string
-     */
-    public static function urlEncode($value)
-    {
-        $encoded = rawurlencode($value);
-        $encoded = str_replace('%7E', '~', $encoded);
-        return $encoded;
     }
 }

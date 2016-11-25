@@ -65,15 +65,19 @@ class Zend_Controller_Action_Helper_ActionStack extends Zend_Controller_Action_H
     }
 
     /**
-     * Push onto the stack
+     * Perform helper when called as $this->_helper->actionStack() from an action controller
      *
-     * @param  Zend_Controller_Request_Abstract $next
-     * @return Zend_Controller_Action_Helper_ActionStack Provides a fluent interface
+     * Proxies to {@link simple()}
+     *
+     * @param  string $action
+     * @param  string $controller
+     * @param  string $module
+     * @param  array $params
+     * @return boolean
      */
-    public function pushStack(Zend_Controller_Request_Abstract $next)
+    public function direct($action, $controller = null, $module = null, array $params = array())
     {
-        $this->_actionStack->pushStack($next);
-        return $this;
+        return $this->actionToStack($action, $controller, $module, $params);
     }
 
     /**
@@ -82,7 +86,7 @@ class Zend_Controller_Action_Helper_ActionStack extends Zend_Controller_Action_H
      * @param  string $action
      * @param  string $controller
      * @param  string $module
-     * @param  array  $params
+     * @param  array $params
      * @throws Zend_Controller_Action_Exception
      * @return Zend_Controller_Action_Helper_ActionStack
      */
@@ -100,7 +104,7 @@ class Zend_Controller_Action_Helper_ActionStack extends Zend_Controller_Action_H
 
         $request = $this->getRequest();
 
-        if ($request instanceof Zend_Controller_Request_Abstract === false){
+        if ($request instanceof Zend_Controller_Request_Abstract === false) {
             /**
              * @see Zend_Controller_Action_Exception
              */
@@ -121,18 +125,14 @@ class Zend_Controller_Action_Helper_ActionStack extends Zend_Controller_Action_H
     }
 
     /**
-     * Perform helper when called as $this->_helper->actionStack() from an action controller
+     * Push onto the stack
      *
-     * Proxies to {@link simple()}
-     *
-     * @param  string $action
-     * @param  string $controller
-     * @param  string $module
-     * @param  array $params
-     * @return boolean
+     * @param  Zend_Controller_Request_Abstract $next
+     * @return Zend_Controller_Action_Helper_ActionStack Provides a fluent interface
      */
-    public function direct($action, $controller = null, $module = null, array $params = array())
+    public function pushStack(Zend_Controller_Request_Abstract $next)
     {
-        return $this->actionToStack($action, $controller, $module, $params);
+        $this->_actionStack->pushStack($next);
+        return $this;
     }
 }

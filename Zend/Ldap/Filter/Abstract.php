@@ -32,72 +32,6 @@
 abstract class Zend_Ldap_Filter_Abstract
 {
     /**
-     * Returns a string representation of the filter.
-     *
-     * @return string
-     */
-    abstract public function toString();
-
-    /**
-     * Returns a string representation of the filter.
-     * @see toString()
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->toString();
-    }
-
-    /**
-     * Negates the filter.
-     *
-     * @return Zend_Ldap_Filter_Abstract
-     */
-    public function negate()
-    {
-        /**
-         * Zend_Ldap_Filter_Not
-         */
-        require_once 'Zend/Ldap/Filter/Not.php';
-        return new Zend_Ldap_Filter_Not($this);
-    }
-
-    /**
-     * Creates an 'and' filter.
-     *
-     * @param  Zend_Ldap_Filter_Abstract $filter,...
-     * @return Zend_Ldap_Filter_And
-     */
-    public function addAnd($filter)
-    {
-        /**
-         * Zend_Ldap_Filter_And
-         */
-        require_once 'Zend/Ldap/Filter/And.php';
-        $fa = func_get_args();
-        $args = array_merge(array($this), $fa);
-        return new Zend_Ldap_Filter_And($args);
-    }
-
-    /**
-     * Creates an 'or' filter.
-     *
-     * @param  Zend_Ldap_Filter_Abstract $filter,...
-     * @return Zend_Ldap_Filter_Or
-     */
-    public function addOr($filter)
-    {
-        /**
-         * Zend_Ldap_Filter_Or
-         */
-        require_once 'Zend/Ldap/Filter/Or.php';
-        $fa = func_get_args();
-        $args = array_merge(array($this), $fa);
-        return new Zend_Ldap_Filter_Or($args);
-    }
-
-    /**
      * Escapes the given VALUES according to RFC 2254 so that they can be safely used in LDAP filters.
      *
      * Any control characters with an ACII code < 32 as well as the characters with special meaning in
@@ -153,5 +87,71 @@ abstract class Zend_Ldap_Filter_Abstract
             $values[$key] = Zend_Ldap_Converter::hex32ToAsc($value);
         }
         return (count($values) == 1) ? $values[0] : $values;
+    }
+
+    /**
+     * Returns a string representation of the filter.
+     * @see toString()
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->toString();
+    }
+
+    /**
+     * Returns a string representation of the filter.
+     *
+     * @return string
+     */
+    abstract public function toString();
+
+    /**
+     * Negates the filter.
+     *
+     * @return Zend_Ldap_Filter_Abstract
+     */
+    public function negate()
+    {
+        /**
+         * Zend_Ldap_Filter_Not
+         */
+        require_once 'Zend/Ldap/Filter/Not.php';
+        return new Zend_Ldap_Filter_Not($this);
+    }
+
+    /**
+     * Creates an 'and' filter.
+     *
+     * @param  Zend_Ldap_Filter_Abstract $filter,...
+     * @return Zend_Ldap_Filter_And
+     */
+    public function addAnd($filter)
+    {
+        /**
+         * Zend_Ldap_Filter_And
+         */
+        require_once 'Zend/Ldap/Filter/And.php';
+        $fa = func_get_args();
+        $args = array_merge(array($this), $fa);
+        return new Zend_Ldap_Filter_And($args);
+    }
+
+    /**
+     * Creates an 'or' filter.
+     *
+     * @param  Zend_Ldap_Filter_Abstract $filter,...
+     * @return Zend_Ldap_Filter_Or
+     */
+    public function addOr($filter)
+    {
+        /**
+         * Zend_Ldap_Filter_Or
+         */
+        require_once 'Zend/Ldap/Filter/Or.php';
+        $fa = func_get_args();
+        $args = array_merge(array($this), $fa);
+        return new Zend_Ldap_Filter_Or($args);
     }
 }

@@ -1,8 +1,9 @@
 <?php
-/********************************************************************************* 
+
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,12 +19,11 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
 class Default_Model_Insertorupdate extends Zend_Db_Table_Abstract
 {
-    protected $_primary  = 'id';
-    protected $_name     = 'main_hierarchylevels';
-    
+    protected $_primary = 'id';
+    protected $_name = 'main_hierarchylevels';
+
 
     /**
      * @param array $insertData
@@ -33,14 +33,16 @@ class Default_Model_Insertorupdate extends Zend_Db_Table_Abstract
      */
     public function insertOrUpdate(array $insertData, array $updateData)
     {
-        $db    = $this->getAdapter();
+        $db = $this->getAdapter();
         $table = ($this->_schema ? $this->_schema . '.' : '') . $this->_name;
 
         // extract and quote col names from the array keys
-        $i           = 0;
-        $bind        = array();
-        $insert_cols = array(); $insert_vals = array();
-        $update_cols = array(); $update_vals = array();
+        $i = 0;
+        $bind = array();
+        $insert_cols = array();
+        $insert_vals = array();
+        $update_cols = array();
+        $update_vals = array();
         foreach (array('insert', 'update') as $type) {
             $data = ${"{$type}Data"};
             $cols = array();
@@ -56,18 +58,20 @@ class Default_Model_Insertorupdate extends Zend_Db_Table_Abstract
                     } else {
                         if ($db->supportsParameters('named')) {
                             $bind[':col' . $i] = $val;
-                            $vals[] = ':col'.$i;
+                            $vals[] = ':col' . $i;
                             $i++;
                         } else {
                             /** @see Zend_Db_Adapter_Exception */
                             require_once 'Zend/Db/Adapter/Exception.php';
-                            throw new Zend_Db_Adapter_Exception(get_class($db) ." doesn't support positional or named binding");
+                            throw new Zend_Db_Adapter_Exception(get_class($db) . " doesn't support positional or named binding");
                         }
                     }
                 }
             }
-            ${"{$type}_cols"} = $cols; unset($cols);
-            ${"{$type}_vals"} = $vals; unset($vals);
+            ${"{$type}_cols"} = $cols;
+            unset($cols);
+            ${"{$type}_vals"} = $vals;
+            unset($vals);
         }
 
         // build the statement
@@ -78,17 +82,17 @@ class Default_Model_Insertorupdate extends Zend_Db_Table_Abstract
 
         $sql = sprintf(
             'INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s;',
-                $db->quoteIdentifier($table, true),
-                implode(', ', $insert_cols),
-                implode(', ', $insert_vals),
-                implode(', ', $set)
+            $db->quoteIdentifier($table, true),
+            implode(', ', $insert_cols),
+            implode(', ', $insert_vals),
+            implode(', ', $set)
         );
 
         // execute the statement and return the number of affected rows
         if ($db->supportsParameters('positional')) {
             $bind = array_values($bind);
         }
-        $stmt   = $db->query($sql, $bind);
+        $stmt = $db->query($sql, $bind);
         $result = $stmt->rowCount();
         return $result;
     }

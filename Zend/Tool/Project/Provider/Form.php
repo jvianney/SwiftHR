@@ -29,67 +29,6 @@
 class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstract
 {
 
-    public static function createResource(Zend_Tool_Project_Profile $profile, $formName, $moduleName = null)
-    {
-        if (!is_string($formName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Form::createResource() expects \"formName\" is the name of a form resource to create.');
-        }
-
-        if (!($formsDirectory = self::_getFormsDirectoryResource($profile, $moduleName))) {
-            if ($moduleName) {
-                $exceptionMessage = 'A form directory for module "' . $moduleName . '" was not found.';
-            } else {
-                $exceptionMessage = 'A form directory was not found.';
-            }
-            throw new Zend_Tool_Project_Provider_Exception($exceptionMessage);
-        }
-
-        $newForm = $formsDirectory->createResource(
-            'formFile',
-            array('formName' => $formName, 'moduleName' => $moduleName)
-            );
-
-        return $newForm;
-    }
-
-    /**
-     * hasResource()
-     *
-     * @param Zend_Tool_Project_Profile $profile
-     * @param string $formName
-     * @param string $moduleName
-     * @return Zend_Tool_Project_Profile_Resource
-     */
-    public static function hasResource(Zend_Tool_Project_Profile $profile, $formName, $moduleName = null)
-    {
-        if (!is_string($formName)) {
-            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Form::createResource() expects \"formName\" is the name of a form resource to check for existence.');
-        }
-
-        $formsDirectory = self::_getFormsDirectoryResource($profile, $moduleName);
-        return (($formsDirectory->search(array('formFile' => array('formName' => $formName)))) instanceof Zend_Tool_Project_Profile_Resource);
-    }
-
-    /**
-     * _getFormsDirectoryResource()
-     *
-     * @param Zend_Tool_Project_Profile $profile
-     * @param string $moduleName
-     * @return Zend_Tool_Project_Profile_Resource
-     */
-    protected static function _getFormsDirectoryResource(Zend_Tool_Project_Profile $profile, $moduleName = null)
-    {
-        $profileSearchParams = array();
-
-        if ($moduleName != null && is_string($moduleName)) {
-            $profileSearchParams = array('modulesDirectory', 'moduleDirectory' => array('moduleName' => $moduleName));
-        }
-
-        $profileSearchParams[] = 'formsDirectory';
-
-        return $profile->search($profileSearchParams);
-    }
-
     public function enable($module = null)
     {
         $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
@@ -112,6 +51,26 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
             }
 
         }
+    }
+
+    /**
+     * _getFormsDirectoryResource()
+     *
+     * @param Zend_Tool_Project_Profile $profile
+     * @param string $moduleName
+     * @return Zend_Tool_Project_Profile_Resource
+     */
+    protected static function _getFormsDirectoryResource(Zend_Tool_Project_Profile $profile, $moduleName = null)
+    {
+        $profileSearchParams = array();
+
+        if ($moduleName != null && is_string($moduleName)) {
+            $profileSearchParams = array('modulesDirectory', 'moduleDirectory' => array('moduleName' => $moduleName));
+        }
+
+        $profileSearchParams[] = 'formsDirectory';
+
+        return $profile->search($profileSearchParams);
     }
 
     /**
@@ -155,7 +114,7 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
         // do the creation
         if ($this->_registry->getRequest()->isPretend()) {
 
-            $this->_registry->getResponse()->appendContent('Would create a form at '  . $formResource->getContext()->getPath());
+            $this->_registry->getResponse()->appendContent('Would create a form at ' . $formResource->getContext()->getPath());
 
             if ($testFormResource) {
                 $this->_registry->getResponse()->appendContent('Would create a form test file at ' . $testFormResource->getContext()->getPath());
@@ -174,6 +133,47 @@ class Zend_Tool_Project_Provider_Form extends Zend_Tool_Project_Provider_Abstrac
             $this->_storeProfile();
         }
 
+    }
+
+    /**
+     * hasResource()
+     *
+     * @param Zend_Tool_Project_Profile $profile
+     * @param string $formName
+     * @param string $moduleName
+     * @return Zend_Tool_Project_Profile_Resource
+     */
+    public static function hasResource(Zend_Tool_Project_Profile $profile, $formName, $moduleName = null)
+    {
+        if (!is_string($formName)) {
+            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Form::createResource() expects \"formName\" is the name of a form resource to check for existence.');
+        }
+
+        $formsDirectory = self::_getFormsDirectoryResource($profile, $moduleName);
+        return (($formsDirectory->search(array('formFile' => array('formName' => $formName)))) instanceof Zend_Tool_Project_Profile_Resource);
+    }
+
+    public static function createResource(Zend_Tool_Project_Profile $profile, $formName, $moduleName = null)
+    {
+        if (!is_string($formName)) {
+            throw new Zend_Tool_Project_Provider_Exception('Zend_Tool_Project_Provider_Form::createResource() expects \"formName\" is the name of a form resource to create.');
+        }
+
+        if (!($formsDirectory = self::_getFormsDirectoryResource($profile, $moduleName))) {
+            if ($moduleName) {
+                $exceptionMessage = 'A form directory for module "' . $moduleName . '" was not found.';
+            } else {
+                $exceptionMessage = 'A form directory was not found.';
+            }
+            throw new Zend_Tool_Project_Provider_Exception($exceptionMessage);
+        }
+
+        $newForm = $formsDirectory->createResource(
+            'formFile',
+            array('formName' => $formName, 'moduleName' => $moduleName)
+        );
+
+        return $newForm;
     }
 
 

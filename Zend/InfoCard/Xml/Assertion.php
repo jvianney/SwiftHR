@@ -61,7 +61,7 @@ final class Zend_InfoCard_Xml_Assertion
     static public function getInstance($xmlData)
     {
 
-        if($xmlData instanceof Zend_InfoCard_Xml_Element) {
+        if ($xmlData instanceof Zend_InfoCard_Xml_Element) {
             $strXmlData = $xmlData->asXML();
         } else if (is_string($xmlData)) {
             $strXmlData = $xmlData;
@@ -74,8 +74,8 @@ final class Zend_InfoCard_Xml_Assertion
 
         $namespaces = $sxe->getDocNameSpaces();
 
-        foreach($namespaces as $namespace) {
-            switch($namespace) {
+        foreach ($namespaces as $namespace) {
+            switch ($namespace) {
                 case self::TYPE_SAML:
                     include_once 'Zend/InfoCard/Xml/Assertion/Saml.php';
                     return simplexml_load_string($strXmlData, 'Zend_InfoCard_Xml_Assertion_Saml', null);

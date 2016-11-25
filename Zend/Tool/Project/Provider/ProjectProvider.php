@@ -32,6 +32,43 @@ class Zend_Tool_Project_Provider_ProjectProvider extends Zend_Tool_Project_Provi
 {
 
     /**
+     * getName()
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return 'ProjectProvider';
+    }
+
+    /**
+     * Create stub for Zend_Tool Project Provider
+     *
+     * @var string $name class name for new Zend_Tool Project Provider
+     * @var array|string $actions list of provider methods
+     * @throws Zend_Tool_Project_Provider_Exception
+     */
+    public function create($name, $actions = null)
+    {
+        $profile = $this->_loadProfileRequired();
+
+        $projectProvider = self::createResource($profile, $name, $actions);
+
+        if ($this->_registry->getRequest()->isPretend()) {
+            $this->_registry->getResponse()->appendContent('Would create a project provider named ' . $name
+                . ' in location ' . $projectProvider->getPath()
+            );
+        } else {
+            $this->_registry->getResponse()->appendContent('Creating a project provider named ' . $name
+                . ' in location ' . $projectProvider->getPath()
+            );
+            $projectProvider->create();
+            $this->_storeProfile();
+        }
+
+    }
+
+    /**
      * createResource()
      *
      * @param Zend_Tool_Project_Profile $profile
@@ -56,42 +93,5 @@ class Zend_Tool_Project_Provider_ProjectProvider extends Zend_Tool_Project_Provi
         $projectProvider = $profile->createResourceAt($profileSearchParams, 'projectProviderFile', array('projectProviderName' => $projectProviderName, 'actionNames' => $actionNames));
 
         return $projectProvider;
-    }
-
-    /**
-     * getName()
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return 'ProjectProvider';
-    }
-
-    /**
-     * Create stub for Zend_Tool Project Provider
-     *
-     * @var string       $name            class name for new Zend_Tool Project Provider
-     * @var array|string $actions         list of provider methods
-     * @throws Zend_Tool_Project_Provider_Exception
-     */
-    public function create($name, $actions = null)
-    {
-        $profile = $this->_loadProfileRequired();
-
-        $projectProvider = self::createResource($profile, $name, $actions);
-
-        if ($this->_registry->getRequest()->isPretend()) {
-            $this->_registry->getResponse()->appendContent('Would create a project provider named ' . $name
-                . ' in location ' . $projectProvider->getPath()
-                );
-        } else {
-            $this->_registry->getResponse()->appendContent('Creating a project provider named ' . $name
-                . ' in location ' . $projectProvider->getPath()
-                );
-            $projectProvider->create();
-            $this->_storeProfile();
-        }
-
     }
 }

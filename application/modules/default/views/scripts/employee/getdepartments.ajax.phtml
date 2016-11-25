@@ -1,8 +1,8 @@
-<?php 
-/********************************************************************************* 
+<?php
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -20,55 +20,38 @@
  ********************************************************************************/
 ?>
 
-<?php 
-if($this->con == 'leavemanagement')
-{
-  if(!empty($this->uniquedepartmentids))
-  {
-	   if($this->flag != 'true')
-		{
-		foreach ($this->uniquedepartmentids as $uniquedepartments) {
-				$this->leavemanagementform->department_id->addMultiOption($uniquedepartments['id'],utf8_encode($uniquedepartments['deptname']));
-			}
-			echo $this->leavemanagementform->department_id;
-		}
-		else
-		{
-		echo "nodepartments";
-		}
-  }
-  else
-  {
-        if($this->flag != 'true')
-		{
-		foreach ($this->departmentlistArr as $departmentlist) {
-				$this->leavemanagementform->department_id->addMultiOption($departmentlist['id'],utf8_encode($departmentlist['deptname']));
-			}
-			echo $this->leavemanagementform->department_id;
-		}
-		else
-		{
-		echo "nodepartments";
-		}
-  }  
+<?php
+if ($this->con == 'leavemanagement') {
+    if (!empty($this->uniquedepartmentids)) {
+        if ($this->flag != 'true') {
+            foreach ($this->uniquedepartmentids as $uniquedepartments) {
+                $this->leavemanagementform->department_id->addMultiOption($uniquedepartments['id'], utf8_encode($uniquedepartments['deptname']));
+            }
+            echo $this->leavemanagementform->department_id;
+        } else {
+            echo "nodepartments";
+        }
+    } else {
+        if ($this->flag != 'true') {
+            foreach ($this->departmentlistArr as $departmentlist) {
+                $this->leavemanagementform->department_id->addMultiOption($departmentlist['id'], utf8_encode($departmentlist['deptname']));
+            }
+            echo $this->leavemanagementform->department_id;
+        } else {
+            echo "nodepartments";
+        }
+    }
 
+} else {
+    if ($this->flag != 'true') {
+        foreach ($this->departmentlistArr as $departmentlist) {
+            $this->employeeform->department_id->addMultiOption($departmentlist['id'], utf8_encode($departmentlist['deptname']));
+        }
+        echo $this->employeeform->department_id;
+    } else {
+        echo "nodepartments";
+    }
 }
-else
-{
-	if($this->flag != 'true')
-	{
-	foreach ($this->departmentlistArr as $departmentlist) {
-			$this->employeeform->department_id->addMultiOption($departmentlist['id'],utf8_encode($departmentlist['deptname']));
-		}
-		echo $this->employeeform->department_id;
-	}
-
-	else
-	{
-	echo "nodepartments";
-	}
-}	
-	
 
 
 ?> 

@@ -77,17 +77,17 @@ class Zend_View_Helper_FormPassword extends Zend_View_Helper_FormElement
         // XHTML or HTML end tag?
         $endTag = ' />';
         if (($this->view instanceof Zend_View_Abstract) && !$this->view->doctype()->isXhtml()) {
-            $endTag= '>';
+            $endTag = '>';
         }
 
         // render the element
         $xhtml = '<input type="password"'
-                . ' name="' . $this->view->escape($name) . '"'
-                . ' id="' . $this->view->escape($id) . '"'
-                . $valueString
-                . $disabled
-                . $this->_htmlAttribs($attribs)
-                . $endTag;
+            . ' name="' . $this->view->escape($name) . '"'
+            . ' id="' . $this->view->escape($id) . '"'
+            . $valueString
+            . $disabled
+            . $this->_htmlAttribs($attribs)
+            . $endTag;
 
         return $xhtml;
     }

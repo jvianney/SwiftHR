@@ -60,17 +60,6 @@ class Zend_Feed_Writer_Extension_DublinCore_Renderer_Entry
     }
 
     /**
-     * Append namespaces to entry
-     *
-     * @return void
-     */
-    protected function _appendNamespaces()
-    {
-        $this->getRootElement()->setAttribute('xmlns:dc',
-            'http://purl.org/dc/elements/1.1/');
-    }
-
-    /**
      * Set entry author elements
      *
      * @param  DOMDocument $dom
@@ -92,5 +81,16 @@ class Zend_Feed_Writer_Extension_DublinCore_Renderer_Entry
             }
         }
         $this->_called = true;
+    }
+
+    /**
+     * Append namespaces to entry
+     *
+     * @return void
+     */
+    protected function _appendNamespaces()
+    {
+        $this->getRootElement()->setAttribute('xmlns:dc',
+            'http://purl.org/dc/elements/1.1/');
     }
 }

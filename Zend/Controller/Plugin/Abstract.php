@@ -40,6 +40,16 @@ abstract class Zend_Controller_Plugin_Abstract
     protected $_response;
 
     /**
+     * Get request object
+     *
+     * @return Zend_Controller_Request_Abstract $request
+     */
+    public function getRequest()
+    {
+        return $this->_request;
+    }
+
+    /**
      * Set request object
      *
      * @param Zend_Controller_Request_Abstract $request
@@ -52,13 +62,13 @@ abstract class Zend_Controller_Plugin_Abstract
     }
 
     /**
-     * Get request object
+     * Get response object
      *
-     * @return Zend_Controller_Request_Abstract $request
+     * @return Zend_Controller_Response_Abstract $response
      */
-    public function getRequest()
+    public function getResponse()
     {
-        return $this->_request;
+        return $this->_response;
     }
 
     /**
@@ -74,16 +84,6 @@ abstract class Zend_Controller_Plugin_Abstract
     }
 
     /**
-     * Get response object
-     *
-     * @return Zend_Controller_Response_Abstract $response
-     */
-    public function getResponse()
-    {
-        return $this->_response;
-    }
-
-    /**
      * Called before Zend_Controller_Front begins evaluating the
      * request against its routes.
      *
@@ -91,7 +91,8 @@ abstract class Zend_Controller_Plugin_Abstract
      * @return void
      */
     public function routeStartup(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called after Zend_Controller_Router exits.
@@ -102,7 +103,8 @@ abstract class Zend_Controller_Plugin_Abstract
      * @return void
      */
     public function routeShutdown(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called before Zend_Controller_Front enters its dispatch loop.
@@ -111,7 +113,8 @@ abstract class Zend_Controller_Plugin_Abstract
      * @return void
      */
     public function dispatchLoopStartup(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called before an action is dispatched by Zend_Controller_Dispatcher.
@@ -125,7 +128,8 @@ abstract class Zend_Controller_Plugin_Abstract
      * @return void
      */
     public function preDispatch(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called after an action is dispatched by Zend_Controller_Dispatcher.
@@ -139,7 +143,8 @@ abstract class Zend_Controller_Plugin_Abstract
      * @return void
      */
     public function postDispatch(Zend_Controller_Request_Abstract $request)
-    {}
+    {
+    }
 
     /**
      * Called before Zend_Controller_Front exits its dispatch loop.
@@ -147,5 +152,6 @@ abstract class Zend_Controller_Plugin_Abstract
      * @return void
      */
     public function dispatchLoopShutdown()
-    {}
+    {
+    }
 }

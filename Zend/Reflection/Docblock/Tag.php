@@ -34,9 +34,9 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      * @var array Array of Class names
      */
     protected static $_tagClasses = array(
-        'param'  => 'Zend_Reflection_Docblock_Tag_Param',
+        'param' => 'Zend_Reflection_Docblock_Tag_Param',
         'return' => 'Zend_Reflection_Docblock_Tag_Return',
-        );
+    );
 
     /**
      * @var string
@@ -47,6 +47,28 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      * @var string
      */
     protected $_description = null;
+
+    /**
+     * Constructor
+     *
+     * @param  string $tagDocblockLine
+     * @return void
+     */
+    public function __construct($tagDocblockLine)
+    {
+        $matches = array();
+
+        // find the line
+        if (!preg_match('#^@(\w+)(?:\s+([^\s].*)|$)?#', $tagDocblockLine, $matches)) {
+            require_once 'Zend/Reflection/Exception.php';
+            throw new Zend_Reflection_Exception('Provided docblock line does not contain a valid tag');
+        }
+
+        $this->_name = $matches[1];
+        if (isset($matches[2]) && $matches[2]) {
+            $this->_description = $matches[2];
+        }
+    }
 
     /**
      * Factory: Create the appropriate annotation tag object
@@ -96,31 +118,9 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      */
     public function __toString()
     {
-        $str = "Docblock Tag [ * @".$this->_name." ]".PHP_EOL;
+        $str = "Docblock Tag [ * @" . $this->_name . " ]" . PHP_EOL;
 
         return $str;
-    }
-
-    /**
-     * Constructor
-     *
-     * @param  string $tagDocblockLine
-     * @return void
-     */
-    public function __construct($tagDocblockLine)
-    {
-        $matches = array();
-
-        // find the line
-        if (!preg_match('#^@(\w+)(?:\s+([^\s].*)|$)?#', $tagDocblockLine, $matches)) {
-            require_once 'Zend/Reflection/Exception.php';
-            throw new Zend_Reflection_Exception('Provided docblock line does not contain a valid tag');
-        }
-
-        $this->_name = $matches[1];
-        if (isset($matches[2]) && $matches[2]) {
-            $this->_description = $matches[2];
-        }
     }
 
     /**

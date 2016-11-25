@@ -113,10 +113,10 @@ class Zend_Feed_Pubsubhubbub_Subscriber_Callback
         ) {
             $this->setFeedUpdate($this->_getRawBody());
             $this->getHttpResponse()
-                 ->setHeader('X-Hub-On-Behalf-Of', $this->getSubscriberCount());
-        /**
-         * Handle any (un)subscribe confirmation requests
-         */
+                ->setHeader('X-Hub-On-Behalf-Of', $this->getSubscriberCount());
+            /**
+             * Handle any (un)subscribe confirmation requests
+             */
         } elseif ($this->isValidHubVerification($httpGetData)) {
             $data = $this->_currentSubscriptionData;
             $this->getHttpResponse()->setBody($httpGetData['hub_challenge']);
@@ -125,105 +125,15 @@ class Zend_Feed_Pubsubhubbub_Subscriber_Callback
                 $data['lease_seconds'] = $httpGetData['hub_lease_seconds'];
             }
             $this->getStorage()->setSubscription($data);
-        /**
-         * Hey, C'mon! We tried everything else!
-         */
+            /**
+             * Hey, C'mon! We tried everything else!
+             */
         } else {
             $this->getHttpResponse()->setHttpResponseCode(404);
         }
         if ($sendResponseNow) {
             $this->sendResponse();
         }
-    }
-
-    /**
-     * Checks validity of the request simply by making a quick pass and
-     * confirming the presence of all REQUIRED parameters.
-     *
-     * @param  array $httpGetData
-     * @return bool
-     */
-    public function isValidHubVerification(array $httpGetData)
-    {
-        /**
-         * As per the specification, the hub.verify_token is OPTIONAL. This
-         * implementation of Pubsubhubbub considers it REQUIRED and will
-         * always send a hub.verify_token parameter to be echoed back
-         * by the Hub Server. Therefore, its absence is considered invalid.
-         */
-        if (strtolower($_SERVER['REQUEST_METHOD']) !== 'get') {
-            return false;
-        }
-        $required = array(
-            'hub_mode',
-            'hub_topic',
-            'hub_challenge',
-            'hub_verify_token',
-        );
-        foreach ($required as $key) {
-            if (!array_key_exists($key, $httpGetData)) {
-                return false;
-            }
-        }
-        if ($httpGetData['hub_mode'] !== 'subscribe'
-            && $httpGetData['hub_mode'] !== 'unsubscribe'
-        ) {
-            return false;
-        }
-        if ($httpGetData['hub_mode'] == 'subscribe'
-            && !array_key_exists('hub_lease_seconds', $httpGetData)
-        ) {
-            return false;
-        }
-        if (!Zend_Uri::check($httpGetData['hub_topic'])) {
-            return false;
-        }
-
-        /**
-         * Attempt to retrieve any Verification Token Key attached to Callback
-         * URL's path by our Subscriber implementation
-         */
-        if (!$this->_hasValidVerifyToken($httpGetData)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Sets a newly received feed (Atom/RSS) sent by a Hub as an update to a
-     * Topic we've subscribed to.
-     *
-     * @param  string $feed
-     * @return Zend_Feed_Pubsubhubbub_Subscriber_Callback
-     */
-    public function setFeedUpdate($feed)
-    {
-        $this->_feedUpdate = $feed;
-        return $this;
-    }
-
-    /**
-     * Check if any newly received feed (Atom/RSS) update was received
-     *
-     * @return bool
-     */
-    public function hasFeedUpdate()
-    {
-        if ($this->_feedUpdate === null) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Gets a newly received feed (Atom/RSS) sent by a Hub as an update to a
-     * Topic we've subscribed to.
-     *
-     * @return string
-     */
-    public function getFeedUpdate()
-    {
-        return $this->_feedUpdate;
     }
 
     /**
@@ -302,7 +212,7 @@ class Zend_Feed_Pubsubhubbub_Subscriber_Callback
      */
     protected function _parseQueryString()
     {
-        $params      = array();
+        $params = array();
         $queryString = '';
         if (isset($_SERVER['QUERY_STRING'])) {
             $queryString = $_SERVER['QUERY_STRING'];
@@ -312,8 +222,8 @@ class Zend_Feed_Pubsubhubbub_Subscriber_Callback
         }
         $parts = explode('&', $queryString);
         foreach ($parts as $kvpair) {
-            $pair  = explode('=', $kvpair);
-            $key   = rawurldecode($pair[0]);
+            $pair = explode('=', $kvpair);
+            $key = rawurldecode($pair[0]);
             $value = rawurldecode($pair[1]);
             if (isset($params[$key])) {
                 if (is_array($params[$key])) {
@@ -326,5 +236,95 @@ class Zend_Feed_Pubsubhubbub_Subscriber_Callback
             }
         }
         return $params;
+    }
+
+    /**
+     * Checks validity of the request simply by making a quick pass and
+     * confirming the presence of all REQUIRED parameters.
+     *
+     * @param  array $httpGetData
+     * @return bool
+     */
+    public function isValidHubVerification(array $httpGetData)
+    {
+        /**
+         * As per the specification, the hub.verify_token is OPTIONAL. This
+         * implementation of Pubsubhubbub considers it REQUIRED and will
+         * always send a hub.verify_token parameter to be echoed back
+         * by the Hub Server. Therefore, its absence is considered invalid.
+         */
+        if (strtolower($_SERVER['REQUEST_METHOD']) !== 'get') {
+            return false;
+        }
+        $required = array(
+            'hub_mode',
+            'hub_topic',
+            'hub_challenge',
+            'hub_verify_token',
+        );
+        foreach ($required as $key) {
+            if (!array_key_exists($key, $httpGetData)) {
+                return false;
+            }
+        }
+        if ($httpGetData['hub_mode'] !== 'subscribe'
+            && $httpGetData['hub_mode'] !== 'unsubscribe'
+        ) {
+            return false;
+        }
+        if ($httpGetData['hub_mode'] == 'subscribe'
+            && !array_key_exists('hub_lease_seconds', $httpGetData)
+        ) {
+            return false;
+        }
+        if (!Zend_Uri::check($httpGetData['hub_topic'])) {
+            return false;
+        }
+
+        /**
+         * Attempt to retrieve any Verification Token Key attached to Callback
+         * URL's path by our Subscriber implementation
+         */
+        if (!$this->_hasValidVerifyToken($httpGetData)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if any newly received feed (Atom/RSS) update was received
+     *
+     * @return bool
+     */
+    public function hasFeedUpdate()
+    {
+        if ($this->_feedUpdate === null) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Gets a newly received feed (Atom/RSS) sent by a Hub as an update to a
+     * Topic we've subscribed to.
+     *
+     * @return string
+     */
+    public function getFeedUpdate()
+    {
+        return $this->_feedUpdate;
+    }
+
+    /**
+     * Sets a newly received feed (Atom/RSS) sent by a Hub as an update to a
+     * Topic we've subscribed to.
+     *
+     * @param  string $feed
+     * @return Zend_Feed_Pubsubhubbub_Subscriber_Callback
+     */
+    public function setFeedUpdate($feed)
+    {
+        $this->_feedUpdate = $feed;
+        return $this;
     }
 }

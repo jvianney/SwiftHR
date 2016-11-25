@@ -81,7 +81,7 @@ class Zend_Queue_Stomp_Client_Connection
         if (!isset($options['timeout_sec'])) {
             $options['timeout_sec'] = self::READ_TIMEOUT_DEFAULT_SEC;
         }
-        if (! isset($options['timeout_usec'])) {
+        if (!isset($options['timeout_usec'])) {
             $options['timeout_usec'] = self::READ_TIMEOUT_DEFAULT_USEC;
         }
 
@@ -128,18 +128,39 @@ class Zend_Queue_Stomp_Client_Connection
     }
 
     /**
-     * Check whether we are connected to the server
+     * Create an empty frame
      *
-     * @return true
-     * @throws Zend_Queue_Exception
+     * @return Zend_Queue_Stomp_FrameInterface
      */
-    public function ping()
+    public function createFrame()
     {
-        if (!is_resource($this->_socket)) {
-            require_once 'Zend/Queue/Exception.php';
-            throw new Zend_Queue_Exception('Not connected to Stomp server');
+        $class = $this->getFrameClass();
+
+        if (!class_exists($class)) {
+            require_once 'Zend/Loader.php';
+            Zend_Loader::loadClass($class);
         }
-        return true;
+
+        $frame = new $class();
+
+        if (!$frame instanceof Zend_Queue_Stomp_FrameInterface) {
+            require_once 'Zend/Queue/Exception.php';
+            throw new Zend_Queue_Exception('Invalid Frame class provided; must implement Zend_Queue_Stomp_FrameInterface');
+        }
+
+        return $frame;
+    }
+
+    /**
+     * Get the frameClass
+     *
+     * @return string
+     */
+    public function getFrameClass()
+    {
+        return isset($this->_options['frameClass'])
+            ? $this->_options['frameClass']
+            : 'Zend_Queue_Stomp_Frame';
     }
 
     /**
@@ -165,23 +186,38 @@ class Zend_Queue_Stomp_Client_Connection
     }
 
     /**
+     * Check whether we are connected to the server
+     *
+     * @return true
+     * @throws Zend_Queue_Exception
+     */
+    public function ping()
+    {
+        if (!is_resource($this->_socket)) {
+            require_once 'Zend/Queue/Exception.php';
+            throw new Zend_Queue_Exception('Not connected to Stomp server');
+        }
+        return true;
+    }
+
+    /**
      * Tests the socket to see if there is data for us
      *
      * @return boolean
      */
     public function canRead()
     {
-        $read   = array($this->_socket);
-        $write  = null;
+        $read = array($this->_socket);
+        $write = null;
         $except = null;
 
         return stream_select(
-            $read,
-            $write,
-            $except,
-            $this->_options['timeout_sec'],
-            $this->_options['timeout_usec']
-        ) == 1;
+                $read,
+                $write,
+                $except,
+                $this->_options['timeout_sec'],
+                $this->_options['timeout_usec']
+            ) == 1;
         // see http://us.php.net/manual/en/function.stream-select.php
     }
 
@@ -196,7 +232,7 @@ class Zend_Queue_Stomp_Client_Connection
         $this->ping();
 
         $response = '';
-        $prev     = '';
+        $prev = '';
 
         // while not end of file.
         while (!feof($this->_socket)) {
@@ -240,41 +276,5 @@ class Zend_Queue_Stomp_Client_Connection
     {
         $this->_options['frameClass'] = $classname;
         return $this;
-    }
-
-    /**
-     * Get the frameClass
-     *
-     * @return string
-     */
-    public function getFrameClass()
-    {
-        return isset($this->_options['frameClass'])
-            ? $this->_options['frameClass']
-            : 'Zend_Queue_Stomp_Frame';
-    }
-
-    /**
-     * Create an empty frame
-     *
-     * @return Zend_Queue_Stomp_FrameInterface
-     */
-    public function createFrame()
-    {
-        $class = $this->getFrameClass();
-
-        if (!class_exists($class)) {
-            require_once 'Zend/Loader.php';
-            Zend_Loader::loadClass($class);
-        }
-
-        $frame = new $class();
-
-        if (!$frame instanceof Zend_Queue_Stomp_FrameInterface) {
-            require_once 'Zend/Queue/Exception.php';
-            throw new Zend_Queue_Exception('Invalid Frame class provided; must implement Zend_Queue_Stomp_FrameInterface');
-        }
-
-        return $frame;
     }
 }

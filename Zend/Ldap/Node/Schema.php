@@ -36,10 +36,37 @@ require_once 'Zend/Ldap/Node/Abstract.php';
  */
 class Zend_Ldap_Node_Schema extends Zend_Ldap_Node_Abstract
 {
-    const OBJECTCLASS_TYPE_UNKNOWN    = 0;
+    const OBJECTCLASS_TYPE_UNKNOWN = 0;
     const OBJECTCLASS_TYPE_STRUCTURAL = 1;
-    const OBJECTCLASS_TYPE_ABSTRACT   = 3;
-    const OBJECTCLASS_TYPE_AUXILIARY  = 4;
+    const OBJECTCLASS_TYPE_ABSTRACT = 3;
+    const OBJECTCLASS_TYPE_AUXILIARY = 4;
+
+    /**
+     * Constructor.
+     *
+     * Constructor is protected to enforce the use of factory methods.
+     *
+     * @param  Zend_Ldap_Dn $dn
+     * @param  array $data
+     * @param  Zend_Ldap $ldap
+     */
+    protected function __construct(Zend_Ldap_Dn $dn, array $data, Zend_Ldap $ldap)
+    {
+        parent::__construct($dn, $data, true);
+        $this->_parseSchema($dn, $ldap);
+    }
+
+    /**
+     * Parses the schema
+     *
+     * @param  Zend_Ldap_Dn $dn
+     * @param  Zend_Ldap $ldap
+     * @return Zend_Ldap_Node_Schema Provides a fluid interface
+     */
+    protected function _parseSchema(Zend_Ldap_Dn $dn, Zend_Ldap $ldap)
+    {
+        return $this;
+    }
 
     /**
      * Factory method to create the Schema node.
@@ -69,33 +96,6 @@ class Zend_Ldap_Node_Schema extends Zend_Ldap_Node_Abstract
             default:
                 return new self($dn, $data, $ldap);
         }
-    }
-
-    /**
-     * Constructor.
-     *
-     * Constructor is protected to enforce the use of factory methods.
-     *
-     * @param  Zend_Ldap_Dn $dn
-     * @param  array        $data
-     * @param  Zend_Ldap    $ldap
-     */
-    protected function __construct(Zend_Ldap_Dn $dn, array $data, Zend_Ldap $ldap)
-    {
-        parent::__construct($dn, $data, true);
-        $this->_parseSchema($dn, $ldap);
-    }
-
-    /**
-     * Parses the schema
-     *
-     * @param  Zend_Ldap_Dn $dn
-     * @param  Zend_Ldap    $ldap
-     * @return Zend_Ldap_Node_Schema Provides a fluid interface
-     */
-    protected function _parseSchema(Zend_Ldap_Dn $dn, Zend_Ldap $ldap)
-    {
-        return $this;
     }
 
     /**

@@ -38,8 +38,8 @@ class Zend_Test_PHPUnit_Constraint_Redirect extends PHPUnit_Framework_Constraint
     /**#@+
      * Assertion type constants
      */
-    const ASSERT_REDIRECT       = 'assertRedirect';
-    const ASSERT_REDIRECT_TO    = 'assertRedirectTo';
+    const ASSERT_REDIRECT = 'assertRedirect';
+    const ASSERT_REDIRECT_TO = 'assertRedirectTo';
     const ASSERT_REDIRECT_REGEX = 'assertRedirectRegex';
     /**#@-*/
 
@@ -47,13 +47,13 @@ class Zend_Test_PHPUnit_Constraint_Redirect extends PHPUnit_Framework_Constraint
      * Current assertion type
      * @var string
      */
-    protected $_assertType      = null;
+    protected $_assertType = null;
 
     /**
      * Available assertion types
      * @var array
      */
-    protected $_assertTypes     = array(
+    protected $_assertTypes = array(
         self::ASSERT_REDIRECT,
         self::ASSERT_REDIRECT_TO,
         self::ASSERT_REDIRECT_REGEX,
@@ -63,13 +63,13 @@ class Zend_Test_PHPUnit_Constraint_Redirect extends PHPUnit_Framework_Constraint
      * Pattern to match against
      * @var string
      */
-    protected $_match             = null;
+    protected $_match = null;
 
     /**
      * Whether or not assertion is negated
      * @var bool
      */
-    protected $_negate            = false;
+    protected $_negate = false;
 
     /**
      * Constructor; setup constraint state
@@ -78,17 +78,6 @@ class Zend_Test_PHPUnit_Constraint_Redirect extends PHPUnit_Framework_Constraint
      */
     public function __construct()
     {
-    }
-
-    /**
-     * Indicate negative match
-     *
-     * @param  bool $flag
-     * @return void
-     */
-    public function setNegate($flag = true)
-    {
-        $this->_negate = $flag;
     }
 
     /**
@@ -118,8 +107,8 @@ class Zend_Test_PHPUnit_Constraint_Redirect extends PHPUnit_Framework_Constraint
         $this->_assertType = $assertType;
 
         $response = $other;
-        $argv     = func_get_args();
-        $argc     = func_num_args();
+        $argv = func_get_args();
+        $argc = func_num_args();
 
         switch ($assertType) {
             case self::ASSERT_REDIRECT_TO:
@@ -144,6 +133,97 @@ class Zend_Test_PHPUnit_Constraint_Redirect extends PHPUnit_Framework_Constraint
             default:
                 return ($this->_negate) ? !$response->isRedirect() : $response->isRedirect();
         }
+    }
+
+    /**
+     * Indicate negative match
+     *
+     * @param  bool $flag
+     * @return void
+     */
+    public function setNegate($flag = true)
+    {
+        $this->_negate = $flag;
+    }
+
+    /**
+     * Check to see if content is NOT matched in selected nodes
+     *
+     * @param  Zend_Controller_Response_HttpTestCase $response
+     * @param  string $match
+     * @return bool
+     */
+    protected function _notMatch($response, $match)
+    {
+        if (!$response->isRedirect()) {
+            return true;
+        }
+
+        $headers = $response->sendHeaders();
+        $redirect = $headers['location'];
+        $redirect = str_replace('Location: ', '', $redirect);
+
+        return ($redirect != $match);
+    }
+
+    /**
+     * Check to see if content is matched in selected nodes
+     *
+     * @param  Zend_Controller_Response_HttpTestCase $response
+     * @param  string $match Content to match
+     * @return bool
+     */
+    protected function _match($response, $match)
+    {
+        if (!$response->isRedirect()) {
+            return false;
+        }
+
+        $headers = $response->sendHeaders();
+        $redirect = $headers['location'];
+        $redirect = str_replace('Location: ', '', $redirect);
+
+        return ($redirect == $match);
+    }
+
+    /**
+     * Check to see if content is NOT matched by regex in selected nodes
+     *
+     * @param  Zend_Controller_Response_HttpTestCase $response
+     * @param  string $pattern
+     * @return bool
+     */
+    protected function _notRegex($response, $pattern)
+    {
+        if (!$response->isRedirect()) {
+            return true;
+        }
+
+        $headers = $response->sendHeaders();
+        $redirect = $headers['location'];
+        $redirect = str_replace('Location: ', '', $redirect);
+
+        return !preg_match($pattern, $redirect);
+    }
+
+    /**
+     * Check to see if content is matched by regex in selected nodes
+     *
+     * @param  Zend_Controller_Response_HttpTestCase $response
+     * @param  string $pattern
+     * @return bool
+     */
+    protected function _regex($response, $pattern)
+    {
+        if (!$response->isRedirect()) {
+            return false;
+        }
+
+        $headers = $response->sendHeaders();
+        $redirect = $headers['location'];
+        $redirect = str_replace('Location: ', '', $redirect);
+
+        return preg_match($pattern, $redirect);
     }
 
     /**
@@ -198,85 +278,5 @@ class Zend_Test_PHPUnit_Constraint_Redirect extends PHPUnit_Framework_Constraint
     public function toString()
     {
         return '';
-    }
-
-    /**
-     * Check to see if content is matched in selected nodes
-     *
-     * @param  Zend_Controller_Response_HttpTestCase $response
-     * @param  string $match Content to match
-     * @return bool
-     */
-    protected function _match($response, $match)
-    {
-        if (!$response->isRedirect()) {
-            return false;
-        }
-
-        $headers  = $response->sendHeaders();
-        $redirect = $headers['location'];
-        $redirect = str_replace('Location: ', '', $redirect);
-
-        return ($redirect == $match);
-    }
-
-    /**
-     * Check to see if content is NOT matched in selected nodes
-     *
-     * @param  Zend_Controller_Response_HttpTestCase $response
-     * @param  string $match
-     * @return bool
-     */
-    protected function _notMatch($response, $match)
-    {
-        if (!$response->isRedirect()) {
-            return true;
-        }
-
-        $headers  = $response->sendHeaders();
-        $redirect = $headers['location'];
-        $redirect = str_replace('Location: ', '', $redirect);
-
-        return ($redirect != $match);
-    }
-
-    /**
-     * Check to see if content is matched by regex in selected nodes
-     *
-     * @param  Zend_Controller_Response_HttpTestCase $response
-     * @param  string $pattern
-     * @return bool
-     */
-    protected function _regex($response, $pattern)
-    {
-        if (!$response->isRedirect()) {
-            return false;
-        }
-
-        $headers  = $response->sendHeaders();
-        $redirect = $headers['location'];
-        $redirect = str_replace('Location: ', '', $redirect);
-
-        return preg_match($pattern, $redirect);
-    }
-
-    /**
-     * Check to see if content is NOT matched by regex in selected nodes
-     *
-     * @param  Zend_Controller_Response_HttpTestCase $response
-     * @param  string $pattern
-     * @return bool
-     */
-    protected function _notRegex($response, $pattern)
-    {
-        if (!$response->isRedirect()) {
-            return true;
-        }
-
-        $headers  = $response->sendHeaders();
-        $redirect = $headers['location'];
-        $redirect = str_replace('Location: ', '', $redirect);
-
-        return !preg_match($pattern, $redirect);
     }
 }

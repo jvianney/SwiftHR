@@ -38,21 +38,27 @@ class Zend_TimeSync implements IteratorAggregate
      * when no protocol is specified
      */
     const DEFAULT_PROTOCOL = 'Ntp';
-
+    /**
+     * Configuration array, set using the constructor or using
+     * ::setOptions() or ::setOption()
+     *
+     * @var array
+     */
+    public static $options = array(
+        'timeout' => 1
+    );
     /**
      * Contains array of timeserver objects
      *
      * @var array
      */
     protected $_timeservers = array();
-
     /**
      * Holds a reference to the timeserver that is currently being used
      *
      * @var object
      */
     protected $_current;
-
     /**
      * Allowed timeserver schemes
      *
@@ -64,20 +70,10 @@ class Zend_TimeSync implements IteratorAggregate
     );
 
     /**
-     * Configuration array, set using the constructor or using
-     * ::setOptions() or ::setOption()
-     *
-     * @var array
-     */
-    public static $options = array(
-        'timeout' => 1
-    );
-
-    /**
      * Zend_TimeSync constructor
      *
      * @param  string|array $target - OPTIONAL single timeserver, or an array of timeservers.
-     * @param  string       $alias  - OPTIONAL an alias for this timeserver
+     * @param  string $alias - OPTIONAL an alias for this timeserver
      * @return  object
      */
     public function __construct($target = null, $alias = null)
@@ -85,17 +81,6 @@ class Zend_TimeSync implements IteratorAggregate
         if ($target !== null) {
             $this->addServer($target, $alias);
         }
-    }
-
-    /**
-     * getIterator() - return an iteratable object for use in foreach and the like,
-     * this completes the IteratorAggregate interface
-     *
-     * @return ArrayObject
-     */
-    public function getIterator()
-    {
-        return new ArrayObject($this->_timeservers);
     }
 
     /**
@@ -125,7 +110,7 @@ class Zend_TimeSync implements IteratorAggregate
      * - sntp
      *
      * @param  string|array $target - Single timeserver, or an array of timeservers.
-     * @param  string       $alias  - OPTIONAL an alias for this timeserver
+     * @param  string $alias - OPTIONAL an alias for this timeserver
      * @throws Zend_TimeSync_Exception
      */
     public function addServer($target, $alias = null)
@@ -140,126 +125,10 @@ class Zend_TimeSync implements IteratorAggregate
     }
 
     /**
-     * Sets the value for the given options
-     *
-     * This will replace any currently defined options.
-     *
-     * @param   array $options - An array of options to be set
-     */
-    public static function setOptions(array $options)
-    {
-        foreach ($options as $key => $value) {
-            Zend_TimeSync::$options[$key] = $value;
-        }
-    }
-
-    /**
-     * Marks a nameserver as current
-     *
-     * @param   string|integer $alias - The alias from the timeserver to set as current
-     * @throws  Zend_TimeSync_Exception
-     */
-    public function setServer($alias)
-    {
-        if (isset($this->_timeservers[$alias]) === true) {
-            $this->_current = $this->_timeservers[$alias];
-        } else {
-            require_once 'Zend/TimeSync/Exception.php';
-            throw new Zend_TimeSync_Exception("'$alias' does not point to valid timeserver");
-        }
-    }
-
-    /**
-     * Returns the value to the option
-     *
-     * @param   string $key - The option's identifier
-     * @return  mixed
-     * @throws  Zend_TimeSync_Exception
-     */
-    public static function getOptions($key = null)
-    {
-        if ($key == null) {
-            return Zend_TimeSync::$options;
-        }
-
-        if (isset(Zend_TimeSync::$options[$key]) === true) {
-            return Zend_TimeSync::$options[$key];
-        } else {
-            require_once 'Zend/TimeSync/Exception.php';
-            throw new Zend_TimeSync_Exception("'$key' does not point to valid option");
-        }
-    }
-
-    /**
-     * Return a specified timeserver by alias
-     * If no alias is given it will return the current timeserver
-     *
-     * @param   string|integer $alias - The alias from the timeserver to return
-     * @return  object
-     * @throws  Zend_TimeSync_Exception
-     */
-    public function getServer($alias = null)
-    {
-        if ($alias === null) {
-            if (isset($this->_current) && $this->_current !== false) {
-                return $this->_current;
-            } else {
-                require_once 'Zend/TimeSync/Exception.php';
-                throw new Zend_TimeSync_Exception('there is no timeserver set');
-            }
-        }
-        if (isset($this->_timeservers[$alias]) === true) {
-            return $this->_timeservers[$alias];
-        } else {
-            require_once 'Zend/TimeSync/Exception.php';
-            throw new Zend_TimeSync_Exception("'$alias' does not point to valid timeserver");
-        }
-    }
-
-    /**
-     * Returns information sent/returned from the current timeserver
-     *
-     * @return  array
-     */
-    public function getInfo()
-    {
-        return $this->getServer()->getInfo();
-    }
-
-    /**
-     * Query the timeserver list using the fallback mechanism
-     *
-     * If there are multiple servers listed, this method will act as a
-     * facade and will try to return the date from the first server that
-     * returns a valid result.
-     *
-     * @param   Zend_Locale $locale - OPTIONAL locale
-     * @return  object
-     * @throws  Zend_TimeSync_Exception
-     */
-    public function getDate($locale = null)
-    {
-        require_once 'Zend/TimeSync/Exception.php';
-        foreach ($this->_timeservers as $alias => $server) {
-            $this->_current = $server;
-            try {
-                return $server->getDate($locale);
-            } catch (Zend_TimeSync_Exception $e) {
-                if (!isset($masterException)) {
-                    $masterException = new Zend_TimeSync_Exception('all timeservers are bogus');
-                }
-                $masterException->addException($e);
-            }
-        }
-
-        throw $masterException;
-    }
-
-    /**
      * Adds a timeserver object to the timeserver list
      *
-     * @param  string|array $target   - Single timeserver, or an array of timeservers.
-     * @param  string       $alias    - An alias for this timeserver
+     * @param  string|array $target - Single timeserver, or an array of timeservers.
+     * @param  string $alias - An alias for this timeserver
      */
     protected function _addServer($target, $alias)
     {
@@ -300,5 +169,132 @@ class Zend_TimeSync implements IteratorAggregate
         $timeServerObj = new $className($adress, $port);
 
         $this->_timeservers[$alias] = $timeServerObj;
+    }
+
+    /**
+     * Returns the value to the option
+     *
+     * @param   string $key - The option's identifier
+     * @return  mixed
+     * @throws  Zend_TimeSync_Exception
+     */
+    public static function getOptions($key = null)
+    {
+        if ($key == null) {
+            return Zend_TimeSync::$options;
+        }
+
+        if (isset(Zend_TimeSync::$options[$key]) === true) {
+            return Zend_TimeSync::$options[$key];
+        } else {
+            require_once 'Zend/TimeSync/Exception.php';
+            throw new Zend_TimeSync_Exception("'$key' does not point to valid option");
+        }
+    }
+
+    /**
+     * Sets the value for the given options
+     *
+     * This will replace any currently defined options.
+     *
+     * @param   array $options - An array of options to be set
+     */
+    public static function setOptions(array $options)
+    {
+        foreach ($options as $key => $value) {
+            Zend_TimeSync::$options[$key] = $value;
+        }
+    }
+
+    /**
+     * getIterator() - return an iteratable object for use in foreach and the like,
+     * this completes the IteratorAggregate interface
+     *
+     * @return ArrayObject
+     */
+    public function getIterator()
+    {
+        return new ArrayObject($this->_timeservers);
+    }
+
+    /**
+     * Marks a nameserver as current
+     *
+     * @param   string|integer $alias - The alias from the timeserver to set as current
+     * @throws  Zend_TimeSync_Exception
+     */
+    public function setServer($alias)
+    {
+        if (isset($this->_timeservers[$alias]) === true) {
+            $this->_current = $this->_timeservers[$alias];
+        } else {
+            require_once 'Zend/TimeSync/Exception.php';
+            throw new Zend_TimeSync_Exception("'$alias' does not point to valid timeserver");
+        }
+    }
+
+    /**
+     * Returns information sent/returned from the current timeserver
+     *
+     * @return  array
+     */
+    public function getInfo()
+    {
+        return $this->getServer()->getInfo();
+    }
+
+    /**
+     * Return a specified timeserver by alias
+     * If no alias is given it will return the current timeserver
+     *
+     * @param   string|integer $alias - The alias from the timeserver to return
+     * @return  object
+     * @throws  Zend_TimeSync_Exception
+     */
+    public function getServer($alias = null)
+    {
+        if ($alias === null) {
+            if (isset($this->_current) && $this->_current !== false) {
+                return $this->_current;
+            } else {
+                require_once 'Zend/TimeSync/Exception.php';
+                throw new Zend_TimeSync_Exception('there is no timeserver set');
+            }
+        }
+        if (isset($this->_timeservers[$alias]) === true) {
+            return $this->_timeservers[$alias];
+        } else {
+            require_once 'Zend/TimeSync/Exception.php';
+            throw new Zend_TimeSync_Exception("'$alias' does not point to valid timeserver");
+        }
+    }
+
+    /**
+     * Query the timeserver list using the fallback mechanism
+     *
+     * If there are multiple servers listed, this method will act as a
+     * facade and will try to return the date from the first server that
+     * returns a valid result.
+     *
+     * @param   Zend_Locale $locale - OPTIONAL locale
+     * @return  object
+     * @throws  Zend_TimeSync_Exception
+     */
+    public function getDate($locale = null)
+    {
+        require_once 'Zend/TimeSync/Exception.php';
+        foreach ($this->_timeservers as $alias => $server) {
+            $this->_current = $server;
+            try {
+                return $server->getDate($locale);
+            } catch (Zend_TimeSync_Exception $e) {
+                if (!isset($masterException)) {
+                    $masterException = new Zend_TimeSync_Exception('all timeservers are bogus');
+                }
+                $masterException->addException($e);
+            }
+        }
+
+        throw $masterException;
     }
 }

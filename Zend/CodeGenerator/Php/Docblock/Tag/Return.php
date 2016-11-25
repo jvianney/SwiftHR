@@ -62,6 +62,16 @@ class Zend_CodeGenerator_Php_Docblock_Tag_Return extends Zend_CodeGenerator_Php_
     }
 
     /**
+     * getDatatype()
+     *
+     * @return string
+     */
+    public function getDatatype()
+    {
+        return $this->_datatype;
+    }
+
+    /**
      * setDatatype()
      *
      * @param string $datatype
@@ -72,17 +82,6 @@ class Zend_CodeGenerator_Php_Docblock_Tag_Return extends Zend_CodeGenerator_Php_
         $this->_datatype = $datatype;
         return $this;
     }
-
-    /**
-     * getDatatype()
-     *
-     * @return string
-     */
-    public function getDatatype()
-    {
-        return $this->_datatype;
-    }
-
 
     /**
      * generate()

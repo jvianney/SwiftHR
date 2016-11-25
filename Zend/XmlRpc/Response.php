@@ -81,29 +81,6 @@ class Zend_XmlRpc_Response
     }
 
     /**
-     * Set encoding to use in response
-     *
-     * @param string $encoding
-     * @return Zend_XmlRpc_Response
-     */
-    public function setEncoding($encoding)
-    {
-        $this->_encoding = $encoding;
-        Zend_XmlRpc_Value::setEncoding($encoding);
-        return $this;
-    }
-
-    /**
-     * Retrieve current response encoding
-     *
-     * @return string
-     */
-    public function getEncoding()
-    {
-        return $this->_encoding;
-    }
-
-    /**
      * Set the return value
      *
      * Sets the return value, with optional type hinting if provided.
@@ -115,7 +92,7 @@ class Zend_XmlRpc_Response
     public function setReturnValue($value, $type = null)
     {
         $this->_return = $value;
-        $this->_type = (string) $type;
+        $this->_type = (string)$type;
     }
 
     /**
@@ -126,16 +103,6 @@ class Zend_XmlRpc_Response
     public function getReturnValue()
     {
         return $this->_return;
-    }
-
-    /**
-     * Retrieve the XMLRPC value for the return value
-     *
-     * @return Zend_XmlRpc_Value
-     */
-    protected function _getXmlRpcReturn()
-    {
-        return Zend_XmlRpc_Value::getXmlRpcValue($this->_return);
     }
 
     /**
@@ -220,23 +187,26 @@ class Zend_XmlRpc_Response
     }
 
     /**
-     * Return response as XML
+     * Retrieve current response encoding
      *
      * @return string
      */
-    public function saveXml()
+    public function getEncoding()
     {
-        $value = $this->_getXmlRpcReturn();
-        $generator = Zend_XmlRpc_Value::getGenerator();
-        $generator->openElement('methodResponse')
-                  ->openElement('params')
-                  ->openElement('param');
-        $value->generateXml();
-        $generator->closeElement('param')
-                  ->closeElement('params')
-                  ->closeElement('methodResponse');
+        return $this->_encoding;
+    }
 
-        return $generator->flush();
+    /**
+     * Set encoding to use in response
+     *
+     * @param string $encoding
+     * @return Zend_XmlRpc_Response
+     */
+    public function setEncoding($encoding)
+    {
+        $this->_encoding = $encoding;
+        Zend_XmlRpc_Value::setEncoding($encoding);
+        return $this;
     }
 
     /**
@@ -247,5 +217,35 @@ class Zend_XmlRpc_Response
     public function __toString()
     {
         return $this->saveXML();
+    }
+
+    /**
+     * Return response as XML
+     *
+     * @return string
+     */
+    public function saveXml()
+    {
+        $value = $this->_getXmlRpcReturn();
+        $generator = Zend_XmlRpc_Value::getGenerator();
+        $generator->openElement('methodResponse')
+            ->openElement('params')
+            ->openElement('param');
+        $value->generateXml();
+        $generator->closeElement('param')
+            ->closeElement('params')
+            ->closeElement('methodResponse');
+
+        return $generator->flush();
+    }
+
+    /**
+     * Retrieve the XMLRPC value for the return value
+     *
+     * @return Zend_XmlRpc_Value
+     */
+    protected function _getXmlRpcReturn()
+    {
+        return Zend_XmlRpc_Value::getXmlRpcValue($this->_return);
     }
 }

@@ -60,17 +60,6 @@ class Zend_Feed_Writer_Extension_Content_Renderer_Entry
     }
 
     /**
-     * Append namespaces to root element
-     *
-     * @return void
-     */
-    protected function _appendNamespaces()
-    {
-        $this->getRootElement()->setAttribute('xmlns:content',
-            'http://purl.org/rss/1.0/modules/content/');
-    }
-
-    /**
      * Set entry content
      *
      * @param  DOMDocument $dom
@@ -88,5 +77,16 @@ class Zend_Feed_Writer_Extension_Content_Renderer_Entry
         $cdata = $dom->createCDATASection($content);
         $element->appendChild($cdata);
         $this->_called = true;
+    }
+
+    /**
+     * Append namespaces to root element
+     *
+     * @return void
+     */
+    protected function _appendNamespaces()
+    {
+        $this->getRootElement()->setAttribute('xmlns:content',
+            'http://purl.org/rss/1.0/modules/content/');
     }
 }

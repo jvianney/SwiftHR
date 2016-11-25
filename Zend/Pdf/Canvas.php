@@ -54,9 +54,9 @@ class Zend_Pdf_Canvas extends Zend_Pdf_Canvas_Abstract
      */
     protected $_height;
 
-    protected $_resources = array('Font'      => array(),
-                                  'XObject'   => array(),
-                                  'ExtGState' => array());
+    protected $_resources = array('Font' => array(),
+        'XObject' => array(),
+        'ExtGState' => array());
 
     /**
      * Object constructor
@@ -66,50 +66,8 @@ class Zend_Pdf_Canvas extends Zend_Pdf_Canvas_Abstract
      */
     public function __construct($width, $height)
     {
-        $this->_width  = $width;
+        $this->_width = $width;
         $this->_height = $height;
-    }
-
-    /**
-     * Add procedure set to the canvas description
-     *
-     * @param string $procSetName
-     */
-    protected function _addProcSet($procSetName)
-    {
-        $this->_procset[$procSetName] = 1;
-    }
-
-    /**
-     * Attach resource to the canvas
-     *
-     * Method returns a name of the resource which can be used
-     * as a resource reference within drawing instructions stream
-     * Allowed types: 'ExtGState', 'ColorSpace', 'Pattern', 'Shading',
-     * 'XObject', 'Font', 'Properties'
-     *
-     * @param string $type
-     * @param Zend_Pdf_Resource $resource
-     * @return string
-     */
-    protected function _attachResource($type, Zend_Pdf_Resource $resource)
-    {
-        // Check, that resource is already attached to resource set.
-        $resObject = $resource->getResource();
-        foreach ($this->_resources[$type] as $resName => $collectedResObject) {
-            if ($collectedResObject === $resObject) {
-                return $resName;
-            }
-        }
-
-        $idCounter = 1;
-        do {
-            $newResName = $type[0] . $idCounter++;
-        } while (isset($this->_resources[$type][$newResName]));
-
-        $this->_resources[$type][$newResName] = $resObject;
-
-        return $newResName;
     }
 
     /**
@@ -178,5 +136,47 @@ class Zend_Pdf_Canvas extends Zend_Pdf_Canvas_Abstract
     public function getWidth()
     {
         return $this->_width;
+    }
+
+    /**
+     * Add procedure set to the canvas description
+     *
+     * @param string $procSetName
+     */
+    protected function _addProcSet($procSetName)
+    {
+        $this->_procset[$procSetName] = 1;
+    }
+
+    /**
+     * Attach resource to the canvas
+     *
+     * Method returns a name of the resource which can be used
+     * as a resource reference within drawing instructions stream
+     * Allowed types: 'ExtGState', 'ColorSpace', 'Pattern', 'Shading',
+     * 'XObject', 'Font', 'Properties'
+     *
+     * @param string $type
+     * @param Zend_Pdf_Resource $resource
+     * @return string
+     */
+    protected function _attachResource($type, Zend_Pdf_Resource $resource)
+    {
+        // Check, that resource is already attached to resource set.
+        $resObject = $resource->getResource();
+        foreach ($this->_resources[$type] as $resName => $collectedResObject) {
+            if ($collectedResObject === $resObject) {
+                return $resName;
+            }
+        }
+
+        $idCounter = 1;
+        do {
+            $newResName = $type[0] . $idCounter++;
+        } while (isset($this->_resources[$type][$newResName]));
+
+        $this->_resources[$type][$newResName] = $resObject;
+
+        return $newResName;
     }
 }

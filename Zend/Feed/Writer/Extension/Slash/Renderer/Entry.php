@@ -60,17 +60,6 @@ class Zend_Feed_Writer_Extension_Slash_Renderer_Entry
     }
 
     /**
-     * Append entry namespaces
-     *
-     * @return void
-     */
-    protected function _appendNamespaces()
-    {
-        $this->getRootElement()->setAttribute('xmlns:slash',
-            'http://purl.org/rss/1.0/modules/slash/');
-    }
-
-    /**
      * Set entry comment count
      *
      * @param  DOMDocument $dom
@@ -87,5 +76,16 @@ class Zend_Feed_Writer_Extension_Slash_Renderer_Entry
         $tcount->nodeValue = $count;
         $root->appendChild($tcount);
         $this->_called = true;
+    }
+
+    /**
+     * Append entry namespaces
+     *
+     * @return void
+     */
+    protected function _appendNamespaces()
+    {
+        $this->getRootElement()->setAttribute('xmlns:slash',
+            'http://purl.org/rss/1.0/modules/slash/');
     }
 }

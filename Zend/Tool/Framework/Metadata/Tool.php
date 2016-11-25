@@ -42,9 +42,9 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     /**#@+
      * @var string
      */
-    protected $_clientName    = null;
-    protected $_actionName    = null;
-    protected $_providerName  = null;
+    protected $_clientName = null;
+    protected $_actionName = null;
+    protected $_providerName = null;
     protected $_specialtyName = null;
     /**#@-*/
 
@@ -54,6 +54,12 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     protected $_clientReference = null;
     protected $_actionReference = null;
     protected $_providerReference = null;
+
+    public function getClientName()
+    {
+        return $this->_clientName;
+    }
+
     /**#@-*/
 
     public function setClientName($clientName)
@@ -62,9 +68,14 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
         return $this;
     }
 
-    public function getClientName()
+    /**
+     * getActionName()
+     *
+     * @return string
+     */
+    public function getActionName()
     {
-        return $this->_clientName;
+        return $this->_actionName;
     }
 
     /**
@@ -80,13 +91,13 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     }
 
     /**
-     * getActionName()
+     * getProviderName()
      *
      * @return string
      */
-    public function getActionName()
+    public function getProviderName()
     {
-        return $this->_actionName;
+        return $this->_providerName;
     }
 
     /**
@@ -102,13 +113,13 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     }
 
     /**
-     * getProviderName()
+     * getSpecialtyName()
      *
      * @return string
      */
-    public function getProviderName()
+    public function getSpecialtyName()
     {
-        return $this->_providerName;
+        return $this->_specialtyName;
     }
 
     /**
@@ -124,13 +135,13 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     }
 
     /**
-     * getSpecialtyName()
+     * getClientReference()
      *
-     * @return string
+     * @return Zend_Tool_Framework_Client_Abstract
      */
-    public function getSpecialtyName()
+    public function getClientReference()
     {
-        return $this->_specialtyName;
+        return $this->_clientReference;
     }
 
     /**
@@ -146,13 +157,13 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     }
 
     /**
-     * getClientReference()
+     * getActionReference()
      *
-     * @return Zend_Tool_Framework_Client_Abstract
+     * @return Zend_Tool_Framework_Action_Interface
      */
-    public function getClientReference()
+    public function getActionReference()
     {
-        return $this->_clientReference;
+        return $this->_actionReference;
     }
 
     /**
@@ -168,13 +179,13 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     }
 
     /**
-     * getActionReference()
+     * getProviderReference()
      *
-     * @return Zend_Tool_Framework_Action_Interface
+     * @return Zend_Tool_Framework_Provider_Interface
      */
-    public function getActionReference()
+    public function getProviderReference()
     {
-        return $this->_actionReference;
+        return $this->_providerReference;
     }
 
     /**
@@ -190,16 +201,6 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     }
 
     /**
-     * getProviderReference()
-     *
-     * @return Zend_Tool_Framework_Provider_Interface
-     */
-    public function getProviderReference()
-    {
-        return $this->_providerReference;
-    }
-
-    /**
      * __toString() cast to string
      *
      * @return string
@@ -208,9 +209,9 @@ class Zend_Tool_Framework_Metadata_Tool extends Zend_Tool_Framework_Metadata_Bas
     {
         $string = parent::__toString();
         $string .= ' (ProviderName: ' . $this->_providerName
-             . ', ActionName: '     . $this->_actionName
-             . ', SpecialtyName: '  . $this->_specialtyName
-             . ')';
+            . ', ActionName: ' . $this->_actionName
+            . ', SpecialtyName: ' . $this->_specialtyName
+            . ')';
 
         return $string;
     }

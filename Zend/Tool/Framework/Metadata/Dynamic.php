@@ -76,18 +76,6 @@ class Zend_Tool_Framework_Metadata_Dynamic
     }
 
     /**
-     * setType()
-     *
-     * @param string $type
-     * @return Zend_Tool_Framework_Metadata_Dynamic
-     */
-    public function setType($type)
-    {
-        $this->_type = $type;
-        return $this;
-    }
-
-    /**
      * getType()
      *
      * The type of metadata this describes
@@ -100,14 +88,14 @@ class Zend_Tool_Framework_Metadata_Dynamic
     }
 
     /**
-     * setName()
+     * setType()
      *
-     * @param string $name
+     * @param string $type
      * @return Zend_Tool_Framework_Metadata_Dynamic
      */
-    public function setName($name)
+    public function setType($type)
     {
-        $this->_name = $name;
+        $this->_type = $type;
         return $this;
     }
 
@@ -124,14 +112,14 @@ class Zend_Tool_Framework_Metadata_Dynamic
     }
 
     /**
-     * setValue()
+     * setName()
      *
-     * @param mixed $value
+     * @param string $name
      * @return Zend_Tool_Framework_Metadata_Dynamic
      */
-    public function setValue($value)
+    public function setName($name)
     {
-        $this->_value = $value;
+        $this->_name = $name;
         return $this;
     }
 
@@ -145,6 +133,18 @@ class Zend_Tool_Framework_Metadata_Dynamic
     public function getValue()
     {
         return $this->_value;
+    }
+
+    /**
+     * setValue()
+     *
+     * @param mixed $value
+     * @return Zend_Tool_Framework_Metadata_Dynamic
+     */
+    public function setValue($value)
+    {
+        $this->_value = $value;
+        return $this;
     }
 
     public function getAttributes()

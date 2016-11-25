@@ -72,10 +72,10 @@ class Zend_View_Helper_Translate extends Zend_View_Helper_Abstract
         }
 
         $translate = $this->getTranslator();
-        $options   = func_get_args();
+        $options = func_get_args();
 
         array_shift($options);
-        $count  = count($options);
+        $count = count($options);
         $locale = null;
         if ($count > 0) {
             if (Zend_Locale::isLocale($options[($count - 1)], null, false) !== false) {
@@ -99,6 +99,23 @@ class Zend_View_Helper_Translate extends Zend_View_Helper_Abstract
     }
 
     /**
+     * Retrieve translation object
+     *
+     * @return Zend_Translate_Adapter|null
+     */
+    public function getTranslator()
+    {
+        if ($this->_translator === null) {
+            require_once 'Zend/Registry.php';
+            if (Zend_Registry::isRegistered('Zend_Translate')) {
+                $this->setTranslator(Zend_Registry::get('Zend_Translate'));
+            }
+        }
+
+        return $this->_translator;
+    }
+
+    /**
      * Sets a translation Adapter for translation
      *
      * @param  Zend_Translate|Zend_Translate_Adapter $translate Instance of Zend_Translate
@@ -119,23 +136,6 @@ class Zend_View_Helper_Translate extends Zend_View_Helper_Abstract
         }
 
         return $this;
-    }
-
-    /**
-     * Retrieve translation object
-     *
-     * @return Zend_Translate_Adapter|null
-     */
-    public function getTranslator()
-    {
-        if ($this->_translator === null) {
-            require_once 'Zend/Registry.php';
-            if (Zend_Registry::isRegistered('Zend_Translate')) {
-                $this->setTranslator(Zend_Registry::get('Zend_Translate'));
-            }
-        }
-
-        return $this->_translator;
     }
 
     /**

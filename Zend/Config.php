@@ -98,13 +98,13 @@ class Zend_Config implements Countable, Iterator
      * Zend_Config also implements Countable and Iterator to
      * facilitate easy access to the data.
      *
-     * @param  array   $array
+     * @param  array $array
      * @param  boolean $allowModifications
      * @return void
      */
     public function __construct(array $array, $allowModifications = false)
     {
-        $this->_allowModifications = (boolean) $allowModifications;
+        $this->_allowModifications = (boolean)$allowModifications;
         $this->_loadedSection = null;
         $this->_index = 0;
         $this->_data = array();
@@ -116,22 +116,6 @@ class Zend_Config implements Countable, Iterator
             }
         }
         $this->_count = count($this->_data);
-    }
-
-    /**
-     * Retrieve a value and return $default if there is no element set.
-     *
-     * @param string $name
-     * @param mixed $default
-     * @return mixed
-     */
-    public function get($name, $default = null)
-    {
-        $result = $default;
-        if (array_key_exists($name, $this->_data)) {
-            $result = $this->_data[$name];
-        }
-        return $result;
     }
 
     /**
@@ -150,7 +134,7 @@ class Zend_Config implements Countable, Iterator
      * was set to true on construction. Otherwise, throw an exception.
      *
      * @param  string $name
-     * @param  mixed  $value
+     * @param  mixed $value
      * @throws Zend_Config_Exception
      * @return void
      */
@@ -171,6 +155,22 @@ class Zend_Config implements Countable, Iterator
     }
 
     /**
+     * Retrieve a value and return $default if there is no element set.
+     *
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
+     */
+    public function get($name, $default = null)
+    {
+        $result = $default;
+        if (array_key_exists($name, $this->_data)) {
+            $result = $this->_data[$name];
+        }
+        return $result;
+    }
+
+    /**
      * Deep clone of this instance to ensure that nested Zend_Configs
      * are also cloned.
      *
@@ -178,34 +178,15 @@ class Zend_Config implements Countable, Iterator
      */
     public function __clone()
     {
-      $array = array();
-      foreach ($this->_data as $key => $value) {
-          if ($value instanceof Zend_Config) {
-              $array[$key] = clone $value;
-          } else {
-              $array[$key] = $value;
-          }
-      }
-      $this->_data = $array;
-    }
-
-    /**
-     * Return an associative array of the stored data.
-     *
-     * @return array
-     */
-    public function toArray()
-    {
         $array = array();
-        $data = $this->_data;
-        foreach ($data as $key => $value) {
+        foreach ($this->_data as $key => $value) {
             if ($value instanceof Zend_Config) {
-                $array[$key] = $value->toArray();
+                $array[$key] = clone $value;
             } else {
                 $array[$key] = $value;
             }
         }
-        return $array;
+        $this->_data = $array;
     }
 
     /**
@@ -313,7 +294,7 @@ class Zend_Config implements Countable, Iterator
      */
     public function getSectionName()
     {
-        if(is_array($this->_loadedSection) && count($this->_loadedSection) == 1) {
+        if (is_array($this->_loadedSection) && count($this->_loadedSection) == 1) {
             $this->_loadedSection = $this->_loadedSection[0];
         }
         return $this->_loadedSection;
@@ -329,7 +310,6 @@ class Zend_Config implements Countable, Iterator
         return $this->_loadedSection === null;
     }
 
-
     /**
      * Merge another Zend_Config with this one. The items
      * in $merge will override the same named items in
@@ -340,15 +320,15 @@ class Zend_Config implements Countable, Iterator
      */
     public function merge(Zend_Config $merge)
     {
-        foreach($merge as $key => $item) {
-            if(array_key_exists($key, $this->_data)) {
-                if($item instanceof Zend_Config && $this->$key instanceof Zend_Config) {
+        foreach ($merge as $key => $item) {
+            if (array_key_exists($key, $this->_data)) {
+                if ($item instanceof Zend_Config && $this->$key instanceof Zend_Config) {
                     $this->$key = $this->$key->merge(new Zend_Config($item->toArray(), !$this->readOnly()));
                 } else {
                     $this->$key = $item;
                 }
             } else {
-                if($item instanceof Zend_Config) {
+                if ($item instanceof Zend_Config) {
                     $this->$key = new Zend_Config($item->toArray(), !$this->readOnly());
                 } else {
                     $this->$key = $item;
@@ -357,6 +337,35 @@ class Zend_Config implements Countable, Iterator
         }
 
         return $this;
+    }
+
+    /**
+     * Return an associative array of the stored data.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = array();
+        $data = $this->_data;
+        foreach ($data as $key => $value) {
+            if ($value instanceof Zend_Config) {
+                $array[$key] = $value->toArray();
+            } else {
+                $array[$key] = $value;
+            }
+        }
+        return $array;
+    }
+
+    /**
+     * Returns if this Zend_Config object is read only or not.
+     *
+     * @return boolean
+     */
+    public function readOnly()
+    {
+        return !$this->_allowModifications;
     }
 
     /**
@@ -373,16 +382,6 @@ class Zend_Config implements Countable, Iterator
                 $value->setReadOnly();
             }
         }
-    }
-
-    /**
-     * Returns if this Zend_Config object is read only or not.
-     *
-     * @return boolean
-     */
-    public function readOnly()
-    {
-        return !$this->_allowModifications;
     }
 
     /**
@@ -457,7 +456,7 @@ class Zend_Config implements Countable, Iterator
      * Merge two arrays recursively, overwriting keys of the same name
      * in $firstArray with the value in $secondArray.
      *
-     * @param  mixed $firstArray  First array
+     * @param  mixed $firstArray First array
      * @param  mixed $secondArray Second array to merge into first array
      * @return array
      */
@@ -468,8 +467,8 @@ class Zend_Config implements Countable, Iterator
                 if (isset($firstArray[$key])) {
                     $firstArray[$key] = $this->_arrayMergeRecursive($firstArray[$key], $value);
                 } else {
-                    if($key === 0) {
-                        $firstArray= array(0=>$this->_arrayMergeRecursive($firstArray, $value));
+                    if ($key === 0) {
+                        $firstArray = array(0 => $this->_arrayMergeRecursive($firstArray, $value));
                     } else {
                         $firstArray[$key] = $value;
                     }

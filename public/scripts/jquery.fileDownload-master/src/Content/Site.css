@@ -1,5 +1,4 @@
-body
-{
+body {
     font-size: .85em;
     font-family: "Trebuchet MS", Verdana, Helvetica, Sans-Serif;
     color: #232323;
@@ -12,7 +11,6 @@ nav,
 section {
     display: block;
 }
-
 
 a.toggle-source {
     border: 1px dashed gray;
@@ -28,4 +26,6 @@ h2 {
     margin-top: 40px;
 }
 
-.ui-progressbar-value { background-image: url(images/pbar-ani.gif); }
+.ui-progressbar-value {
+    background-image: url(images/pbar-ani.gif);
+}

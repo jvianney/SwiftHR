@@ -10,7 +10,7 @@ class HTMLPurifier_Injector_SafeObject extends HTMLPurifier_Injector
     public $needed = array('object', 'param');
 
     protected $objectStack = array();
-    protected $paramStack  = array();
+    protected $paramStack = array();
 
     // Keep this synchronized with AttrTransform/SafeParam.php
     protected $addParam = array(
@@ -25,11 +25,13 @@ class HTMLPurifier_Injector_SafeObject extends HTMLPurifier_Injector
         'allowFullScreen' => true, // if omitted, assume to be 'false'
     );
 
-    public function prepare($config, $context) {
+    public function prepare($config, $context)
+    {
         parent::prepare($config, $context);
     }
 
-    public function handleElement(&$token) {
+    public function handleElement(&$token)
+    {
         if ($token->name == 'object') {
             $this->objectStack[] = $token;
             $this->paramStack[] = array();
@@ -51,7 +53,8 @@ class HTMLPurifier_Injector_SafeObject extends HTMLPurifier_Injector
                 // attribute, which we need if a type is specified. This is
                 // *very* Flash specific.
                 if (!isset($this->objectStack[$i]->attr['data']) &&
-                    ($token->attr['name'] == 'movie' || $token->attr['name'] == 'src')) {
+                    ($token->attr['name'] == 'movie' || $token->attr['name'] == 'src')
+                ) {
                     $this->objectStack[$i]->attr['data'] = $token->attr['value'];
                 }
                 // Check if the parameter is the correct value but has not
@@ -76,7 +79,8 @@ class HTMLPurifier_Injector_SafeObject extends HTMLPurifier_Injector
         }
     }
 
-    public function handleEnd(&$token) {
+    public function handleEnd(&$token)
+    {
         // This is the WRONG way of handling the object and param stacks;
         // we should be inserting them directly on the relevant object tokens
         // so that the global stack handling handles it.

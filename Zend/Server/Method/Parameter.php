@@ -87,58 +87,40 @@ class Zend_Server_Method_Parameter
     }
 
     /**
-     * Set default value
+     * Cast to array
      *
-     * @param  mixed $defaultValue
-     * @return Zend_Server_Method_Parameter
+     * @return array
      */
-    public function setDefaultValue($defaultValue)
+    public function toArray()
     {
-        $this->_defaultValue = $defaultValue;
-        return $this;
+        return array(
+            'type' => $this->getType(),
+            'name' => $this->getName(),
+            'optional' => $this->isOptional(),
+            'defaultValue' => $this->getDefaultValue(),
+            'description' => $this->getDescription(),
+        );
     }
 
     /**
-     * Retrieve default value
-     *
-     * @return mixed
-     */
-    public function getDefaultValue()
-    {
-        return $this->_defaultValue;
-    }
-
-    /**
-     * Set description
-     *
-     * @param  string $description
-     * @return Zend_Server_Method_Parameter
-     */
-    public function setDescription($description)
-    {
-        $this->_description = (string) $description;
-        return $this;
-    }
-
-    /**
-     * Retrieve description
+     * Retrieve parameter type
      *
      * @return string
      */
-    public function getDescription()
+    public function getType()
     {
-        return $this->_description;
+        return $this->_type;
     }
 
     /**
-     * Set name
+     * Set parameter type
      *
-     * @param  string $name
+     * @param  string $type
      * @return Zend_Server_Method_Parameter
      */
-    public function setName($name)
+    public function setType($type)
     {
-        $this->_name = (string) $name;
+        $this->_type = (string)$type;
         return $this;
     }
 
@@ -153,14 +135,14 @@ class Zend_Server_Method_Parameter
     }
 
     /**
-     * Set optional flag
+     * Set name
      *
-     * @param  bool $flag
+     * @param  string $name
      * @return Zend_Server_Method_Parameter
      */
-    public function setOptional($flag)
+    public function setName($name)
     {
-        $this->_optional = (bool) $flag;
+        $this->_name = (string)$name;
         return $this;
     }
 
@@ -175,40 +157,58 @@ class Zend_Server_Method_Parameter
     }
 
     /**
-     * Set parameter type
+     * Set optional flag
      *
-     * @param  string $type
+     * @param  bool $flag
      * @return Zend_Server_Method_Parameter
      */
-    public function setType($type)
+    public function setOptional($flag)
     {
-        $this->_type = (string) $type;
+        $this->_optional = (bool)$flag;
         return $this;
     }
 
     /**
-     * Retrieve parameter type
+     * Retrieve default value
      *
-     * @return string
+     * @return mixed
      */
-    public function getType()
+    public function getDefaultValue()
     {
-        return $this->_type;
+        return $this->_defaultValue;
     }
 
     /**
-     * Cast to array
+     * Set default value
      *
-     * @return array
+     * @param  mixed $defaultValue
+     * @return Zend_Server_Method_Parameter
      */
-    public function toArray()
+    public function setDefaultValue($defaultValue)
     {
-        return array(
-            'type'         => $this->getType(),
-            'name'         => $this->getName(),
-            'optional'     => $this->isOptional(),
-            'defaultValue' => $this->getDefaultValue(),
-            'description'  => $this->getDescription(),
-        );
+        $this->_defaultValue = $defaultValue;
+        return $this;
+    }
+
+    /**
+     * Retrieve description
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->_description;
+    }
+
+    /**
+     * Set description
+     *
+     * @param  string $description
+     * @return Zend_Server_Method_Parameter
+     */
+    public function setDescription($description)
+    {
+        $this->_description = (string)$description;
+        return $this;
     }
 }

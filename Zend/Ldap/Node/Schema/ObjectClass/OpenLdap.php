@@ -90,19 +90,6 @@ class Zend_Ldap_Node_Schema_ObjectClass_OpenLdap extends Zend_Ldap_Node_Schema_I
     }
 
     /**
-     * Gets the attributes that this objectClass may contain
-     *
-     * @return array
-     */
-    public function getMayContain()
-    {
-        if ($this->_inheritedMay === null) {
-            $this->_resolveInheritance();
-        }
-        return $this->_inheritedMay;
-    }
-
-    /**
      * Resolves the inheritance tree
      *
      * @return void
@@ -122,6 +109,29 @@ class Zend_Ldap_Node_Schema_ObjectClass_OpenLdap extends Zend_Ldap_Node_Schema_I
         sort($may, SORT_STRING);
         $this->_inheritedMust = $must;
         $this->_inheritedMay = $may;
+    }
+
+    /**
+     * Returns the parent object classes in the inhertitance tree if one exists
+     *
+     * @return array of Zend_Ldap_Node_Schema_ObjectClass_OpenLdap
+     */
+    public function getParents()
+    {
+        return $this->_parents;
+    }
+
+    /**
+     * Gets the attributes that this objectClass may contain
+     *
+     * @return array
+     */
+    public function getMayContain()
+    {
+        if ($this->_inheritedMay === null) {
+            $this->_resolveInheritance();
+        }
+        return $this->_inheritedMay;
     }
 
     /**
@@ -161,15 +171,5 @@ class Zend_Ldap_Node_Schema_ObjectClass_OpenLdap extends Zend_Ldap_Node_Schema_I
     public function getParentClasses()
     {
         return $this->sup;
-    }
-
-    /**
-     * Returns the parent object classes in the inhertitance tree if one exists
-     *
-     * @return array of Zend_Ldap_Node_Schema_ObjectClass_OpenLdap
-     */
-    public function getParents()
-    {
-        return $this->_parents;
     }
 }

@@ -114,161 +114,20 @@ class Zend_Http_Cookie
             throw new Zend_Http_Exception("Cookie name cannot contain these characters: =,; \\t\\r\\n\\013\\014 ({$name})");
         }
 
-        if (! $this->name = (string) $name) {
+        if (!$this->name = (string)$name) {
             require_once 'Zend/Http/Exception.php';
             throw new Zend_Http_Exception('Cookies must have a name');
         }
 
-        if (! $this->domain = (string) $domain) {
+        if (!$this->domain = (string)$domain) {
             require_once 'Zend/Http/Exception.php';
             throw new Zend_Http_Exception('Cookies must have a domain');
         }
 
-        $this->value = (string) $value;
-        $this->expires = ($expires === null ? null : (int) $expires);
+        $this->value = (string)$value;
+        $this->expires = ($expires === null ? null : (int)$expires);
         $this->path = ($path ? $path : '/');
         $this->secure = $secure;
-    }
-
-    /**
-     * Get Cookie name
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Get cookie value
-     *
-     * @return string
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * Get cookie domain
-     *
-     * @return string
-     */
-    public function getDomain()
-    {
-        return $this->domain;
-    }
-
-    /**
-     * Get the cookie path
-     *
-     * @return string
-     */
-    public function getPath()
-    {
-        return $this->path;
-    }
-
-    /**
-     * Get the expiry time of the cookie, or null if no expiry time is set
-     *
-     * @return int|null
-     */
-    public function getExpiryTime()
-    {
-        return $this->expires;
-    }
-
-    /**
-     * Check whether the cookie should only be sent over secure connections
-     *
-     * @return boolean
-     */
-    public function isSecure()
-    {
-        return $this->secure;
-    }
-
-    /**
-     * Check whether the cookie has expired
-     *
-     * Always returns false if the cookie is a session cookie (has no expiry time)
-     *
-     * @param int $now Timestamp to consider as "now"
-     * @return boolean
-     */
-    public function isExpired($now = null)
-    {
-        if ($now === null) $now = time();
-        if (is_int($this->expires) && $this->expires < $now) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Check whether the cookie is a session cookie (has no expiry time set)
-     *
-     * @return boolean
-     */
-    public function isSessionCookie()
-    {
-        return ($this->expires === null);
-    }
-
-    /**
-     * Checks whether the cookie should be sent or not in a specific scenario
-     *
-     * @param string|Zend_Uri_Http $uri URI to check against (secure, domain, path)
-     * @param boolean $matchSessionCookies Whether to send session cookies
-     * @param int $now Override the current time when checking for expiry time
-     * @return boolean
-     */
-    public function match($uri, $matchSessionCookies = true, $now = null)
-    {
-        if (is_string ($uri)) {
-            $uri = Zend_Uri_Http::factory($uri);
-        }
-
-        // Make sure we have a valid Zend_Uri_Http object
-        if (! ($uri->valid() && ($uri->getScheme() == 'http' || $uri->getScheme() =='https'))) {
-            require_once 'Zend/Http/Exception.php';
-            throw new Zend_Http_Exception('Passed URI is not a valid HTTP or HTTPS URI');
-        }
-
-        // Check that the cookie is secure (if required) and not expired
-        if ($this->secure && $uri->getScheme() != 'https') return false;
-        if ($this->isExpired($now)) return false;
-        if ($this->isSessionCookie() && ! $matchSessionCookies) return false;
-
-        // Check if the domain matches
-        if (! self::matchCookieDomain($this->getDomain(), $uri->getHost())) {
-            return false;
-        }
-
-        // Check that path matches using prefix match
-        if (! self::matchCookiePath($this->getPath(), $uri->getPath())) {
-            return false;
-        }
-
-        // If we didn't die until now, return true.
-        return true;
-    }
-
-    /**
-     * Get the cookie as a string, suitable for sending as a "Cookie" header in an
-     * HTTP request
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        if ($this->encodeValue) {
-            return $this->name . '=' . urlencode($this->value) . ';';
-        }
-        return $this->name . '=' . $this->value . ';';
     }
 
     /**
@@ -288,20 +147,20 @@ class Zend_Http_Cookie
             $refUri = Zend_Uri_Http::factory($refUri);
         }
 
-        $name    = '';
-        $value   = '';
-        $domain  = '';
-        $path    = '';
+        $name = '';
+        $value = '';
+        $domain = '';
+        $path = '';
         $expires = null;
-        $secure  = false;
-        $parts   = explode(';', $cookieStr);
+        $secure = false;
+        $parts = explode(';', $cookieStr);
 
         // If first part does not include '=', fail
         if (strpos($parts[0], '=') === false) return false;
 
         // Get the name and value of the cookie
         list($name, $value) = explode('=', trim(array_shift($parts)), 2);
-        $name  = trim($name);
+        $name = trim($name);
         if ($encodeValue) {
             $value = urldecode(trim($value));
         }
@@ -324,9 +183,9 @@ class Zend_Http_Cookie
             $keyValue = explode('=', $part, 2);
             if (count($keyValue) == 2) {
                 list($k, $v) = $keyValue;
-                switch (strtolower($k))    {
+                switch (strtolower($k)) {
                     case 'expires':
-                        if(($expires = strtotime($v)) === false) {
+                        if (($expires = strtotime($v)) === false) {
                             /**
                              * The expiration is past Tue, 19 Jan 2038 03:14:07 UTC
                              * the maximum for 32-bit signed integer. Zend_Date
@@ -365,6 +224,113 @@ class Zend_Http_Cookie
     }
 
     /**
+     * Get Cookie name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get cookie value
+     *
+     * @return string
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    /**
+     * Get the expiry time of the cookie, or null if no expiry time is set
+     *
+     * @return int|null
+     */
+    public function getExpiryTime()
+    {
+        return $this->expires;
+    }
+
+    /**
+     * Check whether the cookie should only be sent over secure connections
+     *
+     * @return boolean
+     */
+    public function isSecure()
+    {
+        return $this->secure;
+    }
+
+    /**
+     * Checks whether the cookie should be sent or not in a specific scenario
+     *
+     * @param string|Zend_Uri_Http $uri URI to check against (secure, domain, path)
+     * @param boolean $matchSessionCookies Whether to send session cookies
+     * @param int $now Override the current time when checking for expiry time
+     * @return boolean
+     */
+    public function match($uri, $matchSessionCookies = true, $now = null)
+    {
+        if (is_string($uri)) {
+            $uri = Zend_Uri_Http::factory($uri);
+        }
+
+        // Make sure we have a valid Zend_Uri_Http object
+        if (!($uri->valid() && ($uri->getScheme() == 'http' || $uri->getScheme() == 'https'))) {
+            require_once 'Zend/Http/Exception.php';
+            throw new Zend_Http_Exception('Passed URI is not a valid HTTP or HTTPS URI');
+        }
+
+        // Check that the cookie is secure (if required) and not expired
+        if ($this->secure && $uri->getScheme() != 'https') return false;
+        if ($this->isExpired($now)) return false;
+        if ($this->isSessionCookie() && !$matchSessionCookies) return false;
+
+        // Check if the domain matches
+        if (!self::matchCookieDomain($this->getDomain(), $uri->getHost())) {
+            return false;
+        }
+
+        // Check that path matches using prefix match
+        if (!self::matchCookiePath($this->getPath(), $uri->getPath())) {
+            return false;
+        }
+
+        // If we didn't die until now, return true.
+        return true;
+    }
+
+    /**
+     * Check whether the cookie has expired
+     *
+     * Always returns false if the cookie is a session cookie (has no expiry time)
+     *
+     * @param int $now Timestamp to consider as "now"
+     * @return boolean
+     */
+    public function isExpired($now = null)
+    {
+        if ($now === null) $now = time();
+        if (is_int($this->expires) && $this->expires < $now) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Check whether the cookie is a session cookie (has no expiry time set)
+     *
+     * @return boolean
+     */
+    public function isSessionCookie()
+    {
+        return ($this->expires === null);
+    }
+
+    /**
      * Check if a cookie's domain matches a host name.
      *
      * Used by Zend_Http_Cookie and Zend_Http_CookieJar for cookie matching
@@ -376,12 +342,12 @@ class Zend_Http_Cookie
      */
     public static function matchCookieDomain($cookieDomain, $host)
     {
-        if (! $cookieDomain) {
+        if (!$cookieDomain) {
             require_once 'Zend/Http/Exception.php';
             throw new Zend_Http_Exception("\$cookieDomain is expected to be a cookie domain");
         }
 
-        if (! $host) {
+        if (!$host) {
             require_once 'Zend/Http/Exception.php';
             throw new Zend_Http_Exception("\$host is expected to be a host name");
         }
@@ -395,7 +361,17 @@ class Zend_Http_Cookie
 
         // Check for either exact match or suffix match
         return ($cookieDomain == $host ||
-                preg_match('/\.' . preg_quote($cookieDomain) . '$/', $host));
+            preg_match('/\.' . preg_quote($cookieDomain) . '$/', $host));
+    }
+
+    /**
+     * Get cookie domain
+     *
+     * @return string
+     */
+    public function getDomain()
+    {
+        return $this->domain;
     }
 
     /**
@@ -409,16 +385,40 @@ class Zend_Http_Cookie
      */
     public static function matchCookiePath($cookiePath, $path)
     {
-        if (! $cookiePath) {
+        if (!$cookiePath) {
             require_once 'Zend/Http/Exception.php';
             throw new Zend_Http_Exception("\$cookiePath is expected to be a cookie path");
         }
 
-        if (! $path) {
+        if (!$path) {
             require_once 'Zend/Http/Exception.php';
             throw new Zend_Http_Exception("\$path is expected to be a host name");
         }
 
         return (strpos($path, $cookiePath) === 0);
+    }
+
+    /**
+     * Get the cookie path
+     *
+     * @return string
+     */
+    public function getPath()
+    {
+        return $this->path;
+    }
+
+    /**
+     * Get the cookie as a string, suitable for sending as a "Cookie" header in an
+     * HTTP request
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        if ($this->encodeValue) {
+            return $this->name . '=' . urlencode($this->value) . ';';
+        }
+        return $this->name . '=' . $this->value . ';';
     }
 }

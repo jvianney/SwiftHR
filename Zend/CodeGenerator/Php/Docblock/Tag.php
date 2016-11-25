@@ -75,34 +75,6 @@ class Zend_CodeGenerator_Php_Docblock_Tag extends Zend_CodeGenerator_Php_Abstrac
         return $codeGenDocblockTag;
     }
 
-    /**
-     * setPluginLoader()
-     *
-     * @param Zend_Loader_PluginLoader $pluginLoader
-     */
-    public static function setPluginLoader(Zend_Loader_PluginLoader $pluginLoader)
-    {
-        self::$_pluginLoader = $pluginLoader;
-        return;
-    }
-
-    /**
-     * getPluginLoader()
-     *
-     * @return Zend_Loader_PluginLoader
-     */
-    public static function getPluginLoader()
-    {
-        if (self::$_pluginLoader == null) {
-            require_once 'Zend/Loader/PluginLoader.php';
-            self::setPluginLoader(new Zend_Loader_PluginLoader(array(
-                'Zend_CodeGenerator_Php_Docblock_Tag' => dirname(__FILE__) . '/Tag/'))
-                );
-        }
-
-        return self::$_pluginLoader;
-    }
-
     public static function factory($tagName)
     {
         $pluginLoader = self::getPluginLoader();
@@ -118,15 +90,31 @@ class Zend_CodeGenerator_Php_Docblock_Tag extends Zend_CodeGenerator_Php_Abstrac
     }
 
     /**
-     * setName()
+     * getPluginLoader()
      *
-     * @param string $name
-     * @return Zend_CodeGenerator_Php_Docblock_Tag
+     * @return Zend_Loader_PluginLoader
      */
-    public function setName($name)
+    public static function getPluginLoader()
     {
-        $this->_name = ltrim($name, '@');
-        return $this;
+        if (self::$_pluginLoader == null) {
+            require_once 'Zend/Loader/PluginLoader.php';
+            self::setPluginLoader(new Zend_Loader_PluginLoader(array(
+                    'Zend_CodeGenerator_Php_Docblock_Tag' => dirname(__FILE__) . '/Tag/'))
+            );
+        }
+
+        return self::$_pluginLoader;
+    }
+
+    /**
+     * setPluginLoader()
+     *
+     * @param Zend_Loader_PluginLoader $pluginLoader
+     */
+    public static function setPluginLoader(Zend_Loader_PluginLoader $pluginLoader)
+    {
+        self::$_pluginLoader = $pluginLoader;
+        return;
     }
 
     /**
@@ -140,14 +128,14 @@ class Zend_CodeGenerator_Php_Docblock_Tag extends Zend_CodeGenerator_Php_Abstrac
     }
 
     /**
-     * setDescription()
+     * setName()
      *
-     * @param string $description
+     * @param string $name
      * @return Zend_CodeGenerator_Php_Docblock_Tag
      */
-    public function setDescription($description)
+    public function setName($name)
     {
-        $this->_description = $description;
+        $this->_name = ltrim($name, '@');
         return $this;
     }
 
@@ -159,6 +147,18 @@ class Zend_CodeGenerator_Php_Docblock_Tag extends Zend_CodeGenerator_Php_Abstrac
     public function getDescription()
     {
         return $this->_description;
+    }
+
+    /**
+     * setDescription()
+     *
+     * @param string $description
+     * @return Zend_CodeGenerator_Php_Docblock_Tag
+     */
+    public function setDescription($description)
+    {
+        $this->_description = $description;
+        return $this;
     }
 
     /**

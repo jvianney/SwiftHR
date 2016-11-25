@@ -1,8 +1,8 @@
-<?php 
-/********************************************************************************* 
+<?php
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -19,24 +19,20 @@
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
 
-if(!empty($this->citiesmodeldata))
-{
-	if($this->con == 'city')
-	{
-		foreach ($this->citiesmodeldata as $city) {
-		$this->citiesform->city->addMultiOption($city['city_org_id'].'!@#'.$city['city'],utf8_encode($city['city']));
-		}
-		echo $this->citiesform->city;
-	}
-	else{
-		foreach ($this->citiesmodeldata as $city) {
-		$this->citiesform->city->addMultiOption($city['id'].'!@#'.$city['city_name'],utf8_encode($city['city_name']));
-		}
-		$this->citiesform->city->addMultiOption('other','Other');
-		echo $this->citiesform->city;
-	}
-}else
-{
-  echo "nocities";
+if (!empty($this->citiesmodeldata)) {
+    if ($this->con == 'city') {
+        foreach ($this->citiesmodeldata as $city) {
+            $this->citiesform->city->addMultiOption($city['city_org_id'] . '!@#' . $city['city'], utf8_encode($city['city']));
+        }
+        echo $this->citiesform->city;
+    } else {
+        foreach ($this->citiesmodeldata as $city) {
+            $this->citiesform->city->addMultiOption($city['id'] . '!@#' . $city['city_name'], utf8_encode($city['city_name']));
+        }
+        $this->citiesform->city->addMultiOption('other', 'Other');
+        echo $this->citiesform->city;
+    }
+} else {
+    echo "nocities";
 }
 ?>  

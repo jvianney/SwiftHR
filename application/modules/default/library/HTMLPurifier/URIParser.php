@@ -12,7 +12,8 @@ class HTMLPurifier_URIParser
      */
     protected $percentEncoder;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->percentEncoder = new HTMLPurifier_PercentEncoder();
     }
 
@@ -22,19 +23,20 @@ class HTMLPurifier_URIParser
      * @return HTMLPurifier_URI representation of URI. This representation has
      *         not been validated yet and may not conform to RFC.
      */
-    public function parse($uri) {
+    public function parse($uri)
+    {
 
         $uri = $this->percentEncoder->normalize($uri);
 
         // Regexp is as per Appendix B.
         // Note that ["<>] are an addition to the RFC's recommended
         // characters, because they represent external delimeters.
-        $r_URI = '!'.
-            '(([^:/?#"<>]+):)?'. // 2. Scheme
-            '(//([^/?#"<>]*))?'. // 4. Authority
-            '([^?#"<>]*)'.       // 5. Path
-            '(\?([^#"<>]*))?'.   // 7. Query
-            '(#([^"<>]*))?'.     // 8. Fragment
+        $r_URI = '!' .
+            '(([^:/?#"<>]+):)?' . // 2. Scheme
+            '(//([^/?#"<>]*))?' . // 4. Authority
+            '([^?#"<>]*)' .       // 5. Path
+            '(\?([^#"<>]*))?' .   // 7. Query
+            '(#([^"<>]*))?' .     // 8. Fragment
             '!';
 
         $matches = array();
@@ -43,20 +45,20 @@ class HTMLPurifier_URIParser
         if (!$result) return false; // *really* invalid URI
 
         // seperate out parts
-        $scheme     = !empty($matches[1]) ? $matches[2] : null;
-        $authority  = !empty($matches[3]) ? $matches[4] : null;
-        $path       = $matches[5]; // always present, can be empty
-        $query      = !empty($matches[6]) ? $matches[7] : null;
-        $fragment   = !empty($matches[8]) ? $matches[9] : null;
+        $scheme = !empty($matches[1]) ? $matches[2] : null;
+        $authority = !empty($matches[3]) ? $matches[4] : null;
+        $path = $matches[5]; // always present, can be empty
+        $query = !empty($matches[6]) ? $matches[7] : null;
+        $fragment = !empty($matches[8]) ? $matches[9] : null;
 
         // further parse authority
         if ($authority !== null) {
             $r_authority = "/^((.+?)@)?(\[[^\]]+\]|[^:]*)(:(\d*))?/";
             $matches = array();
             preg_match($r_authority, $authority, $matches);
-            $userinfo   = !empty($matches[1]) ? $matches[2] : null;
-            $host       = !empty($matches[3]) ? $matches[3] : '';
-            $port       = !empty($matches[4]) ? (int) $matches[5] : null;
+            $userinfo = !empty($matches[1]) ? $matches[2] : null;
+            $host = !empty($matches[3]) ? $matches[3] : '';
+            $port = !empty($matches[4]) ? (int)$matches[5] : null;
         } else {
             $port = $host = $userinfo = null;
         }

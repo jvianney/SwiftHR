@@ -34,7 +34,7 @@ class Zend_Validate_Identical extends Zend_Validate_Abstract
      * Error codes
      * @const string
      */
-    const NOT_SAME      = 'notSame';
+    const NOT_SAME = 'notSame';
     const MISSING_TOKEN = 'missingToken';
 
     /**
@@ -42,7 +42,7 @@ class Zend_Validate_Identical extends Zend_Validate_Abstract
      * @var array
      */
     protected $_messageTemplates = array(
-        self::NOT_SAME      => "The two given tokens do not match",
+        self::NOT_SAME => "The two given tokens do not match",
         self::MISSING_TOKEN => 'No token was provided to match against',
     );
 
@@ -85,6 +85,40 @@ class Zend_Validate_Identical extends Zend_Validate_Abstract
     }
 
     /**
+     * Defined by Zend_Validate_Interface
+     *
+     * Returns true if and only if a token has been set and the provided value
+     * matches that token.
+     *
+     * @param  mixed $value
+     * @param  array $context
+     * @return boolean
+     */
+    public function isValid($value, $context = null)
+    {
+        $this->_setValue((string)$value);
+
+        if (($context !== null) && isset($context) && array_key_exists($this->getToken(), $context)) {
+            $token = $context[$this->getToken()];
+        } else {
+            $token = $this->getToken();
+        }
+
+        if ($token === null) {
+            $this->_error(self::MISSING_TOKEN);
+            return false;
+        }
+
+        $strict = $this->getStrict();
+        if (($strict && ($value !== $token)) || (!$strict && ($value != $token))) {
+            $this->_error(self::NOT_SAME);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Retrieve token
      *
      * @return string
@@ -102,8 +136,8 @@ class Zend_Validate_Identical extends Zend_Validate_Abstract
      */
     public function setToken($token)
     {
-        $this->_tokenString = (string) $token;
-        $this->_token       = $token;
+        $this->_tokenString = (string)$token;
+        $this->_token = $token;
         return $this;
     }
 
@@ -124,41 +158,7 @@ class Zend_Validate_Identical extends Zend_Validate_Abstract
      */
     public function setStrict($strict)
     {
-        $this->_strict = (boolean) $strict;
+        $this->_strict = (boolean)$strict;
         return $this;
-    }
-
-    /**
-     * Defined by Zend_Validate_Interface
-     *
-     * Returns true if and only if a token has been set and the provided value
-     * matches that token.
-     *
-     * @param  mixed $value
-     * @param  array $context
-     * @return boolean
-     */
-    public function isValid($value, $context = null)
-    {
-        $this->_setValue((string) $value);
-
-        if (($context !== null) && isset($context) && array_key_exists($this->getToken(), $context)) {
-            $token = $context[$this->getToken()];
-        } else {
-            $token = $this->getToken();
-        }
-
-        if ($token === null) {
-            $this->_error(self::MISSING_TOKEN);
-            return false;
-        }
-
-        $strict = $this->getStrict();
-        if (($strict && ($value !== $token)) || (!$strict && ($value != $token))) {
-            $this->_error(self::NOT_SAME);
-            return false;
-        }
-
-        return true;
     }
 }

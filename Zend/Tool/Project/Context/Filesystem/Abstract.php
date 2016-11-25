@@ -79,6 +79,16 @@ abstract class Zend_Tool_Project_Context_Filesystem_Abstract implements Zend_Too
     }
 
     /**
+     * getBaseDirectory()
+     *
+     * @return string
+     */
+    public function getBaseDirectory()
+    {
+        return $this->_baseDirectory;
+    }
+
+    /**
      * setBaseDirectory()
      *
      * @param string $baseDirectory
@@ -91,13 +101,13 @@ abstract class Zend_Tool_Project_Context_Filesystem_Abstract implements Zend_Too
     }
 
     /**
-     * getBaseDirectory()
+     * getFilesystemName()
      *
      * @return string
      */
-    public function getBaseDirectory()
+    public function getFilesystemName()
     {
-        return $this->_baseDirectory;
+        return $this->_filesystemName;
     }
 
     /**
@@ -113,13 +123,13 @@ abstract class Zend_Tool_Project_Context_Filesystem_Abstract implements Zend_Too
     }
 
     /**
-     * getFilesystemName()
+     * exists()
      *
-     * @return string
+     * @return bool
      */
-    public function getFilesystemName()
+    public function exists()
     {
-        return $this->_filesystemName;
+        return file_exists($this->getPath());
     }
 
     /**
@@ -134,16 +144,6 @@ abstract class Zend_Tool_Project_Context_Filesystem_Abstract implements Zend_Too
             $path .= '/' . $this->_filesystemName;
         }
         return $path;
-    }
-
-    /**
-     * exists()
-     *
-     * @return bool
-     */
-    public function exists()
-    {
-        return file_exists($this->getPath());
     }
 
     /**

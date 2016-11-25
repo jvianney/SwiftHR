@@ -85,7 +85,7 @@ class Zend_Tool_Framework_Provider_Repository
      */
     public function setProcessOnAdd($processOnAdd = true)
     {
-        $this->_processOnAdd = (bool) $processOnAdd;
+        $this->_processOnAdd = (bool)$processOnAdd;
         return $this;
     }
 
@@ -110,8 +110,8 @@ class Zend_Tool_Framework_Provider_Repository
         // if a provider by the given name already exist, and its not set as overwritable, throw exception
         if (!$overwriteExistingProvider &&
             (array_key_exists($providerName, $this->_unprocessedProviders)
-                || array_key_exists($providerName, $this->_providers)))
-        {
+                || array_key_exists($providerName, $this->_providers))
+        ) {
             require_once 'Zend/Tool/Framework/Provider/Exception.php';
             throw new Zend_Tool_Framework_Provider_Exception('A provider by the name ' . $providerName
                 . ' is already registered and $overrideExistingProvider is set to false.');
@@ -127,29 +127,23 @@ class Zend_Tool_Framework_Provider_Repository
         return $this;
     }
 
-    public function hasProvider($providerOrClassName, $processedOnly = true)
+    /**
+     * _parseName - internal method to determine the name of an action when one is not explicity provided.
+     *
+     * @param Zend_Tool_Framework_Action_Interface $action
+     * @return string
+     */
+    protected function _parseName(Zend_Tool_Framework_Provider_Interface $provider)
     {
-        if ($providerOrClassName instanceof Zend_Tool_Framework_Provider_Interface) {
-            $targetProviderClassName = get_class($providerOrClassName);
-        } else {
-            $targetProviderClassName = (string) $providerOrClassName;
+        $className = get_class($provider);
+        $providerName = $className;
+        if (strpos($providerName, '_') !== false) {
+            $providerName = substr($providerName, strrpos($providerName, '_') + 1);
         }
-
-        if (!$processedOnly) {
-            foreach ($this->_unprocessedProviders as $unprocessedProvider) {
-                if (get_class($unprocessedProvider) == $targetProviderClassName) {
-                    return true;
-                }
-            }
+        if (substr($providerName, -8) == 'Provider') {
+            $providerName = substr($providerName, 0, strlen($providerName) - 8);
         }
-
-        foreach ($this->_providers as $processedProvider) {
-            if (get_class($processedProvider) == $targetProviderClassName) {
-                return true;
-            }
-        }
-
-        return false;
+        return $providerName;
     }
 
     /**
@@ -181,7 +175,7 @@ class Zend_Tool_Framework_Provider_Repository
 
             // add to the appropraite place
             $this->_providerSignatures[$providerName] = $providerSignature;
-            $this->_providers[$providerName]          = $providerSignature->getProvider();
+            $this->_providers[$providerName] = $providerSignature->getProvider();
 
             if ($provider instanceof Zend_Tool_Framework_Provider_Initializable) {
                 $provider->initialize();
@@ -191,14 +185,29 @@ class Zend_Tool_Framework_Provider_Repository
 
     }
 
-    /**
-     * getProviders() Get all the providers in the repository
-     *
-     * @return array
-     */
-    public function getProviders()
+    public function hasProvider($providerOrClassName, $processedOnly = true)
     {
-        return $this->_providers;
+        if ($providerOrClassName instanceof Zend_Tool_Framework_Provider_Interface) {
+            $targetProviderClassName = get_class($providerOrClassName);
+        } else {
+            $targetProviderClassName = (string)$providerOrClassName;
+        }
+
+        if (!$processedOnly) {
+            foreach ($this->_unprocessedProviders as $unprocessedProvider) {
+                if (get_class($unprocessedProvider) == $targetProviderClassName) {
+                    return true;
+                }
+            }
+        }
+
+        foreach ($this->_providers as $processedProvider) {
+            if (get_class($processedProvider) == $targetProviderClassName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -254,22 +263,13 @@ class Zend_Tool_Framework_Provider_Repository
     }
 
     /**
-     * _parseName - internal method to determine the name of an action when one is not explicity provided.
+     * getProviders() Get all the providers in the repository
      *
-     * @param Zend_Tool_Framework_Action_Interface $action
-     * @return string
+     * @return array
      */
-    protected function _parseName(Zend_Tool_Framework_Provider_Interface $provider)
+    public function getProviders()
     {
-        $className = get_class($provider);
-        $providerName = $className;
-        if (strpos($providerName, '_') !== false) {
-            $providerName = substr($providerName, strrpos($providerName, '_')+1);
-        }
-        if (substr($providerName, -8) == 'Provider') {
-            $providerName = substr($providerName, 0, strlen($providerName)-8);
-        }
-        return $providerName;
+        return $this->_providers;
     }
 
 }

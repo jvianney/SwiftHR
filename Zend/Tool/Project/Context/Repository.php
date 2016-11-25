@@ -36,50 +36,17 @@ class Zend_Tool_Project_Context_Repository implements Countable
     protected static $_isInitialized = false;
 
     protected $_shortContextNames = array();
-    protected $_contexts          = array();
-
-    /**
-     * Enter description here...
-     *
-     * @return Zend_Tool_Project_Context_Repository
-     */
-    public static function getInstance()
-    {
-        if (self::$_instance == null) {
-            self::$_instance = new self();
-        }
-
-        return self::$_instance;
-    }
-
-    public static function resetInstance()
-    {
-        self::$_instance = null;
-        self::$_isInitialized = false;
-    }
+    protected $_contexts = array();
 
     protected function __construct()
     {
         if (self::$_isInitialized == false) {
             $this->addContextClass('Zend_Tool_Project_Context_System_ProjectDirectory')
-                 ->addContextClass('Zend_Tool_Project_Context_System_ProjectProfileFile')
-                 ->addContextClass('Zend_Tool_Project_Context_System_ProjectProvidersDirectory');
+                ->addContextClass('Zend_Tool_Project_Context_System_ProjectProfileFile')
+                ->addContextClass('Zend_Tool_Project_Context_System_ProjectProvidersDirectory');
             self::$_isInitialized = true;
         }
     }
-
-    public function addContextsFromDirectory($directory, $prefix)
-    {
-        $prefix = trim($prefix, '_') . '_';
-        foreach (new DirectoryIterator($directory) as $directoryItem) {
-            if ($directoryItem->isDot() || (substr($directoryItem->getFilename(), -4) !== '.php')) {
-                continue;
-            }
-            $class = $prefix . substr($directoryItem->getFilename(), 0, -4);
-            $this->addContextClass($class);
-        }
-    }
-
 
     public function addContextClass($contextClass)
     {
@@ -103,29 +70,66 @@ class Zend_Tool_Project_Context_Repository implements Countable
      */
     public function addContext(Zend_Tool_Project_Context_Interface $context)
     {
-        $isSystem       = ($context instanceof Zend_Tool_Project_Context_System_Interface);
-        $isTopLevel     = ($context instanceof Zend_Tool_Project_Context_System_TopLevelRestrictable);
+        $isSystem = ($context instanceof Zend_Tool_Project_Context_System_Interface);
+        $isTopLevel = ($context instanceof Zend_Tool_Project_Context_System_TopLevelRestrictable);
         $isOverwritable = !($context instanceof Zend_Tool_Project_Context_System_NotOverwritable);
 
         $index = (count($this->_contexts)) ? max(array_keys($this->_contexts)) + 1 : 1;
 
         $normalName = $this->_normalizeName($context->getName());
 
-        if (isset($this->_shortContextNames[$normalName]) && ($this->_contexts[$this->_shortContextNames[$normalName]]['isOverwritable'] === false) ) {
+        if (isset($this->_shortContextNames[$normalName]) && ($this->_contexts[$this->_shortContextNames[$normalName]]['isOverwritable'] === false)) {
             require_once 'Zend/Tool/Project/Context/Exception.php';
             throw new Zend_Tool_Project_Context_Exception('Context ' . $context->getName() . ' is not overwriteable.');
         }
 
         $this->_shortContextNames[$normalName] = $index;
         $this->_contexts[$index] = array(
-            'isTopLevel'     => $isTopLevel,
-            'isSystem'       => $isSystem,
+            'isTopLevel' => $isTopLevel,
+            'isSystem' => $isSystem,
             'isOverwritable' => $isOverwritable,
-            'normalName'     => $normalName,
-            'context'        => $context
-            );
+            'normalName' => $normalName,
+            'context' => $context
+        );
 
         return $this;
+    }
+
+    protected function _normalizeName($name)
+    {
+        return strtolower($name);
+    }
+
+    /**
+     * Enter description here...
+     *
+     * @return Zend_Tool_Project_Context_Repository
+     */
+    public static function getInstance()
+    {
+        if (self::$_instance == null) {
+            self::$_instance = new self();
+        }
+
+        return self::$_instance;
+    }
+
+    public static function resetInstance()
+    {
+        self::$_instance = null;
+        self::$_isInitialized = false;
+    }
+
+    public function addContextsFromDirectory($directory, $prefix)
+    {
+        $prefix = trim($prefix, '_') . '_';
+        foreach (new DirectoryIterator($directory) as $directoryItem) {
+            if ($directoryItem->isDot() || (substr($directoryItem->getFilename(), -4) !== '.php')) {
+                continue;
+            }
+            $class = $prefix . substr($directoryItem->getFilename(), 0, -4);
+            $this->addContextClass($class);
+        }
     }
 
     public function getContext($name)
@@ -179,11 +183,6 @@ class Zend_Tool_Project_Context_Repository implements Countable
     public function count()
     {
         return count($this->_contexts);
-    }
-
-    protected function _normalizeName($name)
-    {
-        return strtolower($name);
     }
 
 }

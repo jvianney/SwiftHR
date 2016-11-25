@@ -20,7 +20,7 @@
  * @version    $Id: Image.php 23775 2011-03-01 17:25:24Z ralph $
  */
 
-/** @see Zend_Barcode_Renderer_RendererAbstract*/
+/** @see Zend_Barcode_Renderer_RendererAbstract */
 require_once 'Zend/Barcode/Renderer/RendererAbstract.php';
 
 /**
@@ -165,6 +165,16 @@ class Zend_Barcode_Renderer_Image extends Zend_Barcode_Renderer_RendererAbstract
     }
 
     /**
+     * Retrieve the image type to produce
+     *
+     * @return string
+     */
+    public function getImageType()
+    {
+        return $this->_imageType;
+    }
+
+    /**
      * Set the image type to produce (png, jpeg, gif)
      *
      * @param string $value
@@ -190,13 +200,17 @@ class Zend_Barcode_Renderer_Image extends Zend_Barcode_Renderer_RendererAbstract
     }
 
     /**
-     * Retrieve the image type to produce
+     * Draw and render the barcode with correct headers
      *
-     * @return string
+     * @return mixed
      */
-    public function getImageType()
+    public function render()
     {
-        return $this->_imageType;
+        $this->draw();
+        header("Content-Type: image/" . $this->_imageType);
+        $functionName = 'image' . $this->_imageType;
+        call_user_func($functionName, $this->_resource);
+        @imagedestroy($this->_resource);
     }
 
     /**
@@ -215,11 +229,11 @@ class Zend_Barcode_Renderer_Image extends Zend_Barcode_Renderer_RendererAbstract
             throw $e;
         }
 
-        $barcodeWidth  = $this->_barcode->getWidth(true);
+        $barcodeWidth = $this->_barcode->getWidth(true);
         $barcodeHeight = $this->_barcode->getHeight(true);
 
         if ($this->_resource !== null) {
-            $foreColor       = $this->_barcode->getForeColor();
+            $foreColor = $this->_barcode->getForeColor();
             $backgroundColor = $this->_barcode->getBackgroundColor();
             $this->_imageBackgroundColor = imagecolorallocate(
                 $this->_resource,
@@ -243,7 +257,7 @@ class Zend_Barcode_Renderer_Image extends Zend_Barcode_Renderer_RendererAbstract
                 $height = $this->_userHeight;
             }
 
-            $foreColor       = $this->_barcode->getForeColor();
+            $foreColor = $this->_barcode->getForeColor();
             $backgroundColor = $this->_barcode->getBackgroundColor();
             $this->_resource = imagecreatetruecolor($width, $height);
 
@@ -330,20 +344,6 @@ class Zend_Barcode_Renderer_Image extends Zend_Barcode_Renderer_RendererAbstract
                 }
             }
         }
-    }
-
-    /**
-     * Draw and render the barcode with correct headers
-     *
-     * @return mixed
-     */
-    public function render()
-    {
-        $this->draw();
-        header("Content-Type: image/" . $this->_imageType);
-        $functionName = 'image' . $this->_imageType;
-        call_user_func($functionName, $this->_resource);
-        @imagedestroy($this->_resource);
     }
 
     /**
@@ -440,7 +440,7 @@ class Zend_Barcode_Renderer_Image extends Zend_Barcode_Renderer_RendererAbstract
                 require_once 'Zend/Barcode/Renderer/Exception.php';
                 throw new Zend_Barcode_Renderer_Exception(
                     'A font was provided, but this instance of PHP does not have TTF (FreeType) support'
-                    );
+                );
             }
 
             $box = imagettfbbox($size, 0, $font, $text);

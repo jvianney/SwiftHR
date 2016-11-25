@@ -84,6 +84,16 @@ class Zend_Tool_Project_Profile_Resource extends Zend_Tool_Project_Profile_Resou
     }
 
     /**
+     * getContext()
+     *
+     * @return Zend_Tool_Project_Context_Interface
+     */
+    public function getContext()
+    {
+        return $this->_context;
+    }
+
+    /**
      * setContext()
      *
      * @param string|Zend_Tool_Project_Context_Interface $context
@@ -93,16 +103,6 @@ class Zend_Tool_Project_Profile_Resource extends Zend_Tool_Project_Profile_Resou
     {
         $this->_context = $context;
         return $this;
-    }
-
-    /**
-     * getContext()
-     *
-     * @return Zend_Tool_Project_Context_Interface
-     */
-    public function getContext()
-    {
-        return $this->_context;
     }
 
     /**
@@ -124,6 +124,16 @@ class Zend_Tool_Project_Profile_Resource extends Zend_Tool_Project_Profile_Resou
     }
 
     /**
+     * getProfile
+     *
+     * @return Zend_Tool_Project_Profile
+     */
+    public function getProfile()
+    {
+        return $this->_profile;
+    }
+
+    /**
      * setProfile()
      *
      * @param Zend_Tool_Project_Profile $profile
@@ -133,16 +143,6 @@ class Zend_Tool_Project_Profile_Resource extends Zend_Tool_Project_Profile_Resou
     {
         $this->_profile = $profile;
         return $this;
-    }
-
-    /**
-     * getProfile
-     *
-     * @return Zend_Tool_Project_Profile
-     */
-    public function getProfile()
-    {
-        return $this->_profile;
     }
 
     /**
@@ -160,26 +160,13 @@ class Zend_Tool_Project_Profile_Resource extends Zend_Tool_Project_Profile_Resou
     }
 
     /**
-     * setEnabled()
+     * isDeleted()
      *
-     * @param bool $enabled
      * @return Zend_Tool_Project_Profile_Resource
      */
-    public function setEnabled($enabled = true)
+    public function isDeleted()
     {
-        // convert fuzzy types to bool
-        $this->_enabled = (!in_array($enabled, array('false', 'disabled', 0, -1, false), true)) ? true : false;
-        return $this;
-    }
-
-    /**
-     * isEnabled()
-     *
-     * @return bool
-     */
-    public function isEnabled()
-    {
-        return $this->_enabled;
+        return $this->_deleted;
     }
 
     /**
@@ -190,18 +177,8 @@ class Zend_Tool_Project_Profile_Resource extends Zend_Tool_Project_Profile_Resou
      */
     public function setDeleted($deleted = true)
     {
-        $this->_deleted = (bool) $deleted;
+        $this->_deleted = (bool)$deleted;
         return $this;
-    }
-
-    /**
-     * isDeleted()
-     *
-     * @return Zend_Tool_Project_Profile_Resource
-     */
-    public function isDeleted()
-    {
-        return $this->_deleted;
     }
 
     /**
@@ -257,6 +234,29 @@ class Zend_Tool_Project_Profile_Resource extends Zend_Tool_Project_Profile_Resou
         } else {
             throw new Zend_Tool_Project_Profile_Exception('cannot call ' . $method);
         }
+    }
+
+    /**
+     * isEnabled()
+     *
+     * @return bool
+     */
+    public function isEnabled()
+    {
+        return $this->_enabled;
+    }
+
+    /**
+     * setEnabled()
+     *
+     * @param bool $enabled
+     * @return Zend_Tool_Project_Profile_Resource
+     */
+    public function setEnabled($enabled = true)
+    {
+        // convert fuzzy types to bool
+        $this->_enabled = (!in_array($enabled, array('false', 'disabled', 0, -1, false), true)) ? true : false;
+        return $this;
     }
 
 }

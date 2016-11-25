@@ -1,8 +1,9 @@
 <?php
-/********************************************************************************* 
+
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2015 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,31 +19,32 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
 class Default_ConfiguresiteController extends Zend_Controller_Action
 {
 
-	private $options;
-	
-	/**
-	 * Init
-	 * 
-	 * @see Zend_Controller_Action::init()
-	 */
+    private $options;
+
+    /**
+     * Init
+     *
+     * @see Zend_Controller_Action::init()
+     */
     public function init()
     {
-        $this->_options= $this->getInvokeArg('bootstrap')->getOptions();
+        $this->_options = $this->getInvokeArg('bootstrap')->getOptions();
     }
 
-	public function indexAction()
-	{		
-		$this->view->msg='this is index';
-	}
-	
-	public function managemenuAction(){
-		$this->view->msg='this is manage menu';
-	}
-	public function sitepreferencesAction()
-	{
-	}
+    public function indexAction()
+    {
+        $this->view->msg = 'this is index';
+    }
+
+    public function managemenuAction()
+    {
+        $this->view->msg = 'this is manage menu';
+    }
+
+    public function sitepreferencesAction()
+    {
+    }
 }

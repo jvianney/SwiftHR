@@ -58,7 +58,7 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
     /**
      * Object constructor
      *
-     * @param array $termStreams  array of term streams (Zend_Search_Lucene_Index_TermsStream_Interface objects)
+     * @param array $termStreams array of term streams (Zend_Search_Lucene_Index_TermsStream_Interface objects)
      */
     public function __construct(array $termStreams)
     {
@@ -90,28 +90,6 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
     }
 
     /**
-     * Skip terms stream up to the specified term preffix.
-     *
-     * Prefix contains fully specified field info and portion of searched term
-     *
-     * @param Zend_Search_Lucene_Index_Term $prefix
-     */
-    public function skipTo(Zend_Search_Lucene_Index_Term $prefix)
-    {
-        $this->_termsStreamQueue = new Zend_Search_Lucene_Index_TermsPriorityQueue();
-
-        foreach ($this->_termStreams as $termStream) {
-            $termStream->skipTo($prefix);
-
-            if ($termStream->currentTerm() !== null) {
-                $this->_termsStreamQueue->put($termStream);
-            }
-        }
-
-        return $this->nextTerm();
-    }
-
-    /**
      * Scans term streams and returns next term
      *
      * @return Zend_Search_Lucene_Index_Term|null
@@ -121,7 +99,8 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
         while (($termStream = $this->_termsStreamQueue->pop()) !== null) {
             if ($this->_termsStreamQueue->top() === null ||
                 $this->_termsStreamQueue->top()->currentTerm()->key() !=
-                            $termStream->currentTerm()->key()) {
+                $termStream->currentTerm()->key()
+            ) {
                 // We got new term
                 $this->_lastTerm = $termStream->currentTerm();
 
@@ -146,6 +125,28 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
     }
 
     /**
+     * Skip terms stream up to the specified term preffix.
+     *
+     * Prefix contains fully specified field info and portion of searched term
+     *
+     * @param Zend_Search_Lucene_Index_Term $prefix
+     */
+    public function skipTo(Zend_Search_Lucene_Index_Term $prefix)
+    {
+        $this->_termsStreamQueue = new Zend_Search_Lucene_Index_TermsPriorityQueue();
+
+        foreach ($this->_termStreams as $termStream) {
+            $termStream->skipTo($prefix);
+
+            if ($termStream->currentTerm() !== null) {
+                $this->_termsStreamQueue->put($termStream);
+            }
+        }
+
+        return $this->nextTerm();
+    }
+
+    /**
      * Returns term in current position
      *
      * @return Zend_Search_Lucene_Index_Term|null
@@ -167,6 +168,6 @@ class Zend_Search_Lucene_TermStreamsPriorityQueue implements Zend_Search_Lucene_
         }
 
         $this->_termsStreamQueue = null;
-        $this->_lastTerm         = null;
+        $this->_lastTerm = null;
     }
 }

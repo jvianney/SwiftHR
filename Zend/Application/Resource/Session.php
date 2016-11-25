@@ -46,16 +46,32 @@ class Zend_Application_Resource_Session extends Zend_Application_Resource_Resour
     protected $_saveHandler = null;
 
     /**
-     * Set session save handler
+     * Defined by Zend_Application_Resource_Resource
      *
-     * @param  array|string|Zend_Session_SaveHandler_Interface $saveHandler
-     * @return Zend_Application_Resource_Session
-     * @throws Zend_Application_Resource_Exception When $saveHandler is no valid save handler
+     * @return void
      */
-    public function setSaveHandler($saveHandler)
+    public function init()
     {
-        $this->_saveHandler = $saveHandler;
-        return $this;
+        $options = array_change_key_case($this->getOptions(), CASE_LOWER);
+        if (isset($options['savehandler'])) {
+            unset($options['savehandler']);
+        }
+
+        if (count($options) > 0) {
+            Zend_Session::setOptions($options);
+        }
+
+        if ($this->_hasSaveHandler()) {
+            Zend_Session::setSaveHandler($this->getSaveHandler());
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    protected function _hasSaveHandler()
+    {
+        return ($this->_saveHandler !== null);
     }
 
     /**
@@ -88,31 +104,15 @@ class Zend_Application_Resource_Session extends Zend_Application_Resource_Resour
     }
 
     /**
-     * @return bool
-     */
-    protected function _hasSaveHandler()
-    {
-        return ($this->_saveHandler !== null);
-    }
-
-    /**
-     * Defined by Zend_Application_Resource_Resource
+     * Set session save handler
      *
-     * @return void
+     * @param  array|string|Zend_Session_SaveHandler_Interface $saveHandler
+     * @return Zend_Application_Resource_Session
+     * @throws Zend_Application_Resource_Exception When $saveHandler is no valid save handler
      */
-    public function init()
+    public function setSaveHandler($saveHandler)
     {
-        $options = array_change_key_case($this->getOptions(), CASE_LOWER);
-        if (isset($options['savehandler'])) {
-            unset($options['savehandler']);
-        }
-
-        if (count($options) > 0) {
-            Zend_Session::setOptions($options);
-        }
-
-        if ($this->_hasSaveHandler()) {
-            Zend_Session::setSaveHandler($this->getSaveHandler());
-        }
+        $this->_saveHandler = $saveHandler;
+        return $this;
     }
 }

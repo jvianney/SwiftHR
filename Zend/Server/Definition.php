@@ -61,7 +61,21 @@ class Zend_Server_Definition implements Countable, Iterator
      */
     public function setOverwriteExistingMethods($flag)
     {
-        $this->_overwriteExistingMethods = (bool) $flag;
+        $this->_overwriteExistingMethods = (bool)$flag;
+        return $this;
+    }
+
+    /**
+     * Add multiple methods
+     *
+     * @param  array $methods Array of Zend_Server_Method_Definition objects or arrays
+     * @return Zend_Server_Definition
+     */
+    public function addMethods(array $methods)
+    {
+        foreach ($methods as $key => $method) {
+            $this->addMethod($method, $key);
+        }
         return $this;
     }
 
@@ -105,44 +119,6 @@ class Zend_Server_Definition implements Countable, Iterator
     }
 
     /**
-     * Add multiple methods
-     *
-     * @param  array $methods Array of Zend_Server_Method_Definition objects or arrays
-     * @return Zend_Server_Definition
-     */
-    public function addMethods(array $methods)
-    {
-        foreach ($methods as $key => $method) {
-            $this->addMethod($method, $key);
-        }
-        return $this;
-    }
-
-    /**
-     * Set all methods at once (overwrite)
-     *
-     * @param  array $methods Array of Zend_Server_Method_Definition objects or arrays
-     * @return Zend_Server_Definition
-     */
-    public function setMethods(array $methods)
-    {
-        $this->clearMethods();
-        $this->addMethods($methods);
-        return $this;
-    }
-
-    /**
-     * Does the definition have the given method?
-     *
-     * @param  string $method
-     * @return bool
-     */
-    public function hasMethod($method)
-    {
-        return array_key_exists($method, $this->_methods);
-    }
-
-    /**
      * Get a given method definition
      *
      * @param  string $method
@@ -157,13 +133,14 @@ class Zend_Server_Definition implements Countable, Iterator
     }
 
     /**
-     * Get all method definitions
+     * Does the definition have the given method?
      *
-     * @return array Array of Zend_Server_Method_Definition objects
+     * @param  string $method
+     * @return bool
      */
-    public function getMethods()
+    public function hasMethod($method)
     {
-        return $this->_methods;
+        return array_key_exists($method, $this->_methods);
     }
 
     /**
@@ -206,6 +183,29 @@ class Zend_Server_Definition implements Countable, Iterator
     }
 
     /**
+     * Get all method definitions
+     *
+     * @return array Array of Zend_Server_Method_Definition objects
+     */
+    public function getMethods()
+    {
+        return $this->_methods;
+    }
+
+    /**
+     * Set all methods at once (overwrite)
+     *
+     * @param  array $methods Array of Zend_Server_Method_Definition objects or arrays
+     * @return Zend_Server_Definition
+     */
+    public function setMethods(array $methods)
+    {
+        $this->clearMethods();
+        $this->addMethods($methods);
+        return $this;
+    }
+
+    /**
      * Countable: count of methods
      *
      * @return int
@@ -213,16 +213,6 @@ class Zend_Server_Definition implements Countable, Iterator
     public function count()
     {
         return count($this->_methods);
-    }
-
-    /**
-     * Iterator: current item
-     *
-     * @return mixed
-     */
-    public function current()
-    {
-        return current($this->_methods);
     }
 
     /**
@@ -262,6 +252,16 @@ class Zend_Server_Definition implements Countable, Iterator
      */
     public function valid()
     {
-        return (bool) $this->current();
+        return (bool)$this->current();
+    }
+
+    /**
+     * Iterator: current item
+     *
+     * @return mixed
+     */
+    public function current()
+    {
+        return current($this->_methods);
     }
 }

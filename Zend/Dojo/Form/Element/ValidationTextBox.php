@@ -48,7 +48,7 @@ class Zend_Dojo_Form_Element_ValidationTextBox extends Zend_Dojo_Form_Element_Te
      */
     public function setInvalidMessage($message)
     {
-        $this->setDijitParam('invalidMessage', (string) $message);
+        $this->setDijitParam('invalidMessage', (string)$message);
         return $this;
     }
 
@@ -70,7 +70,7 @@ class Zend_Dojo_Form_Element_ValidationTextBox extends Zend_Dojo_Form_Element_Te
      */
     public function setPromptMessage($message)
     {
-        $this->setDijitParam('promptMessage', (string) $message);
+        $this->setDijitParam('promptMessage', (string)$message);
         return $this;
     }
 
@@ -92,7 +92,7 @@ class Zend_Dojo_Form_Element_ValidationTextBox extends Zend_Dojo_Form_Element_Te
      */
     public function setRegExp($regexp)
     {
-        $this->setDijitParam('regExp', (string) $regexp);
+        $this->setDijitParam('regExp', (string)$regexp);
         return $this;
     }
 
@@ -116,9 +116,22 @@ class Zend_Dojo_Form_Element_ValidationTextBox extends Zend_Dojo_Form_Element_Te
     public function setConstraint($key, $value)
     {
         $constraints = $this->getConstraints();
-        $constraints[(string) $key] = $value;
+        $constraints[(string)$key] = $value;
         $this->setConstraints($constraints);
         return $this;
+    }
+
+    /**
+     * Get constraints
+     *
+     * @return array
+     */
+    public function getConstraints()
+    {
+        if ($this->hasDijitParam('constraints')) {
+            return $this->getDijitParam('constraints');
+        }
+        return array();
     }
 
     /**
@@ -140,6 +153,21 @@ class Zend_Dojo_Form_Element_ValidationTextBox extends Zend_Dojo_Form_Element_Te
     }
 
     /**
+     * Get an individual constraint
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function getConstraint($key)
+    {
+        $key = (string)$key;
+        if (!$this->hasConstraint($key)) {
+            return null;
+        }
+        return $this->dijitParams['constraints'][$key];
+    }
+
+    /**
      * Is the given constraint set?
      *
      * @param  string $key
@@ -152,34 +180,6 @@ class Zend_Dojo_Form_Element_ValidationTextBox extends Zend_Dojo_Form_Element_Te
     }
 
     /**
-     * Get an individual constraint
-     *
-     * @param  string $key
-     * @return mixed
-     */
-    public function getConstraint($key)
-    {
-        $key = (string) $key;
-        if (!$this->hasConstraint($key)) {
-            return null;
-        }
-        return $this->dijitParams['constraints'][$key];
-    }
-
-    /**
-     * Get constraints
-     *
-     * @return array
-     */
-    public function getConstraints()
-    {
-        if ($this->hasDijitParam('constraints')) {
-            return $this->getDijitParam('constraints');
-        }
-        return array();
-    }
-
-    /**
      * Remove a single constraint
      *
      * @param  string $key
@@ -187,7 +187,7 @@ class Zend_Dojo_Form_Element_ValidationTextBox extends Zend_Dojo_Form_Element_Te
      */
     public function removeConstraint($key)
     {
-        $key = (string) $key;
+        $key = (string)$key;
         if ($this->hasConstraint($key)) {
             unset($this->dijitParams['constraints'][$key]);
         }

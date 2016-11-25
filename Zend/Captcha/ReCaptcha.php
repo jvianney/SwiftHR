@@ -41,52 +41,91 @@ require_once 'Zend/Service/ReCaptcha.php';
  */
 class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
 {
+    /**#@+
+     * Error codes
+     */
+    const MISSING_VALUE = 'missingValue';
+    const ERR_CAPTCHA = 'errCaptcha';
+    /**@-*/
+    const BAD_CAPTCHA = 'badCaptcha';
     /**@+
      * ReCaptcha Field names
      * @var string
      */
     protected $_CHALLENGE = 'recaptcha_challenge_field';
-    protected $_RESPONSE  = 'recaptcha_response_field';
-    /**@-*/
-
+    protected $_RESPONSE = 'recaptcha_response_field';
     /**
      * Recaptcha service object
      *
      * @var Zend_Service_Recaptcha
      */
     protected $_service;
-
     /**
      * Parameters defined by the service
      *
      * @var array
      */
     protected $_serviceParams = array();
-
     /**
      * Options defined by the service
      *
      * @var array
      */
     protected $_serviceOptions = array();
-
-    /**#@+
-     * Error codes
-     */
-    const MISSING_VALUE = 'missingValue';
-    const ERR_CAPTCHA   = 'errCaptcha';
-    const BAD_CAPTCHA   = 'badCaptcha';
     /**#@-*/
-
     /**
      * Error messages
      * @var array
      */
     protected $_messageTemplates = array(
         self::MISSING_VALUE => 'Missing captcha fields',
-        self::ERR_CAPTCHA   => 'Failed to validate captcha',
-        self::BAD_CAPTCHA   => 'Captcha value is wrong: %value%',
+        self::ERR_CAPTCHA => 'Failed to validate captcha',
+        self::BAD_CAPTCHA => 'Captcha value is wrong: %value%',
     );
+
+    /**
+     * Constructor
+     *
+     * @param  array|Zend_Config $options
+     * @return void
+     */
+    public function __construct($options = null)
+    {
+        $this->setService(new Zend_Service_ReCaptcha());
+        $this->_serviceParams = $this->getService()->getParams();
+        $this->_serviceOptions = $this->getService()->getOptions();
+
+        parent::__construct($options);
+
+        if ($options instanceof Zend_Config) {
+            $options = $options->toArray();
+        }
+        if (!empty($options)) {
+            $this->setOptions($options);
+        }
+    }
+
+    /**
+     * Retrieve ReCaptcha service object
+     *
+     * @return Zend_Service_ReCaptcha
+     */
+    public function getService()
+    {
+        return $this->_service;
+    }
+
+    /**
+     * Set service object
+     *
+     * @param  Zend_Service_ReCaptcha $service
+     * @return Zend_Captcha_ReCaptcha
+     */
+    public function setService(Zend_Service_ReCaptcha $service)
+    {
+        $this->_service = $service;
+        return $this;
+    }
 
     /**
      * Retrieve ReCaptcha Private key
@@ -130,50 +169,6 @@ class Zend_Captcha_ReCaptcha extends Zend_Captcha_Base
     {
         $this->getService()->setPublicKey($pubkey);
         return $this;
-    }
-
-    /**
-     * Constructor
-     *
-     * @param  array|Zend_Config $options
-     * @return void
-     */
-    public function __construct($options = null)
-    {
-        $this->setService(new Zend_Service_ReCaptcha());
-        $this->_serviceParams = $this->getService()->getParams();
-        $this->_serviceOptions = $this->getService()->getOptions();
-
-        parent::__construct($options);
-
-        if ($options instanceof Zend_Config) {
-            $options = $options->toArray();
-        }
-        if (!empty($options)) {
-            $this->setOptions($options);
-        }
-    }
-
-    /**
-     * Set service object
-     *
-     * @param  Zend_Service_ReCaptcha $service
-     * @return Zend_Captcha_ReCaptcha
-     */
-    public function setService(Zend_Service_ReCaptcha $service)
-    {
-        $this->_service = $service;
-        return $this;
-    }
-
-    /**
-     * Retrieve ReCaptcha service object
-     *
-     * @return Zend_Service_ReCaptcha
-     */
-    public function getService()
-    {
-        return $this->_service;
     }
 
     /**

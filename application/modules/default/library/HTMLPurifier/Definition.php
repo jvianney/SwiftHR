@@ -29,21 +29,22 @@ abstract class HTMLPurifier_Definition
     public $type;
 
     /**
+     * Setup function that aborts if already setup
+     * @param $config HTMLPurifier_Config instance
+     */
+    public function setup($config)
+    {
+        if ($this->setup) return;
+        $this->setup = true;
+        $this->doSetup($config);
+    }
+
+    /**
      * Sets up the definition object into the final form, something
      * not done by the constructor
      * @param $config HTMLPurifier_Config instance
      */
     abstract protected function doSetup($config);
-
-    /**
-     * Setup function that aborts if already setup
-     * @param $config HTMLPurifier_Config instance
-     */
-    public function setup($config) {
-        if ($this->setup) return;
-        $this->setup = true;
-        $this->doSetup($config);
-    }
 
 }
 

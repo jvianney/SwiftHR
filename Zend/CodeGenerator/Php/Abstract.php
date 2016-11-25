@@ -73,6 +73,16 @@ abstract class Zend_CodeGenerator_Php_Abstract extends Zend_CodeGenerator_Abstra
     }
 
     /**
+     * getIndentation()
+     *
+     * @return string|int
+     */
+    public function getIndentation()
+    {
+        return $this->_indentation;
+    }
+
+    /**
      * setIndentation()
      *
      * @param string|int $indentation
@@ -82,16 +92,6 @@ abstract class Zend_CodeGenerator_Php_Abstract extends Zend_CodeGenerator_Abstra
     {
         $this->_indentation = $indentation;
         return $this;
-    }
-
-    /**
-     * getIndentation()
-     *
-     * @return string|int
-     */
-    public function getIndentation()
-    {
-        return $this->_indentation;
     }
 
 }

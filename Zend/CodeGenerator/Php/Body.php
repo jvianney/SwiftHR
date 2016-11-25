@@ -40,15 +40,13 @@ class Zend_CodeGenerator_Php_Body extends Zend_CodeGenerator_Abstract
     protected $_content = null;
 
     /**
-     * setContent()
+     * generate()
      *
-     * @param string $content
-     * @return Zend_CodeGenerator_Php_Body
+     * @return string
      */
-    public function setContent($content)
+    public function generate()
     {
-        $this->_content = $content;
-        return $this;
+        return $this->getContent();
     }
 
     /**
@@ -58,16 +56,18 @@ class Zend_CodeGenerator_Php_Body extends Zend_CodeGenerator_Abstract
      */
     public function getContent()
     {
-        return (string) $this->_content;
+        return (string)$this->_content;
     }
 
     /**
-     * generate()
+     * setContent()
      *
-     * @return string
+     * @param string $content
+     * @return Zend_CodeGenerator_Php_Body
      */
-    public function generate()
+    public function setContent($content)
     {
-        return $this->getContent();
+        $this->_content = $content;
+        return $this;
     }
 }

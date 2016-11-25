@@ -84,7 +84,7 @@ class Zend_Tool_Framework_Manifest_Repository
         }
 
         // get the required objects from the framework registry
-        $actionRepository   = $this->_registry->getActionRepository();
+        $actionRepository = $this->_registry->getActionRepository();
         $providerRepository = $this->_registry->getProviderRepository();
 
         // load providers if interface supports that method
@@ -106,7 +106,7 @@ class Zend_Tool_Framework_Manifest_Repository
                     throw new Zend_Tool_Framework_Manifest_Exception(
                         'A provider provided by the ' . get_class($manifest)
                         . ' does not implement Zend_Tool_Framework_Provider_Interface'
-                        );
+                    );
                 }
                 if (!$providerRepository->hasProvider($provider, false)) {
                     $providerRepository->addProvider($provider);
@@ -148,18 +148,6 @@ class Zend_Tool_Framework_Manifest_Repository
     }
 
     /**
-     * addMetadata() - add a metadata peice by peice
-     *
-     * @param Zend_Tool_Framework_Manifest_Metadata $metadata
-     * @return Zend_Tool_Framework_Manifest_Repository
-     */
-    public function addMetadata(Zend_Tool_Framework_Metadata_Interface $metadata)
-    {
-        $this->_metadatas[] = $metadata;
-        return $this;
-    }
-
-    /**
      * process() - Process is expected to be called at the end of client construction time.
      * By this time, the loader has run and loaded any found manifests into the repository
      * for loading
@@ -188,7 +176,7 @@ class Zend_Tool_Framework_Manifest_Repository
                         require_once 'Zend/Tool/Framework/Manifest/Exception.php';
                         throw new Zend_Tool_Framework_Manifest_Exception(
                             'A Zend_Tool_Framework_Metadata_Interface object was not found in manifest ' . get_class($manifest)
-                            );
+                        );
                     }
 
                     $this->addMetadata($metadata);
@@ -198,6 +186,32 @@ class Zend_Tool_Framework_Manifest_Repository
         }
 
         return $this;
+    }
+
+    /**
+     * addMetadata() - add a metadata peice by peice
+     *
+     * @param Zend_Tool_Framework_Manifest_Metadata $metadata
+     * @return Zend_Tool_Framework_Manifest_Repository
+     */
+    public function addMetadata(Zend_Tool_Framework_Metadata_Interface $metadata)
+    {
+        $this->_metadatas[] = $metadata;
+        return $this;
+    }
+
+    /**
+     * getMetadata() - This will proxy to getMetadatas(), but will only return a single metadata.  This method
+     * should be used in situations where the search criteria is known to only find a single metadata object
+     *
+     * @param array $searchProperties
+     * @param bool $includeNonExistentProperties
+     * @return Zend_Tool_Framework_Manifest_Metadata
+     */
+    public function getMetadata(Array $searchProperties = array(), $includeNonExistentProperties = true)
+    {
+        $metadatas = $this->getMetadatas($searchProperties, $includeNonExistentProperties);
+        return array_shift($metadatas);
     }
 
     /**
@@ -245,20 +259,6 @@ class Zend_Tool_Framework_Manifest_Repository
         }
 
         return $returnMetadatas;
-    }
-
-    /**
-     * getMetadata() - This will proxy to getMetadatas(), but will only return a single metadata.  This method
-     * should be used in situations where the search criteria is known to only find a single metadata object
-     *
-     * @param array $searchProperties
-     * @param bool $includeNonExistentProperties
-     * @return Zend_Tool_Framework_Manifest_Metadata
-     */
-    public function getMetadata(Array $searchProperties = array(), $includeNonExistentProperties = true)
-    {
-        $metadatas = $this->getMetadatas($searchProperties, $includeNonExistentProperties);
-        return array_shift($metadatas);
     }
 
     /**

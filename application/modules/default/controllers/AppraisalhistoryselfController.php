@@ -20,25 +20,29 @@
  *  Sentrifugo Support <support@sentrifugo.com>
  * ****************************************************************************** */
 
-class Default_AppraisalhistoryselfController extends Zend_Controller_Action {
+class Default_AppraisalhistoryselfController extends Zend_Controller_Action
+{
 
-    private $options;
     public $app_history_disc_array = array(1 => APP_TXT_EMP_SUBMIT, 2 => APP_TXT_L1_SUBMIT, 3 => APP_TXT_L2_SUBMIT, 4 => APP_TXT_L3_SUBMIT,
         5 => APP_TXT_L4_SUBMIT, 6 => APP_TXT_L5_SUBMIT, 7 => APP_TXT_COMPLETED);
     public $app_status_array = array(1 => APP_PENDING_EMP, 2 => APP_PENDING_L1, 3 => APP_PENDING_L2, 4 => APP_PENDING_L3,
         5 => APP_PENDING_L4, 6 => APP_PENDING_L5, 7 => APP_COMPLETED);
+    private $options;
 
-    public function preDispatch() {
-        
+    public function preDispatch()
+    {
+
     }
 
-    public function init() {
+    public function init()
+    {
         $this->_options = $this->getInvokeArg('bootstrap')->getOptions();
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('save', 'json')->initContext();
     }
 
-    public function indexAction() {
+    public function indexAction()
+    {
         $appraisalHistoryModel = new Default_Model_Appraisalhistory();
         $call = $this->_getParam('call');
         if ($call == 'ajaxcall')
@@ -63,8 +67,7 @@ class Default_AppraisalhistoryselfController extends Zend_Controller_Action {
             $searchData = '';
             $searchQuery = '';
             $searchArray = '';
-        }
-        else {
+        } else {
             $sort = ($this->_getParam('sort') != '') ? $this->_getParam('sort') : 'DESC';
             $by = ($this->_getParam('by') != '') ? $this->_getParam('by') : 'a.modifieddate';
             if ($dashboardcall == 'Yes')
@@ -77,8 +80,8 @@ class Default_AppraisalhistoryselfController extends Zend_Controller_Action {
             $searchData = rtrim($searchData, ',');
             /** search from grid - END * */
         }
-        $flag='historyself';
-        $dataTmp = $appraisalHistoryModel->getGrid($sort, $by, $perPage, $pageNo, $searchData, $call, $dashboardcall,$flag);
+        $flag = 'historyself';
+        $dataTmp = $appraisalHistoryModel->getGrid($sort, $by, $perPage, $pageNo, $searchData, $call, $dashboardcall, $flag);
 
         array_push($data, $dataTmp);
         $this->view->dataArray = $data;
@@ -87,7 +90,8 @@ class Default_AppraisalhistoryselfController extends Zend_Controller_Action {
         $this->render('commongrid/performanceindex', null, true);
     }
 
-    public function viewAction() {
+    public function viewAction()
+    {
         $auth = Zend_Auth::getInstance();
         if ($auth->hasIdentity()) {
             $loginUserId = $auth->getStorage()->read()->id;
@@ -165,7 +169,7 @@ class Default_AppraisalhistoryselfController extends Zend_Controller_Action {
                                 foreach ($managerIDs as $mi) {
                                     foreach ($usersData as $ud) {
                                         if ($ud['id'] == $mi)
-                                        //	$managerNames[] = $ud['userfullname'];	
+                                            //	$managerNames[] = $ud['userfullname'];
                                             $managerNames[$ud['id']] = $ud['userfullname'];
                                     }
                                 }

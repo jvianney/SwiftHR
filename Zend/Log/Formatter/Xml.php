@@ -87,7 +87,7 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
         $this->setEncoding($options['encoding']);
 
         if (array_key_exists('elementMap', $options)) {
-            $this->_elementMap  = $options['elementMap'];
+            $this->_elementMap = $options['elementMap'];
         }
     }
 
@@ -100,6 +100,45 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
     public static function factory($options)
     {
         return new self($options);
+    }
+
+    /**
+     * Formats data into a single line to be written by the writer.
+     *
+     * @param  array $event event data
+     * @return string             formatted line to write to the log
+     */
+    public function format($event)
+    {
+        if ($this->_elementMap === null) {
+            $dataToInsert = $event;
+        } else {
+            $dataToInsert = array();
+            foreach ($this->_elementMap as $elementName => $fieldKey) {
+                $dataToInsert[$elementName] = $event[$fieldKey];
+            }
+        }
+
+        $enc = $this->getEncoding();
+        $dom = new DOMDocument('1.0', $enc);
+        $elt = $dom->appendChild(new DOMElement($this->_rootElement));
+
+        foreach ($dataToInsert as $key => $value) {
+            if (empty($value)
+                || is_scalar($value)
+                || (is_object($value) && method_exists($value, '__toString'))
+            ) {
+                if ($key == "message") {
+                    $value = htmlspecialchars($value, ENT_COMPAT, $enc);
+                }
+                $elt->appendChild(new DOMElement($key, (string)$value));
+            }
+        }
+
+        $xml = $dom->saveXML();
+        $xml = preg_replace('/<\?xml version="1.0"( encoding="[^\"]*")?\?>\n/u', '', $xml);
+
+        return $xml . PHP_EOL;
     }
 
     /**
@@ -120,46 +159,7 @@ class Zend_Log_Formatter_Xml extends Zend_Log_Formatter_Abstract
      */
     public function setEncoding($value)
     {
-        $this->_encoding = (string) $value;
+        $this->_encoding = (string)$value;
         return $this;
-    }
-
-    /**
-     * Formats data into a single line to be written by the writer.
-     *
-     * @param  array    $event    event data
-     * @return string             formatted line to write to the log
-     */
-    public function format($event)
-    {
-        if ($this->_elementMap === null) {
-            $dataToInsert = $event;
-        } else {
-            $dataToInsert = array();
-            foreach ($this->_elementMap as $elementName => $fieldKey) {
-                $dataToInsert[$elementName] = $event[$fieldKey];
-            }
-        }
-
-        $enc = $this->getEncoding();
-        $dom = new DOMDocument('1.0', $enc);
-        $elt = $dom->appendChild(new DOMElement($this->_rootElement));
-
-        foreach ($dataToInsert as $key => $value) { 
-            if (empty($value) 
-                || is_scalar($value) 
-                || (is_object($value) && method_exists($value,'__toString'))
-            ) {
-                if($key == "message") {
-                    $value = htmlspecialchars($value, ENT_COMPAT, $enc);
-                }
-                $elt->appendChild(new DOMElement($key, (string)$value));
-            }
-        }
-
-        $xml = $dom->saveXML();
-        $xml = preg_replace('/<\?xml version="1.0"( encoding="[^\"]*")?\?>\n/u', '', $xml);
-
-        return $xml . PHP_EOL;
     }
 }

@@ -83,7 +83,8 @@ class Zend_Oauth_Http
         Zend_Oauth_Consumer $consumer,
         array $parameters = null,
         Zend_Oauth_Http_Utility $utility = null
-    ) {
+    )
+    {
         $this->_consumer = $consumer;
         $this->_preferredRequestScheme = $this->_consumer->getRequestScheme();
         if ($parameters !== null) {
@@ -123,6 +124,16 @@ class Zend_Oauth_Http
     }
 
     /**
+     * Accessor for an array of custom parameters.
+     *
+     * @return array
+     */
+    public function getParameters()
+    {
+        return $this->_parameters;
+    }
+
+    /**
      * Mutator to set an array of custom parameters for the HTTP request.
      *
      * @param  array $customServiceParameters
@@ -132,16 +143,6 @@ class Zend_Oauth_Http
     {
         $this->_parameters = $customServiceParameters;
         return $this;
-    }
-
-    /**
-     * Accessor for an array of custom parameters.
-     *
-     * @return array
-     */
-    public function getParameters()
-    {
-        return $this->_parameters;
     }
 
     /**
@@ -169,8 +170,8 @@ class Zend_Oauth_Http
     public function startRequestCycle(array $params)
     {
         $response = null;
-        $body     = null;
-        $status   = null;
+        $body = null;
+        $status = null;
         try {
             $response = $this->_attemptRequest($params);
         } catch (Zend_Http_Client_Exception $e) {
@@ -178,7 +179,7 @@ class Zend_Oauth_Http
             throw new Zend_Oauth_Exception('Error in HTTP request', null, $e);
         }
         if ($response !== null) {
-            $body   = $response->getBody();
+            $body = $response->getBody();
             $status = $response->getStatus();
         }
         if ($response === null // Request failure/exception
@@ -191,25 +192,6 @@ class Zend_Oauth_Http
             $response = $this->startRequestCycle($params);
         }
         return $response;
-    }
-
-    /**
-     * Return an instance of Zend_Http_Client configured to use the Query
-     * String scheme for an OAuth driven HTTP request.
-     *
-     * @param array $params
-     * @param string $url
-     * @return Zend_Http_Client
-     */
-    public function getRequestSchemeQueryStringClient(array $params, $url)
-    {
-        $client = Zend_Oauth::getHttpClient();
-        $client->setUri($url);
-        $client->getUri()->setQuery(
-            $this->_httpUtility->toEncodedQueryString($params)
-        );
-        $client->setMethod($this->_preferredRequestMethod);
-        return $client;
     }
 
     /**
@@ -241,6 +223,25 @@ class Zend_Oauth_Http
     }
 
     /**
+     * Return an instance of Zend_Http_Client configured to use the Query
+     * String scheme for an OAuth driven HTTP request.
+     *
+     * @param array $params
+     * @param string $url
+     * @return Zend_Http_Client
+     */
+    public function getRequestSchemeQueryStringClient(array $params, $url)
+    {
+        $client = Zend_Oauth::getHttpClient();
+        $client->setUri($url);
+        $client->getUri()->setQuery(
+            $this->_httpUtility->toEncodedQueryString($params)
+        );
+        $client->setMethod($this->_preferredRequestMethod);
+        return $client;
+    }
+
+    /**
      * Generates a valid OAuth Authorization header based on the provided
      * parameters and realm.
      *
@@ -257,9 +258,9 @@ class Zend_Oauth_Http
                 continue;
             }
             $headerValue[] = Zend_Oauth_Http_Utility::urlEncode($key)
-                           . '="'
-                           . Zend_Oauth_Http_Utility::urlEncode($value)
-                           . '"';
+                . '="'
+                . Zend_Oauth_Http_Utility::urlEncode($value)
+                . '"';
         }
         return implode(",", $headerValue);
     }

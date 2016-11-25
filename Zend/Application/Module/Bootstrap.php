@@ -85,6 +85,25 @@ abstract class Zend_Application_Module_Bootstrap
     }
 
     /**
+     * Retrieve module name
+     *
+     * @return string
+     */
+    public function getModuleName()
+    {
+        if (empty($this->_moduleName)) {
+            $class = get_class($this);
+            if (preg_match('/^([a-z][a-z0-9]*)_/i', $class, $matches)) {
+                $prefix = $matches[1];
+            } else {
+                $prefix = $class;
+            }
+            $this->_moduleName = $prefix;
+        }
+        return $this->_moduleName;
+    }
+
+    /**
      * Ensure resource loader is loaded
      *
      * @return void
@@ -105,24 +124,5 @@ abstract class Zend_Application_Module_Bootstrap
     public function getAppNamespace()
     {
         return $this->getModuleName();
-    }
-
-    /**
-     * Retrieve module name
-     *
-     * @return string
-     */
-    public function getModuleName()
-    {
-        if (empty($this->_moduleName)) {
-            $class = get_class($this);
-            if (preg_match('/^([a-z][a-z0-9]*)_/i', $class, $matches)) {
-                $prefix = $matches[1];
-            } else {
-                $prefix = $class;
-            }
-            $this->_moduleName = $prefix;
-        }
-        return $this->_moduleName;
     }
 }

@@ -1,8 +1,9 @@
 <?php
-/********************************************************************************* 
+
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2015 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,119 +19,109 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
 class Default_EmpbenefitsController extends Zend_Controller_Action
 {
 
-	private $options;
-	public function preDispatch()
-	{
-	}
+    private $options;
 
-	public function init()
-	{
-		$this->_options= $this->getInvokeArg('bootstrap')->getOptions();
-	}
+    public function preDispatch()
+    {
+    }
 
-	public function indexAction()
-	{
+    public function init()
+    {
+        $this->_options = $this->getInvokeArg('bootstrap')->getOptions();
+    }
 
-	}
+    public function indexAction()
+    {
 
-	public function editAction()
-	{
-		if(defined('EMPTABCONFIGS'))
-		{
-			$empOrganizationTabs = explode(",",EMPTABCONFIGS);
+    }
 
-		 if(in_array('emp_benifits',$empOrganizationTabs)){
-	   $auth = Zend_Auth::getInstance();
-	   if($auth->hasIdentity())
-	   {
-	   	$loginUserId = $auth->getStorage()->read()->id;
-	   }
-	   $userid = $this->getRequest()->getParam('userid');
-	   $employeeModal = new Default_Model_Employee();
-	   $isrowexist = $employeeModal->getsingleEmployeeData($userid);
-	   if($isrowexist == 'norows')
-		  $this->view->rowexist = "norows";
-		  else
-		  $this->view->rowexist = "rows";
+    public function editAction()
+    {
+        if (defined('EMPTABCONFIGS')) {
+            $empOrganizationTabs = explode(",", EMPTABCONFIGS);
 
-		  $empdata = $employeeModal->getActiveEmployeeData($userid);
-		  if(!empty($empdata))
-		  {
-		  	$empbenefitsModel = new Default_Model_Empbenefits();
-		  	if($userid)
-		  	{
-		  		//To display Employee Profile information......
-		  		$usersModel = new Default_Model_Users();
-		  		$employeeData = $usersModel->getUserDetailsByIDandFlag($userid);
-		  	}
-		  	$this->view->id=$userid;
-		  	$this->view->employeedata = $employeeData[0];
+            if (in_array('emp_benifits', $empOrganizationTabs)) {
+                $auth = Zend_Auth::getInstance();
+                if ($auth->hasIdentity()) {
+                    $loginUserId = $auth->getStorage()->read()->id;
+                }
+                $userid = $this->getRequest()->getParam('userid');
+                $employeeModal = new Default_Model_Employee();
+                $isrowexist = $employeeModal->getsingleEmployeeData($userid);
+                if ($isrowexist == 'norows')
+                    $this->view->rowexist = "norows";
+                else
+                    $this->view->rowexist = "rows";
 
-		  	if($this->getRequest()->getPost())
-		  	{
-		  	}
-		  }
-		  $this->view->empdata = $empdata;
-		 }else{
-		 	$this->_redirect('error');
-		 }
-		}else{
-			$this->_redirect('error');
-		}
-	}
+                $empdata = $employeeModal->getActiveEmployeeData($userid);
+                if (!empty($empdata)) {
+                    $empbenefitsModel = new Default_Model_Empbenefits();
+                    if ($userid) {
+                        //To display Employee Profile information......
+                        $usersModel = new Default_Model_Users();
+                        $employeeData = $usersModel->getUserDetailsByIDandFlag($userid);
+                    }
+                    $this->view->id = $userid;
+                    $this->view->employeedata = $employeeData[0];
+
+                    if ($this->getRequest()->getPost()) {
+                    }
+                }
+                $this->view->empdata = $empdata;
+            } else {
+                $this->_redirect('error');
+            }
+        } else {
+            $this->_redirect('error');
+        }
+    }
 
 
-	public function viewAction()
-	{
-		if(defined('EMPTABCONFIGS'))
-		{
-			$empOrganizationTabs = explode(",",EMPTABCONFIGS);
+    public function viewAction()
+    {
+        if (defined('EMPTABCONFIGS')) {
+            $empOrganizationTabs = explode(",", EMPTABCONFIGS);
 
-		 if(in_array('emp_benifits',$empOrganizationTabs)){
-		 	$auth = Zend_Auth::getInstance();
-		 	if($auth->hasIdentity())
-		 	{
-		 		$loginUserId = $auth->getStorage()->read()->id;
-		 	}
-		 	$userid = $this->getRequest()->getParam('userid');
-		 	$employeeModal = new Default_Model_Employee();
-		 	$isrowexist = $employeeModal->getsingleEmployeeData($userid);
-		 	if($isrowexist == 'norows')
-		 	$this->view->rowexist = "norows";
-		 	else
-		 	$this->view->rowexist = "rows";
+            if (in_array('emp_benifits', $empOrganizationTabs)) {
+                $auth = Zend_Auth::getInstance();
+                if ($auth->hasIdentity()) {
+                    $loginUserId = $auth->getStorage()->read()->id;
+                }
+                $userid = $this->getRequest()->getParam('userid');
+                $employeeModal = new Default_Model_Employee();
+                $isrowexist = $employeeModal->getsingleEmployeeData($userid);
+                if ($isrowexist == 'norows')
+                    $this->view->rowexist = "norows";
+                else
+                    $this->view->rowexist = "rows";
 
-		 	$empdata = $employeeModal->getActiveEmployeeData($userid);
-		 	if(!empty($empdata))
-		 	{
-		 		$empbenefitsModel = new Default_Model_Empbenefits();
-		 		if($userid)
-		 		{
-		 			//To display Employee Profile information......
-		 			$usersModel = new Default_Model_Users();
-		 			$employeeData = $usersModel->getUserDetailsByIDandFlag($userid);
-		 		}
-		 		$this->view->id=$userid;
-		 		$this->view->employeedata = $employeeData[0];
+                $empdata = $employeeModal->getActiveEmployeeData($userid);
+                if (!empty($empdata)) {
+                    $empbenefitsModel = new Default_Model_Empbenefits();
+                    if ($userid) {
+                        //To display Employee Profile information......
+                        $usersModel = new Default_Model_Users();
+                        $employeeData = $usersModel->getUserDetailsByIDandFlag($userid);
+                    }
+                    $this->view->id = $userid;
+                    $this->view->employeedata = $employeeData[0];
 
-		 		if($this->getRequest()->getPost())
-		 		{
-		 		}
-		 	}
-		 	$this->view->empdata = $empdata;
-		 }else{
-		 	$this->_redirect('error');
-		 }
-		}else{
-			$this->_redirect('error');
-		}
-	}
-
+                    if ($this->getRequest()->getPost()) {
+                    }
+                }
+                $this->view->empdata = $empdata;
+            } else {
+                $this->_redirect('error');
+            }
+        } else {
+            $this->_redirect('error');
+        }
+    }
 
 
 }
+
 ?>

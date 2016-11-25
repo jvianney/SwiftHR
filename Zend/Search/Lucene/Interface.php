@@ -66,6 +66,44 @@ interface Zend_Search_Lucene_Interface extends Zend_Search_Lucene_Index_TermsStr
     public static function getSegmentFileName($generation);
 
     /**
+     * Set default search field.
+     *
+     * Null means, that search is performed through all fields by default
+     *
+     * Default value is null
+     *
+     * @param string $fieldName
+     */
+    public static function setDefaultSearchField($fieldName);
+
+    /**
+     * Get default search field.
+     *
+     * Null means, that search is performed through all fields by default
+     *
+     * @return string
+     */
+    public static function getDefaultSearchField();
+
+    /**
+     * Set result set limit.
+     *
+     * 0 (default) means no limit
+     *
+     * @param integer $limit
+     */
+    public static function setResultSetLimit($limit);
+
+    /**
+     * Set result set limit.
+     *
+     * 0 means no limit
+     *
+     * @return integer
+     */
+    public static function getResultSetLimit();
+
+    /**
      * Get index format version
      *
      * @return integer
@@ -119,44 +157,6 @@ interface Zend_Search_Lucene_Interface extends Zend_Search_Lucene_Index_TermsStr
      * @throws Zend_Search_Lucene_Exception    Exception is thrown if $id is out of the range
      */
     public function isDeleted($id);
-
-    /**
-     * Set default search field.
-     *
-     * Null means, that search is performed through all fields by default
-     *
-     * Default value is null
-     *
-     * @param string $fieldName
-     */
-    public static function setDefaultSearchField($fieldName);
-
-    /**
-     * Get default search field.
-     *
-     * Null means, that search is performed through all fields by default
-     *
-     * @return string
-     */
-    public static function getDefaultSearchField();
-
-    /**
-     * Set result set limit.
-     *
-     * 0 (default) means no limit
-     *
-     * @param integer $limit
-     */
-    public static function setResultSetLimit($limit);
-
-    /**
-     * Set result set limit.
-     *
-     * 0 means no limit
-     *
-     * @return integer
-     */
-    public static function getResultSetLimit();
 
     /**
      * Retrieve index maxBufferedDocs option

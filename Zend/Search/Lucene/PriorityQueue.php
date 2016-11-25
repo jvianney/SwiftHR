@@ -62,22 +62,32 @@ abstract class Zend_Search_Lucene_PriorityQueue
      */
     public function put($element)
     {
-        $nodeId   = count($this->_heap);
-        $parentId = ($nodeId-1) >> 1;   // floor( ($nodeId-1)/2 )
+        $nodeId = count($this->_heap);
+        $parentId = ($nodeId - 1) >> 1;   // floor( ($nodeId-1)/2 )
 
-        while ($nodeId != 0  &&  $this->_less($element, $this->_heap[$parentId])) {
+        while ($nodeId != 0 && $this->_less($element, $this->_heap[$parentId])) {
             // Move parent node down
             $this->_heap[$nodeId] = $this->_heap[$parentId];
 
             // Move pointer to the next level of tree
-            $nodeId   = $parentId;
-            $parentId = ($nodeId-1) >> 1;   // floor( ($nodeId-1)/2 )
+            $nodeId = $parentId;
+            $parentId = ($nodeId - 1) >> 1;   // floor( ($nodeId-1)/2 )
         }
 
         // Put new node into the tree
         $this->_heap[$nodeId] = $element;
     }
 
+    /**
+     * Compare elements
+     *
+     * Returns true, if $el1 is less than $el2; else otherwise
+     *
+     * @param mixed $el1
+     * @param mixed $el2
+     * @return boolean
+     */
+    abstract protected function _less($el1, $el2);
 
     /**
      * Return least element of the queue
@@ -94,7 +104,6 @@ abstract class Zend_Search_Lucene_PriorityQueue
 
         return $this->_heap[0];
     }
-
 
     /**
      * Removes and return least element of the queue
@@ -115,27 +124,27 @@ abstract class Zend_Search_Lucene_PriorityQueue
         /**
          * Find appropriate position for last node
          */
-        $nodeId  = 0;     // Start from a top
+        $nodeId = 0;     // Start from a top
         $childId = 1;     // First child
 
         // Choose smaller child
-        if ($lastId > 2  &&  $this->_less($this->_heap[2], $this->_heap[1])) {
+        if ($lastId > 2 && $this->_less($this->_heap[2], $this->_heap[1])) {
             $childId = 2;
         }
 
-        while ($childId < $lastId  &&
-               $this->_less($this->_heap[$childId], $this->_heap[$lastId])
-          ) {
+        while ($childId < $lastId &&
+            $this->_less($this->_heap[$childId], $this->_heap[$lastId])
+        ) {
             // Move child node up
             $this->_heap[$nodeId] = $this->_heap[$childId];
 
-            $nodeId  = $childId;               // Go down
+            $nodeId = $childId;               // Go down
             $childId = ($nodeId << 1) + 1;     // First child
 
             // Choose smaller child
-            if (($childId+1) < $lastId  &&
-                $this->_less($this->_heap[$childId+1], $this->_heap[$childId])
-               ) {
+            if (($childId + 1) < $lastId &&
+                $this->_less($this->_heap[$childId + 1], $this->_heap[$childId])
+            ) {
                 $childId++;
             }
         }
@@ -147,7 +156,6 @@ abstract class Zend_Search_Lucene_PriorityQueue
         return $top;
     }
 
-
     /**
      * Clear queue
      */
@@ -155,17 +163,5 @@ abstract class Zend_Search_Lucene_PriorityQueue
     {
         $this->_heap = array();
     }
-
-
-    /**
-     * Compare elements
-     *
-     * Returns true, if $el1 is less than $el2; else otherwise
-     *
-     * @param mixed $el1
-     * @param mixed $el2
-     * @return boolean
-     */
-    abstract protected function _less($el1, $el2);
 }
 

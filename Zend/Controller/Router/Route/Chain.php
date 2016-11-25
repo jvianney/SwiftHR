@@ -51,12 +51,12 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
      * Add a route to this chain
      *
      * @param  Zend_Controller_Router_Route_Abstract $route
-     * @param  string                                $separator
+     * @param  string $separator
      * @return Zend_Controller_Router_Route_Chain
      */
     public function chain(Zend_Controller_Router_Route_Abstract $route, $separator = self::URI_DELIMITER)
     {
-        $this->_routes[]     = $route;
+        $this->_routes[] = $route;
         $this->_separators[] = $separator;
 
         return $this;
@@ -72,9 +72,9 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
      */
     public function match($request, $partial = null)
     {
-        $path    = trim($request->getPathInfo(), self::URI_DELIMITER);
+        $path = trim($request->getPathInfo(), self::URI_DELIMITER);
         $subPath = $path;
-        $values  = array();
+        $values = array();
 
         foreach ($this->_routes as $key => $route) {
             if ($key > 0
@@ -107,8 +107,8 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
             $matchedPath = $route->getMatchedPath();
 
             if ($matchedPath !== null) {
-                $subPath     = substr($subPath, strlen($matchedPath));
-                $separator   = substr($subPath, 0, strlen($this->_separators[$key]));
+                $subPath = substr($subPath, strlen($matchedPath));
+                $separator = substr($subPath, 0, strlen($this->_separators[$key]));
             }
 
             $values = $res + $values;
@@ -131,7 +131,7 @@ class Zend_Controller_Router_Route_Chain extends Zend_Controller_Router_Route_Ab
      */
     public function assemble($data = array(), $reset = false, $encode = false)
     {
-        $value     = '';
+        $value = '';
         $numRoutes = count($this->_routes);
 
         foreach ($this->_routes as $key => $route) {

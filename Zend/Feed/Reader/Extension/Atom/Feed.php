@@ -103,6 +103,38 @@ class Zend_Feed_Reader_Extension_Atom_Feed
     }
 
     /**
+     * Get an author entry in RSS format
+     *
+     * @param  DOMElement $element
+     * @return string
+     */
+    protected function _getAuthor(DOMElement $element)
+    {
+        $author = array();
+
+        $emailNode = $element->getElementsByTagName('email');
+        $nameNode = $element->getElementsByTagName('name');
+        $uriNode = $element->getElementsByTagName('uri');
+
+        if ($emailNode->length && strlen($emailNode->item(0)->nodeValue) > 0) {
+            $author['email'] = $emailNode->item(0)->nodeValue;
+        }
+
+        if ($nameNode->length && strlen($nameNode->item(0)->nodeValue) > 0) {
+            $author['name'] = $nameNode->item(0)->nodeValue;
+        }
+
+        if ($uriNode->length && strlen($uriNode->item(0)->nodeValue) > 0) {
+            $author['uri'] = $uriNode->item(0)->nodeValue;
+        }
+
+        if (empty($author)) {
+            return null;
+        }
+        return $author;
+    }
+
+    /**
      * Get the copyright entry
      *
      * @return string|null
@@ -267,6 +299,94 @@ class Zend_Feed_Reader_Extension_Atom_Feed
     }
 
     /**
+     * Get a link to the source website
+     *
+     * @return string|null
+     */
+    public function getLink()
+    {
+        if (array_key_exists('link', $this->_data)) {
+            return $this->_data['link'];
+        }
+
+        $link = null;
+
+        $list = $this->_xpath->query(
+            $this->getXpathPrefix() . '/atom:link[@rel="alternate"]/@href' . '|' .
+            $this->getXpathPrefix() . '/atom:link[not(@rel)]/@href'
+        );
+
+        if ($list->length) {
+            $link = $list->item(0)->nodeValue;
+            $link = $this->_absolutiseUri($link);
+        }
+
+        $this->_data['link'] = $link;
+
+        return $this->_data['link'];
+    }
+
+    /**
+     *  Attempt to absolutise the URI, i.e. if a relative URI apply the
+     *  xml:base value as a prefix to turn into an absolute URI.
+     */
+    protected function _absolutiseUri($link)
+    {
+        if (!Zend_Uri::check($link)) {
+            if ($this->getBaseUrl() !== null) {
+                $link = $this->getBaseUrl() . $link;
+                if (!Zend_Uri::check($link)) {
+                    $link = null;
+                }
+            }
+        }
+        return $link;
+    }
+
+    /**
+     * Get the base URI of the feed (if set).
+     *
+     * @return string|null
+     */
+    public function getBaseUrl()
+    {
+        if (array_key_exists('baseUrl', $this->_data)) {
+            return $this->_data['baseUrl'];
+        }
+
+        $baseUrl = $this->_xpath->evaluate('string(//@xml:base[1])');
+
+        if (!$baseUrl) {
+            $baseUrl = null;
+        }
+        $this->_data['baseUrl'] = $baseUrl;
+
+        return $this->_data['baseUrl'];
+    }
+
+    /**
+     * Get the feed title
+     *
+     * @return string|null
+     */
+    public function getTitle()
+    {
+        if (array_key_exists('title', $this->_data)) {
+            return $this->_data['title'];
+        }
+
+        $title = $this->_xpath->evaluate('string(' . $this->getXpathPrefix() . '/atom:title)');
+
+        if (!$title) {
+            $title = null;
+        }
+
+        $this->_data['title'] = $title;
+
+        return $this->_data['title'];
+    }
+
+    /**
      * Get the feed language
      *
      * @return string|null
@@ -308,7 +428,7 @@ class Zend_Feed_Reader_Extension_Atom_Feed
         if (!$imageUrl) {
             $image = null;
         } else {
-            $image = array('uri'=>$imageUrl);
+            $image = array('uri' => $imageUrl);
         }
 
         $this->_data['image'] = $image;
@@ -332,61 +452,12 @@ class Zend_Feed_Reader_Extension_Atom_Feed
         if (!$imageUrl) {
             $image = null;
         } else {
-            $image = array('uri'=>$imageUrl);
+            $image = array('uri' => $imageUrl);
         }
 
         $this->_data['icon'] = $image;
 
         return $this->_data['icon'];
-    }
-
-    /**
-     * Get the base URI of the feed (if set).
-     *
-     * @return string|null
-     */
-    public function getBaseUrl()
-    {
-        if (array_key_exists('baseUrl', $this->_data)) {
-            return $this->_data['baseUrl'];
-        }
-
-        $baseUrl = $this->_xpath->evaluate('string(//@xml:base[1])');
-
-        if (!$baseUrl) {
-            $baseUrl = null;
-        }
-        $this->_data['baseUrl'] = $baseUrl;
-
-        return $this->_data['baseUrl'];
-    }
-
-    /**
-     * Get a link to the source website
-     *
-     * @return string|null
-     */
-    public function getLink()
-    {
-        if (array_key_exists('link', $this->_data)) {
-            return $this->_data['link'];
-        }
-
-        $link = null;
-
-        $list = $this->_xpath->query(
-            $this->getXpathPrefix() . '/atom:link[@rel="alternate"]/@href' . '|' .
-            $this->getXpathPrefix() . '/atom:link[not(@rel)]/@href'
-        );
-
-        if ($list->length) {
-            $link = $list->item(0)->nodeValue;
-            $link = $this->_absolutiseUri($link);
-        }
-
-        $this->_data['link'] = $link;
-
-        return $this->_data['link'];
     }
 
     /**
@@ -438,28 +509,6 @@ class Zend_Feed_Reader_Extension_Atom_Feed
     }
 
     /**
-     * Get the feed title
-     *
-     * @return string|null
-     */
-    public function getTitle()
-    {
-        if (array_key_exists('title', $this->_data)) {
-            return $this->_data['title'];
-        }
-
-        $title = $this->_xpath->evaluate('string(' . $this->getXpathPrefix() . '/atom:title)');
-
-        if (!$title) {
-            $title = null;
-        }
-
-        $this->_data['title'] = $title;
-
-        return $this->_data['title'];
-    }
-
-    /**
      * Get all categories
      *
      * @return Zend_Feed_Reader_Collection_Category
@@ -501,55 +550,6 @@ class Zend_Feed_Reader_Extension_Atom_Feed
     }
 
     /**
-     * Get an author entry in RSS format
-     *
-     * @param  DOMElement $element
-     * @return string
-     */
-    protected function _getAuthor(DOMElement $element)
-    {
-        $author = array();
-
-        $emailNode = $element->getElementsByTagName('email');
-        $nameNode  = $element->getElementsByTagName('name');
-        $uriNode   = $element->getElementsByTagName('uri');
-
-        if ($emailNode->length && strlen($emailNode->item(0)->nodeValue) > 0) {
-            $author['email'] = $emailNode->item(0)->nodeValue;
-        }
-
-        if ($nameNode->length && strlen($nameNode->item(0)->nodeValue) > 0) {
-            $author['name'] = $nameNode->item(0)->nodeValue;
-        }
-
-        if ($uriNode->length && strlen($uriNode->item(0)->nodeValue) > 0) {
-            $author['uri'] = $uriNode->item(0)->nodeValue;
-        }
-
-        if (empty($author)) {
-            return null;
-        }
-        return $author;
-    }
-
-    /**
-     *  Attempt to absolutise the URI, i.e. if a relative URI apply the
-     *  xml:base value as a prefix to turn into an absolute URI.
-     */
-    protected function _absolutiseUri($link)
-    {
-        if (!Zend_Uri::check($link)) {
-            if ($this->getBaseUrl() !== null) {
-                $link = $this->getBaseUrl() . $link;
-                if (!Zend_Uri::check($link)) {
-                    $link = null;
-                }
-            }
-        }
-        return $link;
-    }
-
-    /**
      * Register the default namespaces for the current feed format
      */
     protected function _registerNamespaces()
@@ -579,11 +579,13 @@ class Zend_Feed_Reader_Extension_Atom_Feed
         $prefixAtom03 = $dom->lookupPrefix(Zend_Feed_Reader::NAMESPACE_ATOM_03);
         $prefixAtom10 = $dom->lookupPrefix(Zend_Feed_Reader::NAMESPACE_ATOM_10);
         if ($dom->isDefaultNamespace(Zend_Feed_Reader::NAMESPACE_ATOM_10)
-        || !empty($prefixAtom10)) {
+            || !empty($prefixAtom10)
+        ) {
             return Zend_Feed_Reader::TYPE_ATOM_10;
         }
         if ($dom->isDefaultNamespace(Zend_Feed_Reader::NAMESPACE_ATOM_03)
-        || !empty($prefixAtom03)) {
+            || !empty($prefixAtom03)
+        ) {
             return Zend_Feed_Reader::TYPE_ATOM_03;
         }
     }

@@ -79,8 +79,8 @@ abstract class Zend_Feed_Reader_EntryAbstract
      */
     public function __construct(DOMElement $entry, $entryKey, $type = null)
     {
-        $this->_entry       = $entry;
-        $this->_entryKey    = $entryKey;
+        $this->_entry = $entry;
+        $this->_entryKey = $entryKey;
         $this->_domDocument = $entry->ownerDocument;
         if ($type !== null) {
             $this->_data['type'] = $type;
@@ -91,13 +91,23 @@ abstract class Zend_Feed_Reader_EntryAbstract
     }
 
     /**
-     * Get the DOM
+     * Load extensions from Zend_Feed_Reader
      *
-     * @return DOMDocument
+     * @return void
      */
-    public function getDomDocument()
+    protected function _loadExtensions()
     {
-        return $this->_domDocument;
+        $all = Zend_Feed_Reader::getExtensions();
+        $feed = $all['entry'];
+        foreach ($feed as $extension) {
+            if (in_array($extension, $all['core'])) {
+                continue;
+            }
+            $className = Zend_Feed_Reader::getPluginLoader()->getClassName($extension);
+            $this->_extensions[$extension] = new $className(
+                $this->getElement(), $this->_entryKey, $this->_data['type']
+            );
+        }
     }
 
     /**
@@ -108,6 +118,19 @@ abstract class Zend_Feed_Reader_EntryAbstract
     public function getElement()
     {
         return $this->_entry;
+    }
+
+    /**
+     * Get entry as xml
+     *
+     * @return string
+     */
+    public function saveXml()
+    {
+        $dom = new DOMDocument('1.0', $this->getEncoding());
+        $entry = $dom->importNode($this->getElement(), true);
+        $dom->appendChild($entry);
+        return $dom->saveXml();
     }
 
     /**
@@ -125,16 +148,13 @@ abstract class Zend_Feed_Reader_EntryAbstract
     }
 
     /**
-     * Get entry as xml
+     * Get the DOM
      *
-     * @return string
+     * @return DOMDocument
      */
-    public function saveXml()
+    public function getDomDocument()
     {
-        $dom = new DOMDocument('1.0', $this->getEncoding());
-        $entry = $dom->importNode($this->getElement(), true);
-        $dom->appendChild($entry);
-        return $dom->saveXml();
+        return $this->_domDocument;
     }
 
     /**
@@ -214,25 +234,5 @@ abstract class Zend_Feed_Reader_EntryAbstract
         require_once 'Zend/Feed/Exception.php';
         throw new Zend_Feed_Exception('Method: ' . $method
             . 'does not exist and could not be located on a registered Extension');
-    }
-
-    /**
-     * Load extensions from Zend_Feed_Reader
-     *
-     * @return void
-     */
-    protected function _loadExtensions()
-    {
-        $all = Zend_Feed_Reader::getExtensions();
-        $feed = $all['entry'];
-        foreach ($feed as $extension) {
-            if (in_array($extension, $all['core'])) {
-                continue;
-            }
-            $className = Zend_Feed_Reader::getPluginLoader()->getClassName($extension);
-            $this->_extensions[$extension] = new $className(
-                $this->getElement(), $this->_entryKey, $this->_data['type']
-            );
-        }
     }
 }

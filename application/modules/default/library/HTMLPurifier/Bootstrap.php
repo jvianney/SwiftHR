@@ -34,7 +34,8 @@ class HTMLPurifier_Bootstrap
      * Autoload function for HTML Purifier
      * @param $class Class to load
      */
-    public static function autoload($class) {
+    public static function autoload($class)
+    {
         $file = HTMLPurifier_Bootstrap::getPath($class);
         if (!$file) return false;
         // Technically speaking, it should be ok and more efficient to
@@ -49,7 +50,8 @@ class HTMLPurifier_Bootstrap
     /**
      * Returns the path for a specific class.
      */
-    public static function getPath($class) {
+    public static function getPath($class)
+    {
         if (strncmp('HTMLPurifier', $class, 12) !== 0) return false;
         // Custom implementations
         if (strncmp('HTMLPurifier_Language_', $class, 22) === 0) {
@@ -65,14 +67,15 @@ class HTMLPurifier_Bootstrap
     /**
      * "Pre-registers" our autoloader on the SPL stack.
      */
-    public static function registerAutoload() {
+    public static function registerAutoload()
+    {
         $autoload = array('HTMLPurifier_Bootstrap', 'autoload');
-        if ( ($funcs = spl_autoload_functions()) === false ) {
+        if (($funcs = spl_autoload_functions()) === false) {
             spl_autoload_register($autoload);
         } elseif (function_exists('spl_autoload_unregister')) {
-            $buggy  = version_compare(PHP_VERSION, '5.2.11', '<');
+            $buggy = version_compare(PHP_VERSION, '5.2.11', '<');
             $compat = version_compare(PHP_VERSION, '5.1.2', '<=') &&
-                      version_compare(PHP_VERSION, '5.1.0', '>=');
+                version_compare(PHP_VERSION, '5.1.0', '>=');
             foreach ($funcs as $func) {
                 if ($buggy && is_array($func)) {
                     // :TRICKY: There are some compatibility issues and some

@@ -82,13 +82,13 @@ class Zend_Cache_Frontend_Class extends Zend_Cache_Core
      */
     private $_cachedEntity = null;
 
-     /**
-      * The class name of the cached object or cached abstract class
-      *
-      * Used to differentiate between different classes with the same method calls.
-      *
-      * @var string
-      */
+    /**
+     * The class name of the cached object or cached abstract class
+     *
+     * Used to differentiate between different classes with the same method calls.
+     *
+     * @var string
+     */
     private $_cachedEntityLabel = '';
 
     /**
@@ -118,33 +118,12 @@ class Zend_Cache_Frontend_Class extends Zend_Cache_Core
     }
 
     /**
-     * Set a specific life time
-     *
-     * @param  int $specificLifetime
-     * @return void
-     */
-    public function setSpecificLifetime($specificLifetime = false)
-    {
-        $this->_specificLifetime = $specificLifetime;
-    }
-
-    /**
-     * Set the priority (used by some particular backends)
-     *
-     * @param int $priority integer between 0 (very low priority) and 10 (maximum priority)
-     */
-    public function setPriority($priority)
-    {
-        $this->_priority = $priority;
-    }
-
-    /**
      * Public frontend to set an option
      *
      * Just a wrapper to get a specific behaviour for cached_entity
      *
-     * @param  string $name  Name of the option
-     * @param  mixed  $value Value of the option
+     * @param  string $name Name of the option
+     * @param  mixed $value Value of the option
      * @throws Zend_Cache_Exception
      * @return void
      */
@@ -172,12 +151,33 @@ class Zend_Cache_Frontend_Class extends Zend_Cache_Core
         }
         $this->_cachedEntity = $cachedEntity;
         $this->_specificOptions['cached_entity'] = $cachedEntity;
-        if (is_string($this->_cachedEntity)){
+        if (is_string($this->_cachedEntity)) {
             $this->_cachedEntityLabel = $this->_cachedEntity;
         } else {
             $ro = new ReflectionObject($this->_cachedEntity);
             $this->_cachedEntityLabel = $ro->getName();
         }
+    }
+
+    /**
+     * Set a specific life time
+     *
+     * @param  int $specificLifetime
+     * @return void
+     */
+    public function setSpecificLifetime($specificLifetime = false)
+    {
+        $this->_specificLifetime = $specificLifetime;
+    }
+
+    /**
+     * Set the priority (used by some particular backends)
+     *
+     * @param int $priority integer between 0 (very low priority) and 10 (maximum priority)
+     */
+    public function setPriority($priority)
+    {
+        $this->_priority = $priority;
     }
 
     /**
@@ -194,8 +194,8 @@ class Zend_Cache_Frontend_Class extends Zend_Cache_Core
     /**
      * Main method : call the specified method or get the result from cache
      *
-     * @param  string $name       Method name
-     * @param  array  $parameters Method parameters
+     * @param  string $name Method name
+     * @param  array $parameters Method parameters
      * @return mixed Result
      */
     public function __call($name, $parameters)
@@ -216,7 +216,7 @@ class Zend_Cache_Frontend_Class extends Zend_Cache_Core
         }
 
         $id = $this->_makeId($name, $parameters);
-        if ( ($rs = $this->load($id)) && isset($rs[0], $rs[1]) ) {
+        if (($rs = $this->load($id)) && isset($rs[0], $rs[1])) {
             // A cache is available
             $output = $rs[0];
             $return = $rs[1];
@@ -254,7 +254,7 @@ class Zend_Cache_Frontend_Class extends Zend_Cache_Core
      * Make a cache id from the method name and parameters
      *
      * @param  string $name Method name
-     * @param  array  $args Method parameters
+     * @param  array $args Method parameters
      * @return string Cache id
      */
     public function makeId($name, array $args = array())

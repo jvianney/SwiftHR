@@ -8,7 +8,8 @@
 class HTMLPurifier_VarParser_Flexible extends HTMLPurifier_VarParser
 {
 
-    protected function parseImplementation($var, $type, $allow_null) {
+    protected function parseImplementation($var, $type, $allow_null)
+    {
         if ($allow_null && $var === null) return null;
         switch ($type) {
             // Note: if code "breaks" from the switch, it triggers a generic
@@ -21,14 +22,14 @@ class HTMLPurifier_VarParser_Flexible extends HTMLPurifier_VarParser
             case self::ITEXT :
                 return $var;
             case self::INT :
-                if (is_string($var) && ctype_digit($var)) $var = (int) $var;
+                if (is_string($var) && ctype_digit($var)) $var = (int)$var;
                 return $var;
             case self::FLOAT :
-                if ((is_string($var) && is_numeric($var)) || is_int($var)) $var = (float) $var;
+                if ((is_string($var) && is_numeric($var)) || is_int($var)) $var = (float)$var;
                 return $var;
             case self::BOOL :
                 if (is_int($var) && ($var === 0 || $var === 1)) {
-                    $var = (bool) $var;
+                    $var = (bool)$var;
                 } elseif (is_string($var)) {
                     if ($var == 'on' || $var == 'true' || $var == '1') {
                         $var = true;
@@ -50,7 +51,7 @@ class HTMLPurifier_VarParser_Flexible extends HTMLPurifier_VarParser
                     if (strpos($var, "\n") === false && strpos($var, "\r") === false) {
                         // simplistic string to array method that only works
                         // for simple lists of tag names or alphanumeric characters
-                        $var = explode(',',$var);
+                        $var = explode(',', $var);
                     } else {
                         $var = preg_split('/(,|[\n\r]+)/', $var);
                     }

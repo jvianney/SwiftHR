@@ -47,9 +47,9 @@ class Zend_Oauth_Http_AccessToken extends Zend_Oauth_Http
      */
     public function execute()
     {
-        $params   = $this->assembleParams();
+        $params = $this->assembleParams();
         $response = $this->startRequestCycle($params);
-        $return   = new Zend_Oauth_Token_Access($response);
+        $return = new Zend_Oauth_Token_Access($response);
         return $return;
     }
 
@@ -61,12 +61,12 @@ class Zend_Oauth_Http_AccessToken extends Zend_Oauth_Http
     public function assembleParams()
     {
         $params = array(
-            'oauth_consumer_key'     => $this->_consumer->getConsumerKey(),
-            'oauth_nonce'            => $this->_httpUtility->generateNonce(),
+            'oauth_consumer_key' => $this->_consumer->getConsumerKey(),
+            'oauth_nonce' => $this->_httpUtility->generateNonce(),
             'oauth_signature_method' => $this->_consumer->getSignatureMethod(),
-            'oauth_timestamp'        => $this->_httpUtility->generateTimestamp(),
-            'oauth_token'            => $this->_consumer->getLastRequestToken()->getToken(),
-            'oauth_version'          => $this->_consumer->getVersion(),
+            'oauth_timestamp' => $this->_httpUtility->generateTimestamp(),
+            'oauth_token' => $this->_consumer->getLastRequestToken()->getToken(),
+            'oauth_version' => $this->_consumer->getVersion(),
         );
 
         if (!empty($this->_parameters)) {
@@ -86,6 +86,30 @@ class Zend_Oauth_Http_AccessToken extends Zend_Oauth_Http
     }
 
     /**
+     * Attempt a request based on the current configured OAuth Request Scheme and
+     * return the resulting HTTP Response.
+     *
+     * @param  array $params
+     * @return Zend_Http_Response
+     */
+    protected function _attemptRequest(array $params)
+    {
+        switch ($this->_preferredRequestScheme) {
+            case Zend_Oauth::REQUEST_SCHEME_HEADER:
+                $httpClient = $this->getRequestSchemeHeaderClient($params);
+                break;
+            case Zend_Oauth::REQUEST_SCHEME_POSTBODY:
+                $httpClient = $this->getRequestSchemePostBodyClient($params);
+                break;
+            case Zend_Oauth::REQUEST_SCHEME_QUERYSTRING:
+                $httpClient = $this->getRequestSchemeQueryStringClient($params,
+                    $this->_consumer->getAccessTokenUrl());
+                break;
+        }
+        return $httpClient->request();
+    }
+
+    /**
      * Generate and return a HTTP Client configured for the Header Request Scheme
      * specified by OAuth, for use in requesting an Access Token.
      *
@@ -94,15 +118,36 @@ class Zend_Oauth_Http_AccessToken extends Zend_Oauth_Http
      */
     public function getRequestSchemeHeaderClient(array $params)
     {
-        $params      = $this->_cleanParamsOfIllegalCustomParameters($params);
+        $params = $this->_cleanParamsOfIllegalCustomParameters($params);
         $headerValue = $this->_toAuthorizationHeader($params);
-        $client      = Zend_Oauth::getHttpClient();
+        $client = Zend_Oauth::getHttpClient();
 
         $client->setUri($this->_consumer->getAccessTokenUrl());
         $client->setHeaders('Authorization', $headerValue);
         $client->setMethod($this->_preferredRequestMethod);
 
         return $client;
+    }
+
+    /**
+     * Access Token requests specifically may not contain non-OAuth parameters.
+     * So these should be striped out and excluded. Detection is easy since
+     * specified OAuth parameters start with "oauth_", Extension params start
+     * with "xouth_", and no other parameters should use these prefixes.
+     *
+     * xouth params are not currently allowable.
+     *
+     * @param  array $params
+     * @return array
+     */
+    protected function _cleanParamsOfIllegalCustomParameters(array $params)
+    {
+        foreach ($params as $key => $value) {
+            if (!preg_match("/^oauth_/", $key)) {
+                unset($params[$key]);
+            }
+        }
+        return $params;
     }
 
     /**
@@ -140,50 +185,5 @@ class Zend_Oauth_Http_AccessToken extends Zend_Oauth_Http
     {
         $params = $this->_cleanParamsOfIllegalCustomParameters($params);
         return parent::getRequestSchemeQueryStringClient($params, $url);
-    }
-
-    /**
-     * Attempt a request based on the current configured OAuth Request Scheme and
-     * return the resulting HTTP Response.
-     *
-     * @param  array $params
-     * @return Zend_Http_Response
-     */
-    protected function _attemptRequest(array $params)
-    {
-        switch ($this->_preferredRequestScheme) {
-            case Zend_Oauth::REQUEST_SCHEME_HEADER:
-                $httpClient = $this->getRequestSchemeHeaderClient($params);
-                break;
-            case Zend_Oauth::REQUEST_SCHEME_POSTBODY:
-                $httpClient = $this->getRequestSchemePostBodyClient($params);
-                break;
-            case Zend_Oauth::REQUEST_SCHEME_QUERYSTRING:
-                $httpClient = $this->getRequestSchemeQueryStringClient($params,
-                    $this->_consumer->getAccessTokenUrl());
-                break;
-        }
-        return $httpClient->request();
-    }
-
-    /**
-     * Access Token requests specifically may not contain non-OAuth parameters.
-     * So these should be striped out and excluded. Detection is easy since
-     * specified OAuth parameters start with "oauth_", Extension params start
-     * with "xouth_", and no other parameters should use these prefixes.
-     *
-     * xouth params are not currently allowable.
-     *
-     * @param  array $params
-     * @return array
-     */
-    protected function _cleanParamsOfIllegalCustomParameters(array $params)
-    {
-        foreach ($params as $key=>$value) {
-            if (!preg_match("/^oauth_/", $key)) {
-                unset($params[$key]);
-            }
-        }
-        return $params;
     }
 }

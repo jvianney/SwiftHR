@@ -90,6 +90,17 @@ class Zend_Pdf_Resource_ContentStream extends Zend_Pdf_Resource
     }
 
     /**
+     * Flush buffered content
+     */
+    public function flush()
+    {
+        $this->_resource->value .= $this->_bufferedContent;
+        $this->_bufferedContent = '';
+
+        return $this;
+    }
+
+    /**
      * Clear stream content.
      *
      * @return Zend_Pdf_Resource_ContentStream
@@ -98,17 +109,6 @@ class Zend_Pdf_Resource_ContentStream extends Zend_Pdf_Resource
     {
         $this->_resource->value = '';
         $this->_bufferedContent = '';
-        return $this;
-    }
-
-    /**
-     * Flush buffered content
-     */
-    public function flush()
-    {
-        $this->_resource->value .= $this->_bufferedContent;
-        $this->_bufferedContent = '';
-
         return $this;
     }
 }

@@ -67,17 +67,6 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
      * @var transaction
      */
     protected $_transResource = null;
-
-    /**
-     * Return the status of current transaction.
-     * @return bool
-     */
-
-    public function getTransaction()
-    {
-        return (is_resource($this->_transResource) ? $this->_transResource : null);
-    }
-
     /**
      * Keys are UPPERCASE SQL datatypes or the constants
      * Zend_Db::INT_TYPE, Zend_Db::BIGINT_TYPE, or Zend_Db::FLOAT_TYPE.
@@ -90,34 +79,29 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
+        Zend_Db::INT_TYPE => Zend_Db::INT_TYPE,
         Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'SMALLINT'           => Zend_Db::INT_TYPE,
-        'INT'                => Zend_Db::INT_TYPE,
-        'INTEGER'            => Zend_Db::INT_TYPE,
-        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-        'INT64'              => Zend_Db::BIGINT_TYPE,
-        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-        'DOUBLE PRECISION'   => Zend_Db::FLOAT_TYPE,
-        'DOUBLE'             => Zend_Db::FLOAT_TYPE,
-        'NUMERIC'            => Zend_Db::FLOAT_TYPE,
-        'FLOAT'              => Zend_Db::FLOAT_TYPE
+        Zend_Db::FLOAT_TYPE => Zend_Db::FLOAT_TYPE,
+        'SMALLINT' => Zend_Db::INT_TYPE,
+        'INT' => Zend_Db::INT_TYPE,
+        'INTEGER' => Zend_Db::INT_TYPE,
+        'BIGINT' => Zend_Db::BIGINT_TYPE,
+        'INT64' => Zend_Db::BIGINT_TYPE,
+        'DECIMAL' => Zend_Db::FLOAT_TYPE,
+        'DOUBLE PRECISION' => Zend_Db::FLOAT_TYPE,
+        'DOUBLE' => Zend_Db::FLOAT_TYPE,
+        'NUMERIC' => Zend_Db::FLOAT_TYPE,
+        'FLOAT' => Zend_Db::FLOAT_TYPE
     );
 
     /**
-     * Quote a raw string.
-     *
-     * @param string $value     Raw string
-     * @return string           Quoted string
+     * Return the status of current transaction.
+     * @return bool
      */
-    protected function _quote($value)
+
+    public function getTransaction()
     {
-        if (is_int($value) || is_float($value)) {
-            return $value;
-        }
-        $value = str_replace("'", "''", $value);
-        return "'" . $value . "'";
+        return (is_resource($this->_transResource) ? $this->_transResource : null);
     }
 
     /**
@@ -128,7 +112,7 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
     public function listTables()
     {
         $data = $this->fetchCol('SELECT RDB$RELATION_NAME FROM RDB$RELATIONS WHERE RDB$SYSTEM_FLAG = 0');
-        foreach($data as &$v)
+        foreach ($data as &$v)
             $v = trim($v);
         return $data;
     }
@@ -164,16 +148,16 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
     public function describeTable($tableName, $schemaName = null)
     {
         $fieldMaps = array(
-            'TEXT'      => 'CHAR',
-            'VARYING'   => 'VARCHAR',
-            'SHORT'     => 'SMALLINT',
-            'LONG'      => 'INTEGER',
-            'FLOAT'     => 'FLOAT',
-            'INT64'     => array(0 => 'BIGINT', 'NUMERIC', 'DECIMAL'),
-            'DATE'      => 'DATE',
-            'TIME'      => 'TIME',
-            'BLOB'      => 'BLOB',
-            'DOUBLE'    => 'DOUBLE PRECISION',
+            'TEXT' => 'CHAR',
+            'VARYING' => 'VARCHAR',
+            'SHORT' => 'SMALLINT',
+            'LONG' => 'INTEGER',
+            'FLOAT' => 'FLOAT',
+            'INT64' => array(0 => 'BIGINT', 'NUMERIC', 'DECIMAL'),
+            'DATE' => 'DATE',
+            'TIME' => 'TIME',
+            'BLOB' => 'BLOB',
+            'DOUBLE' => 'DOUBLE PRECISION',
             'TIMESTAMP' => 'TIMESTAMP'
         );
 
@@ -199,19 +183,19 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
          */
         $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
 
-        $table_name      = 0;
-        $owner           = 1;
-        $column_name     = 2;
-        $data_type       = 3;
-        $data_default    = 4;
-        $nullable        = 5;
-        $column_id       = 6;
-        $data_length     = 7;
-        $data_scale      = 8;
-        $data_precision  = 9;
+        $table_name = 0;
+        $owner = 1;
+        $column_name = 2;
+        $data_type = 3;
+        $data_default = 4;
+        $nullable = 5;
+        $column_id = 6;
+        $data_length = 7;
+        $data_scale = 8;
+        $data_precision = 9;
         $constraint_type = 10;
-        $position        = 11;
-        $sub_type        = 12;
+        $position = 11;
+        $sub_type = 12;
 
         $desc = array();
         foreach ($result as $key => $row) {
@@ -232,40 +216,59 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
             $row[$data_type] = $newType;
 
             $desc[trim($row[$column_name])] = array(
-                'SCHEMA_NAME'      => '',
-                'TABLE_NAME'       => trim($row[$table_name]),
-                'COLUMN_NAME'      => trim($row[$column_name]),
-                'COLUMN_POSITION'  => $row[$column_id] +1,
-                'DATA_TYPE'        => $row[$data_type],
-                'DEFAULT'          => $row[$data_default],
-                'NULLABLE'         => (bool) ($row[$nullable] != '1'),
-                'LENGTH'           => $row[$data_length],
-                'SCALE'            => ($row[$data_scale] == 0 ? null : $row[$data_scale]),
-                'PRECISION'        => ($row[$data_precision] == 0 ? null : $row[$data_precision]),
-                'UNSIGNED'         => false,
-                'PRIMARY'          => $primary,
-                'PRIMARY_POSITION' => ($primary ? $primaryPosition+1 : null),
-                'IDENTITY'         => $identity
+                'SCHEMA_NAME' => '',
+                'TABLE_NAME' => trim($row[$table_name]),
+                'COLUMN_NAME' => trim($row[$column_name]),
+                'COLUMN_POSITION' => $row[$column_id] + 1,
+                'DATA_TYPE' => $row[$data_type],
+                'DEFAULT' => $row[$data_default],
+                'NULLABLE' => (bool)($row[$nullable] != '1'),
+                'LENGTH' => $row[$data_length],
+                'SCALE' => ($row[$data_scale] == 0 ? null : $row[$data_scale]),
+                'PRECISION' => ($row[$data_precision] == 0 ? null : $row[$data_precision]),
+                'UNSIGNED' => false,
+                'PRIMARY' => $primary,
+                'PRIMARY_POSITION' => ($primary ? $primaryPosition + 1 : null),
+                'IDENTITY' => $identity
             );
         }
         return $desc;
     }
 
-
     /**
-     * Format a connection string to connect to database
+     * Force the connection to close.
      *
      * @return void
      */
-    protected function _formatDbConnString($host, $port, $dbname)
+    public function closeConnection()
     {
-        if (is_numeric($port))
-            $port = '/' . (integer) $port;
-        if ($dbname)
-            $dbname = ':' . $dbname;
+        if (is_resource($this->_transResource)) {
+            ibase_rollback($this->_transResource);
+        }
+        $this->_transResource = null;
 
-        return $host . $port . $dbname;
+        if (is_resource($this->_connection)) {
+            unset($this->_connection);
+        }
+        //$this->_connection = false;
+    }
 
+    /**
+     * Prepare a statement and return a Statement resource.
+     *
+     * @param  string $sql SQL query
+     * @return ZendX_Db_Statement_Firebird
+     */
+    public function prepare($sql)
+    {
+        $this->_connect();
+
+        $stmt = new ZendX_Db_Statement_Firebird($this, $sql);
+        if ($stmt === false) {
+            return false;
+        }
+        $stmt->setFetchMode($this->_fetchMode);
+        return $stmt;
     }
 
     /**
@@ -292,14 +295,14 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
         // Suppress connection warnings here.
         // Throw an exception instead.
         $this->_connection = @ibase_connect(
-                                $this->_formatDbConnString($this->_config['host'],$this->_config['port'] ,$this->_config['dbname']),
-                                $this->_config['username'],
-                                $this->_config['password'],
-                                $this->_config['charset'],
-                                $this->_config['buffers'],
-                                $this->_config['dialect'],
-                                $this->_config['role']
-                              );
+            $this->_formatDbConnString($this->_config['host'], $this->_config['port'], $this->_config['dbname']),
+            $this->_config['username'],
+            $this->_config['password'],
+            $this->_config['charset'],
+            $this->_config['buffers'],
+            $this->_config['dialect'],
+            $this->_config['role']
+        );
 
         if ($this->_connection === false) {
             /**
@@ -311,39 +314,19 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
     }
 
     /**
-     * Force the connection to close.
+     * Format a connection string to connect to database
      *
      * @return void
      */
-    public function closeConnection()
+    protected function _formatDbConnString($host, $port, $dbname)
     {
-        if (is_resource($this->_transResource)) {
-            ibase_rollback($this->_transResource);
-        }
-        $this->_transResource = null;
+        if (is_numeric($port))
+            $port = '/' . (integer)$port;
+        if ($dbname)
+            $dbname = ':' . $dbname;
 
-        if (is_resource($this->_connection)) {
-            unset($this->_connection);
-        }
-        //$this->_connection = false;
-    }
+        return $host . $port . $dbname;
 
-    /**
-     * Prepare a statement and return a Statement resource.
-     *
-     * @param  string  $sql  SQL query
-     * @return ZendX_Db_Statement_Firebird
-     */
-    public function prepare($sql)
-    {
-        $this->_connect();
-
-        $stmt = new ZendX_Db_Statement_Firebird($this, $sql);
-        if ($stmt === false) {
-            return false;
-        }
-        $stmt->setFetchMode($this->_fetchMode);
-        return $stmt;
     }
 
     /**
@@ -359,8 +342,8 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
      * Firebird does not support IDENTITY columns, so if the sequence is not
      * specified, this method returns null.
      *
-     * @param string $tableName   OPTIONAL Name of table.
-     * @param string $primaryKey  OPTIONAL Name of primary key column.
+     * @param string $tableName OPTIONAL Name of table.
+     * @param string $primaryKey OPTIONAL Name of primary key column.
      * @return string
      * @throws ZendX_Db_Adapter_Firebird_Exception
      */
@@ -380,52 +363,19 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
     }
 
     /**
-     * Begin a transaction.
+     * Return the most recent value from the specified sequence in the database.
+     * This is supported only on RDBMS brands that support sequences
+     * (e.g. Firebird, Oracle, PostgreSQL, DB2).  Other RDBMS brands return null.
      *
-     * @return void
+     * @param string $sequenceName
+     * @return string
      */
-    protected function _beginTransaction()
+    public function lastSequenceId($sequenceName)
     {
         $this->_connect();
-        if (is_resource($this->_transResource)){
-            return;
-        }
-
-        $this->_transResource = ibase_trans(IBASE_DEFAULT, $this->_connection);
-    }
-
-    /**
-     * Commit a transaction.
-     *
-     * @return void
-     */
-    protected function _commit()
-    {
-        if (false === ibase_commit(is_resource($this->_transResource) ? $this->_transResource : $this->_connection)) {
-            /**
-             * @see ZendX_Db_Adapter_Firebird_Exception
-             */
-            require_once 'ZendX/Db/Adapter/Firebird/Exception.php';
-            throw new ZendX_Db_Adapter_Firebird_Exception(ibase_errmsg());
-        }
-        $this->_transResource = null;
-    }
-
-    /**
-     * Roll-back a transaction.
-     *
-     * @return void
-     */
-    protected function _rollBack()
-    {
-        if (false === ibase_rollback(is_resource($this->_transResource) ? $this->_transResource : $this->_connection)) {
-            /**
-             * @see ZendX_Db_Adapter_Firebird_Exception
-             */
-            require_once 'ZendX/Db/Adapter/Firebird/Exception.php';
-            throw new ZendX_Db_Adapter_Firebird_Exception(ibase_errmsg());
-        }
-        $this->_transResource = null;
+        $sql = 'SELECT GEN_ID(' . $this->quoteIdentifier($sequenceName) . ', 0) FROM RDB$DATABASE';
+        $value = $this->fetchOne($sql);
+        return $value;
     }
 
     /**
@@ -484,20 +434,19 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
             throw new ZendX_Db_Adapter_Firebird_Exception("LIMIT argument offset=$offset is not valid");
         }
 
-        if (trim($sql) == ''){
+        if (trim($sql) == '') {
             //Only compatible with FB 2.0 or newer
             //ZF 1.5.0 don't support limit sql syntax that don't only append texto to sql, fixed in 1.5.1
             $sql .= " rows $count";
             if ($offset > 0)
                 $sql .= " to $offset";
-        }
-        else
+        } else
             $sql = substr_replace($sql, "select first $count skip $offset ", stripos($sql, 'select'), 6);
 
         return $sql;
     }
 
-        /**
+    /**
      * Quote a table identifier and alias.
      *
      * @param string|array|Zend_Db_Expr $ident The identifier or expression.
@@ -505,26 +454,10 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
      * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
      * @return string The quoted identifier and alias.
      */
-    public function quoteTableAs($ident, $alias = null, $auto=false)
+    public function quoteTableAs($ident, $alias = null, $auto = false)
     {
         // Firebird doesn't allow the 'AS' keyword between the table identifier/expression and alias.
         return $this->_quoteIdentifierAs($ident, $alias, $auto, ' ');
-    }
-
-    /**
-     * Return the most recent value from the specified sequence in the database.
-     * This is supported only on RDBMS brands that support sequences
-     * (e.g. Firebird, Oracle, PostgreSQL, DB2).  Other RDBMS brands return null.
-     *
-     * @param string $sequenceName
-     * @return string
-     */
-    public function lastSequenceId($sequenceName)
-    {
-        $this->_connect();
-        $sql = 'SELECT GEN_ID('.$this->quoteIdentifier($sequenceName).', 0) FROM RDB$DATABASE';
-        $value = $this->fetchOne($sql);
-        return $value;
     }
 
     /**
@@ -538,7 +471,7 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
     public function nextSequenceId($sequenceName)
     {
         $this->_connect();
-        $sql = 'SELECT GEN_ID('.$this->quoteIdentifier($sequenceName).', 1) FROM RDB$DATABASE';
+        $sql = 'SELECT GEN_ID(' . $this->quoteIdentifier($sequenceName) . ', 1) FROM RDB$DATABASE';
         $value = $this->fetchOne($sql);
         return $value;
     }
@@ -567,8 +500,8 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
      */
     public function isConnected()
     {
-        return ((bool) (is_resource($this->_connection)
-                     && get_resource_type($this->_connection) == 'Firebird/InterBase link'));
+        return ((bool)(is_resource($this->_connection)
+            && get_resource_type($this->_connection) == 'Firebird/InterBase link'));
     }
 
     /**
@@ -582,7 +515,7 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
         $service = ibase_service_attach($this->_formatDbConnString($this->_config['host'], $this->_config['port'], ''), $this->_config['username'], $this->_config['password']);
 
         if ($service != FALSE) {
-            $server_info  = ibase_server_info($service, IBASE_SVC_SERVER_VERSION);
+            $server_info = ibase_server_info($service, IBASE_SVC_SERVER_VERSION);
             ibase_service_detach($service);
             $matches = null;
             if (preg_match('/((?:[0-9]{1,2}\.){1,3}[0-9]{1,2})/', $server_info, $matches)) {
@@ -593,5 +526,69 @@ class ZendX_Db_Adapter_Firebird extends Zend_Db_Adapter_Abstract
         } else {
             return null;
         }
+    }
+
+    /**
+     * Quote a raw string.
+     *
+     * @param string $value Raw string
+     * @return string           Quoted string
+     */
+    protected function _quote($value)
+    {
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+        $value = str_replace("'", "''", $value);
+        return "'" . $value . "'";
+    }
+
+    /**
+     * Begin a transaction.
+     *
+     * @return void
+     */
+    protected function _beginTransaction()
+    {
+        $this->_connect();
+        if (is_resource($this->_transResource)) {
+            return;
+        }
+
+        $this->_transResource = ibase_trans(IBASE_DEFAULT, $this->_connection);
+    }
+
+    /**
+     * Commit a transaction.
+     *
+     * @return void
+     */
+    protected function _commit()
+    {
+        if (false === ibase_commit(is_resource($this->_transResource) ? $this->_transResource : $this->_connection)) {
+            /**
+             * @see ZendX_Db_Adapter_Firebird_Exception
+             */
+            require_once 'ZendX/Db/Adapter/Firebird/Exception.php';
+            throw new ZendX_Db_Adapter_Firebird_Exception(ibase_errmsg());
+        }
+        $this->_transResource = null;
+    }
+
+    /**
+     * Roll-back a transaction.
+     *
+     * @return void
+     */
+    protected function _rollBack()
+    {
+        if (false === ibase_rollback(is_resource($this->_transResource) ? $this->_transResource : $this->_connection)) {
+            /**
+             * @see ZendX_Db_Adapter_Firebird_Exception
+             */
+            require_once 'ZendX/Db/Adapter/Firebird/Exception.php';
+            throw new ZendX_Db_Adapter_Firebird_Exception(ibase_errmsg());
+        }
+        $this->_transResource = null;
     }
 }

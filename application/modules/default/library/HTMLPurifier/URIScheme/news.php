@@ -3,16 +3,18 @@
 /**
  * Validates news (Usenet) as defined by generic RFC 1738
  */
-class HTMLPurifier_URIScheme_news extends HTMLPurifier_URIScheme {
+class HTMLPurifier_URIScheme_news extends HTMLPurifier_URIScheme
+{
 
     public $browsable = false;
     public $may_omit_host = true;
 
-    public function doValidate(&$uri, $config, $context) {
+    public function doValidate(&$uri, $config, $context)
+    {
         $uri->userinfo = null;
-        $uri->host     = null;
-        $uri->port     = null;
-        $uri->query    = null;
+        $uri->host = null;
+        $uri->port = null;
+        $uri->query = null;
         // typecode check needed on path
         return true;
     }

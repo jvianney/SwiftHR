@@ -42,6 +42,17 @@ class Zend_Barcode_Object_Leitcode extends Zend_Barcode_Object_Identcode
 {
 
     /**
+     * Retrieve text to display
+     * @return string
+     */
+    public function getTextToDisplay()
+    {
+        return preg_replace('/([0-9]{5})([0-9]{3})([0-9]{3})([0-9]{2})([0-9])/',
+            '$1.$2.$3.$4 $5',
+            $this->getText());
+    }
+
+    /**
      * Default options for Leitcode barcode
      * @return void
      */
@@ -49,16 +60,5 @@ class Zend_Barcode_Object_Leitcode extends Zend_Barcode_Object_Identcode
     {
         $this->_barcodeLength = 14;
         $this->_mandatoryChecksum = true;
-    }
-
-    /**
-     * Retrieve text to display
-     * @return string
-     */
-    public function getTextToDisplay()
-    {
-        return preg_replace('/([0-9]{5})([0-9]{3})([0-9]{3})([0-9]{2})([0-9])/',
-                            '$1.$2.$3.$4 $5',
-                            $this->getText());
     }
 }

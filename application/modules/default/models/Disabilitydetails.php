@@ -1,8 +1,9 @@
 <?php
-/********************************************************************************* 
+
+/*********************************************************************************
  *  This file is part of Sentrifugo.
  *  Copyright (C) 2014 Sapplica
- *   
+ *
  *  Sentrifugo is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,46 +19,42 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-
 class Default_Model_Disabilitydetails extends Zend_Db_Table_Abstract
-{	
+{
     protected $_name = 'main_empdisabilitydetails';
     protected $_primary = 'id';
-	
-       
-    public function getempDisabilitydetails($id=0)
-	{  
-		$disabilityDetailsArr="";$where = "";
-		$db = Zend_Db_Table::getDefaultAdapter();		
-		if($id != 0)
-		{
-			$where = "user_id =".$id;
-			$disabilitydetails = $this->select()
-									->from(array('d'=>'main_empdisabilitydetails'))
-									->where($where);
-		
-			
-			$disabilityDetailsArr = $this->fetchAll($disabilitydetails)->toArray(); 
+
+
+    public function getempDisabilitydetails($id = 0)
+    {
+        $disabilityDetailsArr = "";
+        $where = "";
+        $db = Zend_Db_Table::getDefaultAdapter();
+        if ($id != 0) {
+            $where = "user_id =" . $id;
+            $disabilitydetails = $this->select()
+                ->from(array('d' => 'main_empdisabilitydetails'))
+                ->where($where);
+
+
+            $disabilityDetailsArr = $this->fetchAll($disabilitydetails)->toArray();
         }
-		return $disabilityDetailsArr;       		
-	}
-    
+        return $disabilityDetailsArr;
+    }
+
     public function SaveorUpdateEmpdisabilityDetails($data, $where)
     {
-	    if($where != '')
-        {
+        if ($where != '') {
             $this->update($data, $where);
-			return 'update';
+            return 'update';
+        } else {
+            $this->insert($data);
+            $id = $this->getAdapter()->lastInsertId('main_empdisabilitydetails');
+            return $id;
         }
-        else
-        {
-			$this->insert($data);
-			$id=$this->getAdapter()->lastInsertId('main_empdisabilitydetails');
-			return $id;
-		}
-		
-	
-	}
-	
-	
+
+
+    }
+
+
 }

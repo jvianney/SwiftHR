@@ -37,7 +37,8 @@ class HTMLPurifier_TagTransform_Font extends HTMLPurifier_TagTransform
         '+4' => '300%'
     );
 
-    public function transform($tag, $config, $context) {
+    public function transform($tag, $config, $context)
+    {
 
         if ($tag instanceof HTMLPurifier_Token_End) {
             $new_tag = clone $tag;
@@ -65,17 +66,17 @@ class HTMLPurifier_TagTransform_Font extends HTMLPurifier_TagTransform
             // normalize large numbers
             if ($attr['size'] !== '') {
                 if ($attr['size']{0} == '+' || $attr['size']{0} == '-') {
-                    $size = (int) $attr['size'];
+                    $size = (int)$attr['size'];
                     if ($size < -2) $attr['size'] = '-2';
-                    if ($size > 4)  $attr['size'] = '+4';
+                    if ($size > 4) $attr['size'] = '+4';
                 } else {
-                    $size = (int) $attr['size'];
+                    $size = (int)$attr['size'];
                     if ($size > 7) $attr['size'] = '7';
                 }
             }
             if (isset($this->_size_lookup[$attr['size']])) {
                 $prepend_style .= 'font-size:' .
-                  $this->_size_lookup[$attr['size']] . ';';
+                    $this->_size_lookup[$attr['size']] . ';';
             }
             unset($attr['size']);
         }

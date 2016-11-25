@@ -99,56 +99,13 @@ class Zend_CodeGenerator_Php_Property extends Zend_CodeGenerator_Php_Member_Abst
     }
 
     /**
-     * isConst()
-     *
-     * @return bool
-     */
-    public function isConst()
-    {
-        return ($this->_isConst) ? true : false;
-    }
-
-    /**
-     * setDefaultValue()
-     *
-     * @param Zend_CodeGenerator_Php_Property_DefaultValue|string|array $defaultValue
-     * @return Zend_CodeGenerator_Php_Property
-     */
-    public function setDefaultValue($defaultValue)
-    {
-        // if it looks like
-        if (is_array($defaultValue)
-            && array_key_exists('value', $defaultValue)
-            && array_key_exists('type', $defaultValue)) {
-            $defaultValue = new Zend_CodeGenerator_Php_Property_DefaultValue($defaultValue);
-        }
-
-        if (!($defaultValue instanceof Zend_CodeGenerator_Php_Property_DefaultValue)) {
-            $defaultValue = new Zend_CodeGenerator_Php_Property_DefaultValue(array('value' => $defaultValue));
-        }
-
-        $this->_defaultValue = $defaultValue;
-        return $this;
-    }
-
-    /**
-     * getDefaultValue()
-     *
-     * @return Zend_CodeGenerator_Php_Property_DefaultValue
-     */
-    public function getDefaultValue()
-    {
-        return $this->_defaultValue;
-    }
-
-    /**
      * generate()
      *
      * @return string
      */
     public function generate()
     {
-        $name         = $this->getName();
+        $name = $this->getName();
         $defaultValue = $this->getDefaultValue();
 
         $output = '';
@@ -174,6 +131,50 @@ class Zend_CodeGenerator_Php_Property extends Zend_CodeGenerator_Php_Member_Abst
                 . (($defaultValue !== null) ? $defaultValue->generate() : 'null;');
         }
         return $output;
+    }
+
+    /**
+     * getDefaultValue()
+     *
+     * @return Zend_CodeGenerator_Php_Property_DefaultValue
+     */
+    public function getDefaultValue()
+    {
+        return $this->_defaultValue;
+    }
+
+    /**
+     * setDefaultValue()
+     *
+     * @param Zend_CodeGenerator_Php_Property_DefaultValue|string|array $defaultValue
+     * @return Zend_CodeGenerator_Php_Property
+     */
+    public function setDefaultValue($defaultValue)
+    {
+        // if it looks like
+        if (is_array($defaultValue)
+            && array_key_exists('value', $defaultValue)
+            && array_key_exists('type', $defaultValue)
+        ) {
+            $defaultValue = new Zend_CodeGenerator_Php_Property_DefaultValue($defaultValue);
+        }
+
+        if (!($defaultValue instanceof Zend_CodeGenerator_Php_Property_DefaultValue)) {
+            $defaultValue = new Zend_CodeGenerator_Php_Property_DefaultValue(array('value' => $defaultValue));
+        }
+
+        $this->_defaultValue = $defaultValue;
+        return $this;
+    }
+
+    /**
+     * isConst()
+     *
+     * @return bool
+     */
+    public function isConst()
+    {
+        return ($this->_isConst) ? true : false;
     }
 
 }

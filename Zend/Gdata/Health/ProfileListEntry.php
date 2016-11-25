@@ -71,6 +71,24 @@ class Zend_Gdata_Health_ProfileListEntry extends Zend_Gdata_Entry
     }
 
     /**
+     * Retrieves the profile ID for the entry, which is contained in <atom:content>
+     * @return string The profile id
+     */
+    public function getProfileID()
+    {
+        return $this->getContent()->text;
+    }
+
+    /**
+     * Retrieves the profile's title, which is contained in <atom:title>
+     * @return string The profile name
+     */
+    public function getProfileName()
+    {
+        return $this->getTitle()->text;
+    }
+
+    /**
      * Creates individual Entry objects of the appropriate type and
      * stores them as members of this entry based upon DOM data.
      *
@@ -79,22 +97,6 @@ class Zend_Gdata_Health_ProfileListEntry extends Zend_Gdata_Entry
     protected function takeChildFromDOM($child)
     {
         parent::takeChildFromDOM($child);
-    }
-
-    /**
-     * Retrieves the profile ID for the entry, which is contained in <atom:content>
-     * @return string The profile id
-     */
-    public function getProfileID() {
-        return $this->getContent()->text;
-    }
-
-    /**
-     * Retrieves the profile's title, which is contained in <atom:title>
-     * @return string The profile name
-     */
-    public function getProfileName() {
-        return $this->getTitle()->text;
     }
 
 }

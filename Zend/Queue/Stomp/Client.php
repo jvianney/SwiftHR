@@ -49,25 +49,14 @@ class Zend_Queue_Stomp_Client
         $scheme = null, $host = null, $port = null,
         $connectionClass = 'Zend_Queue_Stomp_Client_Connection',
         $frameClass = 'Zend_Queue_Stomp_Frame'
-    ) {
+    )
+    {
         if (($scheme !== null)
             && ($host !== null)
             && ($port !== null)
         ) {
             $this->addConnection($scheme, $host, $port, $connectionClass);
             $this->getConnection()->setFrameClass($frameClass);
-        }
-    }
-
-    /**
-     * Shutdown
-     *
-     * @return void
-     */
-    public function __destruct()
-    {
-        if ($this->getConnection()) {
-            $this->getConnection()->close(true);
         }
     }
 
@@ -79,7 +68,7 @@ class Zend_Queue_Stomp_Client
      *
      * You cannot add more than 1 connection to the client at this time.
      *
-     * @param string  $scheme ['tcp', 'udp']
+     * @param string $scheme ['tcp', 'udp']
      * @param string  host
      * @param integer port
      * @param string  class - create a connection with this class; class must support Zend_Queue_Stomp_Client_ConnectionInterface
@@ -104,6 +93,16 @@ class Zend_Queue_Stomp_Client
     }
 
     /**
+     * Get client connection
+     *
+     * @return Zend_Queue_Stomp_Client_ConnectionInterface|null
+     */
+    public function getConnection()
+    {
+        return $this->_connection;
+    }
+
+    /**
      * Set client connection
      *
      * @param Zend_Queue_Stomp_Client_ConnectionInterface $connection
@@ -116,13 +115,15 @@ class Zend_Queue_Stomp_Client
     }
 
     /**
-     * Get client connection
+     * Shutdown
      *
-     * @return Zend_Queue_Stomp_Client_ConnectionInterface|null
+     * @return void
      */
-    public function getConnection()
+    public function __destruct()
     {
-        return $this->_connection;
+        if ($this->getConnection()) {
+            $this->getConnection()->close(true);
+        }
     }
 
     /**

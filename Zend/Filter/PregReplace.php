@@ -33,11 +33,16 @@ require_once 'Zend/Filter/Interface.php';
 class Zend_Filter_PregReplace implements Zend_Filter_Interface
 {
     /**
+     * Is unicode enabled?
+     *
+     * @var bool
+     */
+    static protected $_unicodeSupportEnabled = null;
+    /**
      * Pattern to match
      * @var mixed
      */
     protected $_matchPattern = null;
-
     /**
      * Replacement pattern
      * @var mixed
@@ -45,11 +50,40 @@ class Zend_Filter_PregReplace implements Zend_Filter_Interface
     protected $_replacement = '';
 
     /**
-     * Is unicode enabled?
+     * Constructor
+     * Supported options are
+     *     'match'   => matching pattern
+     *     'replace' => replace with this
      *
-     * @var bool
+     * @param  string|array $options
+     * @return void
      */
-    static protected $_unicodeSupportEnabled = null;
+    public function __construct($options = null)
+    {
+        if ($options instanceof Zend_Config) {
+            $options = $options->toArray();
+        } else if (!is_array($options)) {
+            $options = func_get_args();
+            $temp = array();
+            if (!empty($options)) {
+                $temp['match'] = array_shift($options);
+            }
+
+            if (!empty($options)) {
+                $temp['replace'] = array_shift($options);
+            }
+
+            $options = $temp;
+        }
+
+        if (array_key_exists('match', $options)) {
+            $this->setMatchPattern($options['match']);
+        }
+
+        if (array_key_exists('replace', $options)) {
+            $this->setReplacement($options['replace']);
+        }
+    }
 
     /**
      * Is Unicode Support Enabled Utility function
@@ -76,39 +110,13 @@ class Zend_Filter_PregReplace implements Zend_Filter_Interface
     }
 
     /**
-     * Constructor
-     * Supported options are
-     *     'match'   => matching pattern
-     *     'replace' => replace with this
+     * Get currently set match pattern
      *
-     * @param  string|array $options
-     * @return void
+     * @return string
      */
-    public function __construct($options = null)
+    public function getMatchPattern()
     {
-        if ($options instanceof Zend_Config) {
-            $options = $options->toArray();
-        } else if (!is_array($options)) {
-            $options = func_get_args();
-            $temp    = array();
-            if (!empty($options)) {
-                $temp['match'] = array_shift($options);
-            }
-
-            if (!empty($options)) {
-                $temp['replace'] = array_shift($options);
-            }
-
-            $options = $temp;
-        }
-
-        if (array_key_exists('match', $options)) {
-            $this->setMatchPattern($options['match']);
-        }
-
-        if (array_key_exists('replace', $options)) {
-            $this->setReplacement($options['replace']);
-        }
+        return $this->_matchPattern;
     }
 
     /**
@@ -124,13 +132,13 @@ class Zend_Filter_PregReplace implements Zend_Filter_Interface
     }
 
     /**
-     * Get currently set match pattern
+     * Get currently set replacement value
      *
      * @return string
      */
-    public function getMatchPattern()
+    public function getReplacement()
     {
-        return $this->_matchPattern;
+        return $this->_replacement;
     }
 
     /**
@@ -143,16 +151,6 @@ class Zend_Filter_PregReplace implements Zend_Filter_Interface
     {
         $this->_replacement = $replacement;
         return $this;
-    }
-
-    /**
-     * Get currently set replacement value
-     *
-     * @return string
-     */
-    public function getReplacement()
-    {
-        return $this->_replacement;
     }
 
     /**

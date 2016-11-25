@@ -39,16 +39,6 @@ abstract class Zend_InfoCard_Xml_Element
     implements Zend_InfoCard_Xml_Element_Interface
 {
     /**
-     * Convert the object to a string by displaying its XML content
-     *
-     * @return string an XML representation of the object
-     */
-    public function __toString()
-    {
-        return $this->asXML();
-    }
-
-    /**
      * Converts an XML Element object into a DOM object
      *
      * @throws Zend_InfoCard_Xml_Exception
@@ -59,7 +49,7 @@ abstract class Zend_InfoCard_Xml_Element
     {
         $dom = dom_import_simplexml($e);
 
-        if(!($dom instanceof DOMElement)) {
+        if (!($dom instanceof DOMElement)) {
             // Zend_InfoCard_Xml_Element exntes SimpleXMLElement, so this should *never* fail
             // @codeCoverageIgnoreStart
             require_once 'Zend/InfoCard/Xml/Exception.php';
@@ -87,14 +77,14 @@ abstract class Zend_InfoCard_Xml_Element
 
         $reflection = new ReflectionClass($classname);
 
-        if(!$reflection->isSubclassOf('Zend_InfoCard_Xml_Element')) {
+        if (!$reflection->isSubclassOf('Zend_InfoCard_Xml_Element')) {
             require_once 'Zend/InfoCard/Xml/Exception.php';
             throw new Zend_InfoCard_Xml_Exception("DOM element must be converted to an instance of Zend_InfoCard_Xml_Element");
         }
 
         $sxe = simplexml_import_dom($e, $classname);
 
-        if(!($sxe instanceof Zend_InfoCard_Xml_Element)) {
+        if (!($sxe instanceof Zend_InfoCard_Xml_Element)) {
             // Since we just checked to see if this was a subclass of Zend_infoCard_Xml_Element this shoudl never fail
             // @codeCoverageIgnoreStart
             require_once 'Zend/InfoCard/Xml/Exception.php';
@@ -103,5 +93,15 @@ abstract class Zend_InfoCard_Xml_Element
         }
 
         return $sxe;
+    }
+
+    /**
+     * Convert the object to a string by displaying its XML content
+     *
+     * @return string an XML representation of the object
+     */
+    public function __toString()
+    {
+        return $this->asXML();
     }
 }

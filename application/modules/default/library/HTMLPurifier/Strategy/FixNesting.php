@@ -27,11 +27,11 @@
  *
  * @todo Enable nodes to be bubbled out of the structure.
  */
-
 class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
 {
 
-    public function execute($tokens, $config, $context) {
+    public function execute($tokens, $config, $context)
+    {
         //####################################################################//
         // Pre-processing
 
@@ -77,7 +77,7 @@ class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
 
         // iterate through all start nodes. Determining the start node
         // is complicated so it has been omitted from the loop construct
-        for ($i = 0, $size = count($tokens) ; $i < $size; ) {
+        for ($i = 0, $size = count($tokens); $i < $size;) {
 
             //################################################################//
             // Gather information on children
@@ -112,12 +112,12 @@ class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
 
             // calculate parent information
             if ($count = count($stack)) {
-                $parent_index = $stack[$count-1];
-                $parent_name  = $tokens[$parent_index]->name;
+                $parent_index = $stack[$count - 1];
+                $parent_name = $tokens[$parent_index]->name;
                 if ($parent_index == 0) {
-                    $parent_def   = $definition->info_parent_def;
+                    $parent_def = $definition->info_parent_def;
                 } else {
-                    $parent_def   = $definition->info[$parent_name];
+                    $parent_def = $definition->info[$parent_name];
                 }
             } else {
                 // processing as if the parent were the "root" node
@@ -204,7 +204,7 @@ class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
                 // move cursor to next possible start node
                 $i++;
 
-            } elseif($result === false) {
+            } elseif ($result === false) {
                 // remove entire node
 
                 if ($e) {

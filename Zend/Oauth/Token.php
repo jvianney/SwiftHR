@@ -33,8 +33,8 @@ abstract class Zend_Oauth_Token
     /**@+
      * Token constants
      */
-    const TOKEN_PARAM_KEY                = 'oauth_token';
-    const TOKEN_SECRET_PARAM_KEY         = 'oauth_token_secret';
+    const TOKEN_PARAM_KEY = 'oauth_token';
+    const TOKEN_SECRET_PARAM_KEY = 'oauth_token_secret';
     const TOKEN_PARAM_CALLBACK_CONFIRMED = 'oauth_callback_confirmed';
     /**@-*/
 
@@ -67,7 +67,8 @@ abstract class Zend_Oauth_Token
     public function __construct(
         Zend_Http_Response $response = null,
         Zend_Oauth_Http_Utility $utility = null
-    ) {
+    )
+    {
         if ($response !== null) {
             $this->_response = $response;
             $params = $this->_parseParameters($response);
@@ -80,6 +81,59 @@ abstract class Zend_Oauth_Token
         } else {
             $this->_httpUtility = new Zend_Oauth_Http_Utility;
         }
+    }
+
+    /**
+     * Parse a HTTP response body and collect returned parameters
+     * as raw url decoded key-value pairs in an associative array.
+     *
+     * @param  Zend_Http_Response $response
+     * @return array
+     */
+    protected function _parseParameters(Zend_Http_Response $response)
+    {
+        $params = array();
+        $body = $response->getBody();
+        if (empty($body)) {
+            return;
+        }
+
+        // validate body based on acceptable characters...todo
+        $parts = explode('&', $body);
+        foreach ($parts as $kvpair) {
+            $pair = explode('=', $kvpair);
+            $params[rawurldecode($pair[0])] = rawurldecode($pair[1]);
+        }
+        return $params;
+    }
+
+    /**
+     * Sets the value for some parameters (e.g. token secret or other) and run
+     * a simple filter to remove any trailing newlines.
+     *
+     * @param  array $params
+     * @return Zend_Oauth_Token
+     */
+    public function setParams(array $params)
+    {
+        foreach ($params as $key => $value) {
+            $this->setParam($key, $value);
+        }
+        return $this;
+    }
+
+    /**
+     * Sets the value for a parameter (e.g. token secret or other) and run
+     * a simple filter to remove any trailing newlines.
+     *
+     * @param  string $key
+     * @param  string $value
+     * @return Zend_Oauth_Token
+     */
+    public function setParam($key, $value)
+    {
+        $this->_params[$key] = trim($value, "\n");
+        return $this;
     }
 
     /**
@@ -131,35 +185,6 @@ abstract class Zend_Oauth_Token
     public function getTokenSecret()
     {
         return $this->getParam(self::TOKEN_SECRET_PARAM_KEY);
-    }
-
-    /**
-     * Sets the value for a parameter (e.g. token secret or other) and run
-     * a simple filter to remove any trailing newlines.
-     *
-     * @param  string $key
-     * @param  string $value
-     * @return Zend_Oauth_Token
-     */
-    public function setParam($key, $value)
-    {
-        $this->_params[$key] = trim($value, "\n");
-        return $this;
-    }
-
-    /**
-     * Sets the value for some parameters (e.g. token secret or other) and run
-     * a simple filter to remove any trailing newlines.
-     *
-     * @param  array $params
-     * @return Zend_Oauth_Token
-     */
-    public function setParams(array $params)
-    {
-        foreach ($params as $key=>$value) {
-            $this->setParam($key, $value);
-        }
-        return $this;
     }
 
     /**
@@ -222,16 +247,6 @@ abstract class Zend_Oauth_Token
 
     /**
      * Convert Token to a string, specifically a raw encoded query string.
-     *
-     * @return string
-     */
-    public function toString()
-    {
-        return $this->_httpUtility->toEncodedQueryString($this->_params);
-    }
-
-    /**
-     * Convert Token to a string, specifically a raw encoded query string.
      * Aliases to self::toString()
      *
      * @return string
@@ -242,27 +257,13 @@ abstract class Zend_Oauth_Token
     }
 
     /**
-     * Parse a HTTP response body and collect returned parameters
-     * as raw url decoded key-value pairs in an associative array.
+     * Convert Token to a string, specifically a raw encoded query string.
      *
-     * @param  Zend_Http_Response $response
-     * @return array
+     * @return string
      */
-    protected function _parseParameters(Zend_Http_Response $response)
+    public function toString()
     {
-        $params = array();
-        $body   = $response->getBody();
-        if (empty($body)) {
-            return;
-        }
-
-        // validate body based on acceptable characters...todo
-        $parts = explode('&', $body);
-        foreach ($parts as $kvpair) {
-            $pair = explode('=', $kvpair);
-            $params[rawurldecode($pair[0])] = rawurldecode($pair[1]);
-        }
-        return $params;
+        return $this->_httpUtility->toEncodedQueryString($this->_params);
     }
 
     /**

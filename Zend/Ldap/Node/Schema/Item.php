@@ -50,18 +50,6 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     }
 
     /**
-     * Sets the data
-     *
-     * @param  array $data
-     * @return Zend_Ldap_Node_Schema_Item Provides a fluid interface
-     */
-    public function setData(array $data)
-    {
-        $this->_data = $data;
-        return $this;
-    }
-
-    /**
      * Gets the data
      *
      * @return array
@@ -72,29 +60,15 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     }
 
     /**
-     * Gets a specific attribute from this item
+     * Sets the data
      *
-     * @param  string $name
-     * @return mixed
+     * @param  array $data
+     * @return Zend_Ldap_Node_Schema_Item Provides a fluid interface
      */
-    public function __get($name)
+    public function setData(array $data)
     {
-        if (array_key_exists($name, $this->_data)) {
-            return $this->_data[$name];
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Checks whether a specific attribute exists.
-     *
-     * @param  string $name
-     * @return boolean
-     */
-    public function __isset($name)
-    {
-        return (array_key_exists($name, $this->_data));
+        $this->_data = $data;
+        return $this;
     }
 
     /**
@@ -125,6 +99,21 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     }
 
     /**
+     * Gets a specific attribute from this item
+     *
+     * @param  string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        if (array_key_exists($name, $this->_data)) {
+            return $this->_data[$name];
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Always throws BadMethodCallException
      * Implements ArrayAccess.
      *
@@ -148,6 +137,17 @@ abstract class Zend_Ldap_Node_Schema_Item implements ArrayAccess, Countable
     public function offsetExists($name)
     {
         return $this->__isset($name);
+    }
+
+    /**
+     * Checks whether a specific attribute exists.
+     *
+     * @param  string $name
+     * @return boolean
+     */
+    public function __isset($name)
+    {
+        return (array_key_exists($name, $this->_data));
     }
 
     /**

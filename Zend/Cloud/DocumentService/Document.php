@@ -74,6 +74,16 @@ class Zend_Cloud_DocumentService_Document
     }
 
     /**
+     * Get ID name.
+     *
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->_id;
+    }
+
+    /**
      * Set document identifier
      *
      * @param  mixed $id
@@ -86,16 +96,6 @@ class Zend_Cloud_DocumentService_Document
     }
 
     /**
-     * Get ID name.
-     *
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->_id;
-    }
-
-    /**
      * Get fields as array.
      *
      * @return array
@@ -103,6 +103,29 @@ class Zend_Cloud_DocumentService_Document
     public function getFields()
     {
         return $this->_fields;
+    }
+
+    /**
+     * Overloading: get value
+     *
+     * @param  string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->getField($name);
+    }
+
+    /**
+     * Overloading: set field
+     *
+     * @param  string $name
+     * @param  mixed $value
+     * @return void
+     */
+    public function __set($name, $value)
+    {
+        $this->setField($name, $value);
     }
 
     /**
@@ -130,40 +153,6 @@ class Zend_Cloud_DocumentService_Document
     {
         $this->_fields[$name] = $value;
         return $this;
-    }
-
-    /**
-     * Overloading: get value
-     *
-     * @param  string $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        return $this->getField($name);
-    }
-
-    /**
-     * Overloading: set field
-     *
-     * @param  string $name
-     * @param  mixed $value
-     * @return void
-     */
-    public function __set($name, $value)
-    {
-        $this->setField($name, $value);
-    }
-
-    /**
-     * ArrayAccess: does field exist?
-     *
-     * @param  string $name
-     * @return bool
-     */
-    public function offsetExists($name)
-    {
-        return isset($this->_fields[$name]);
     }
 
     /**
@@ -200,6 +189,17 @@ class Zend_Cloud_DocumentService_Document
         if ($this->offsetExists($name)) {
             unset($this->_fields[$name]);
         }
+    }
+
+    /**
+     * ArrayAccess: does field exist?
+     *
+     * @param  string $name
+     * @return bool
+     */
+    public function offsetExists($name)
+    {
+        return isset($this->_fields[$name]);
     }
 
     /**

@@ -33,8 +33,8 @@ require_once 'Zend/Markup/TokenList.php';
  */
 class Zend_Markup_Token
 {
-    const TYPE_NONE    = 'none';
-    const TYPE_TAG     = 'tag';
+    const TYPE_NONE = 'none';
+    const TYPE_TAG = 'tag';
 
     /**
      * Children of this token
@@ -102,15 +102,26 @@ class Zend_Markup_Token
         $name = '',
         array $attributes = array(),
         Zend_Markup_Token $parent = null
-    ) {
-        $this->_tag        = $tag;
-        $this->_type       = $type;
-        $this->_name       = $name;
+    )
+    {
+        $this->_tag = $tag;
+        $this->_type = $type;
+        $this->_name = $name;
         $this->_attributes = $attributes;
-        $this->_parent     = $parent;
+        $this->_parent = $parent;
     }
 
     // accessors
+
+    /**
+     * Get the stopper
+     *
+     * @return string
+     */
+    public function getStopper()
+    {
+        return $this->_stopper;
+    }
 
     /**
      * Set the stopper
@@ -123,16 +134,6 @@ class Zend_Markup_Token
         $this->_stopper = $stopper;
 
         return $this;
-    }
-
-    /**
-     * Get the stopper
-     *
-     * @return string
-     */
-    public function getStopper()
-    {
-        return $this->_stopper;
     }
 
     /**
@@ -236,18 +237,6 @@ class Zend_Markup_Token
     }
 
     /**
-     * Set the children token list
-     *
-     * @param  Zend_Markup_TokenList $children
-     * @return Zend_Markup_Token
-     */
-    public function setChildren(Zend_Markup_TokenList $children)
-    {
-        $this->_children = $children;
-        return $this;
-    }
-
-    /**
      * Get the children for this token
      *
      * @return Zend_Markup_TokenList
@@ -258,6 +247,18 @@ class Zend_Markup_Token
             $this->setChildren(new Zend_Markup_TokenList());
         }
         return $this->_children;
+    }
+
+    /**
+     * Set the children token list
+     *
+     * @param  Zend_Markup_TokenList $children
+     * @return Zend_Markup_Token
+     */
+    public function setChildren(Zend_Markup_TokenList $children)
+    {
+        $this->_children = $children;
+        return $this;
     }
 
     /**
@@ -299,8 +300,8 @@ class Zend_Markup_Token
      */
     public function __clone()
     {
-        $this->_parent   = null;
+        $this->_parent = null;
         $this->_children = null;
-        $this->_tag      = '';
+        $this->_tag = '';
     }
 }

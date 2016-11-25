@@ -33,19 +33,27 @@
 abstract class Zend_Session_Abstract
 {
     /**
+     * Error message thrown when an action requires modification,
+     * but current Zend_Session has been marked as read-only.
+     */
+    const _THROW_NOT_WRITABLE_MSG = 'Zend_Session is currently marked as read-only.';
+    /**
+     * Error message thrown when an action requires reading session data,
+     * but current Zend_Session is not marked as readable.
+     */
+    const _THROW_NOT_READABLE_MSG = 'Zend_Session is not marked as readable.';
+    /**
      * Whether or not session permits writing (modification of $_SESSION[])
      *
      * @var bool
      */
     protected static $_writable = false;
-
     /**
      * Whether or not session permits reading (reading data in $_SESSION[])
      *
      * @var bool
      */
     protected static $_readable = false;
-
     /**
      * Since expiring data is handled at startup to avoid __destruct difficulties,
      * the data that will be expiring at end of this request is held here
@@ -53,21 +61,6 @@ abstract class Zend_Session_Abstract
      * @var array
      */
     protected static $_expiringData = array();
-
-
-    /**
-     * Error message thrown when an action requires modification,
-     * but current Zend_Session has been marked as read-only.
-     */
-    const _THROW_NOT_WRITABLE_MSG = 'Zend_Session is currently marked as read-only.';
-
-
-    /**
-     * Error message thrown when an action requires reading session data,
-     * but current Zend_Session is not marked as readable.
-     */
-    const _THROW_NOT_READABLE_MSG = 'Zend_Session is not marked as readable.';
-
 
     /**
      * namespaceIsset() - check to see if a namespace or a variable within a namespace is set
@@ -87,9 +80,9 @@ abstract class Zend_Session_Abstract
         }
 
         if ($name === null) {
-            return ( isset($_SESSION[$namespace]) || isset(self::$_expiringData[$namespace]) );
+            return (isset($_SESSION[$namespace]) || isset(self::$_expiringData[$namespace]));
         } else {
-            return ( isset($_SESSION[$namespace][$name]) || isset(self::$_expiringData[$namespace][$name]) );
+            return (isset($_SESSION[$namespace][$name]) || isset(self::$_expiringData[$namespace][$name]));
         }
     }
 
@@ -112,7 +105,7 @@ abstract class Zend_Session_Abstract
             throw new Zend_Session_Exception(self::_THROW_NOT_WRITABLE_MSG);
         }
 
-        $name = (string) $name;
+        $name = (string)$name;
 
         // check to see if the api wanted to remove a var from a namespace or a namespace
         if ($name === '') {
@@ -176,7 +169,7 @@ abstract class Zend_Session_Abstract
      */
     protected static function _namespaceGetAll($namespace)
     {
-        $currentData  = (isset($_SESSION[$namespace]) && is_array($_SESSION[$namespace])) ?
+        $currentData = (isset($_SESSION[$namespace]) && is_array($_SESSION[$namespace])) ?
             $_SESSION[$namespace] : array();
         $expiringData = (isset(self::$_expiringData[$namespace]) && is_array(self::$_expiringData[$namespace])) ?
             self::$_expiringData[$namespace] : array();

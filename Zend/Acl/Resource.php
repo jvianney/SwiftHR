@@ -49,17 +49,7 @@ class Zend_Acl_Resource implements Zend_Acl_Resource_Interface
      */
     public function __construct($resourceId)
     {
-        $this->_resourceId = (string) $resourceId;
-    }
-
-    /**
-     * Defined by Zend_Acl_Resource_Interface; returns the Resource identifier
-     *
-     * @return string
-     */
-    public function getResourceId()
-    {
-        return $this->_resourceId;
+        $this->_resourceId = (string)$resourceId;
     }
 
     /**
@@ -71,5 +61,15 @@ class Zend_Acl_Resource implements Zend_Acl_Resource_Interface
     public function __toString()
     {
         return $this->getResourceId();
+    }
+
+    /**
+     * Defined by Zend_Acl_Resource_Interface; returns the Resource identifier
+     *
+     * @return string
+     */
+    public function getResourceId()
+    {
+        return $this->_resourceId;
     }
 }

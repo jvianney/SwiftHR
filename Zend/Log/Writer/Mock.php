@@ -48,9 +48,20 @@ class Zend_Log_Writer_Mock extends Zend_Log_Writer_Abstract
     public $shutdown = false;
 
     /**
+     * Create a new instance of Zend_Log_Writer_Mock
+     *
+     * @param  array|Zend_Config $config
+     * @return Zend_Log_Writer_Mock
+     */
+    static public function factory($config)
+    {
+        return new self();
+    }
+
+    /**
      * Write a message to the log.
      *
-     * @param  array  $event  event data
+     * @param  array $event event data
      * @return void
      */
     public function _write($event)
@@ -66,16 +77,5 @@ class Zend_Log_Writer_Mock extends Zend_Log_Writer_Abstract
     public function shutdown()
     {
         $this->shutdown = true;
-    }
-
-    /**
-     * Create a new instance of Zend_Log_Writer_Mock
-     *
-     * @param  array|Zend_Config $config
-     * @return Zend_Log_Writer_Mock
-     */
-    static public function factory($config)
-    {
-        return new self();
     }
 }

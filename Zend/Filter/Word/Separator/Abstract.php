@@ -48,9 +48,19 @@ abstract class Zend_Filter_Word_Separator_Abstract extends Zend_Filter_PregRepla
     }
 
     /**
+     * Returns the actual set seperator
+     *
+     * @return  string
+     */
+    public function getSeparator()
+    {
+        return $this->_separator;
+    }
+
+    /**
      * Sets a new seperator
      *
-     * @param  string  $separator  Seperator
+     * @param  string $separator Seperator
      * @return $this
      */
     public function setSeparator($separator)
@@ -61,16 +71,6 @@ abstract class Zend_Filter_Word_Separator_Abstract extends Zend_Filter_PregRepla
         }
         $this->_separator = $separator;
         return $this;
-    }
-
-    /**
-     * Returns the actual set seperator
-     *
-     * @return  string
-     */
-    public function getSeparator()
-    {
-        return $this->_separator;
     }
 
 }

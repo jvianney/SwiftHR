@@ -15,13 +15,13 @@
  * as well as transform elements that don't have an implementation.
  * See docs/ref-strictness.txt for more details.
  */
-
 class HTMLPurifier_HTMLModule_Legacy extends HTMLPurifier_HTMLModule
 {
 
     public $name = 'Legacy';
 
-    public function setup($config) {
+    public function setup($config)
+    {
 
         $this->addElement('basefont', 'Inline', 'Empty', false, array(
             'color' => 'Color',
@@ -98,7 +98,7 @@ class HTMLPurifier_HTMLModule_Legacy extends HTMLPurifier_HTMLModule
 
         $li = $this->addBlankElement('li');
         $li->attr['value'] = new HTMLPurifier_AttrDef_Integer();
-        $li->attr['type']  = 'Enum#s:1,i,I,a,A,disc,square,circle';
+        $li->attr['type'] = 'Enum#s:1,i,I,a,A,disc,square,circle';
 
         $ol = $this->addBlankElement('ol');
         $ol->attr['compact'] = 'Bool#compact';

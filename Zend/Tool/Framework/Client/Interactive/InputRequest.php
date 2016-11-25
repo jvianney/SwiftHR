@@ -36,15 +36,15 @@ class Zend_Tool_Framework_Client_Interactive_InputRequest
         }
     }
 
+    public function getContent()
+    {
+        return $this->_content;
+    }
+
     public function setContent($content)
     {
         $this->_content = $content;
         return $this;
-    }
-
-    public function getContent()
-    {
-        return $this->_content;
     }
 
     public function __toString()

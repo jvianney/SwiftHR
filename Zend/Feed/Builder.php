@@ -184,28 +184,6 @@ class Zend_Feed_Builder implements Zend_Feed_Builder_Interface
     }
 
     /**
-     * Returns an instance of Zend_Feed_Builder_Header
-     * describing the header of the feed
-     *
-     * @return Zend_Feed_Builder_Header
-     */
-    public function getHeader()
-    {
-        return $this->_header;
-    }
-
-    /**
-     * Returns an array of Zend_Feed_Builder_Entry instances
-     * describing the entries of the feed
-     *
-     * @return array of Zend_Feed_Builder_Entry
-     */
-    public function getEntries()
-    {
-        return $this->_entries;
-    }
-
-    /**
      * Create the Zend_Feed_Builder_Header instance
      *
      * @param  array $data
@@ -287,9 +265,9 @@ class Zend_Feed_Builder implements Zend_Feed_Builder_Interface
                 }
             }
             $this->_header->setTextInput($data['textInput']['title'],
-                                         $data['textInput']['description'],
-                                         $data['textInput']['name'],
-                                         $data['textInput']['link']);
+                $data['textInput']['description'],
+                $data['textInput']['name'],
+                $data['textInput']['link']);
         }
         if (isset($data['skipHours'])) {
             $this->_header->setSkipHours($data['skipHours']);
@@ -394,5 +372,27 @@ class Zend_Feed_Builder implements Zend_Feed_Builder_Interface
 
             $this->_entries[] = $entry;
         }
+    }
+
+    /**
+     * Returns an instance of Zend_Feed_Builder_Header
+     * describing the header of the feed
+     *
+     * @return Zend_Feed_Builder_Header
+     */
+    public function getHeader()
+    {
+        return $this->_header;
+    }
+
+    /**
+     * Returns an array of Zend_Feed_Builder_Entry instances
+     * describing the entries of the feed
+     *
+     * @return array of Zend_Feed_Builder_Entry
+     */
+    public function getEntries()
+    {
+        return $this->_entries;
     }
 }
