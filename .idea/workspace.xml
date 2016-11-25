@@ -3,16 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5ae633a0-f00b-470a-b6cd-5696d38febf7" name="Default" comment="Done with installation&#10;This changes the install directory to install_old and makes some other changes">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/layouts/scripts/analyticsheader.phtml" afterPath="$PROJECT_DIR$/application/layouts/scripts/analyticsheader.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/layouts/scripts/assetsheader.phtml" afterPath="$PROJECT_DIR$/application/layouts/scripts/assetsheader.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/layouts/scripts/defaultfooter.phtml" afterPath="$PROJECT_DIR$/application/layouts/scripts/defaultfooter.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/layouts/scripts/defaultheader.phtml" afterPath="$PROJECT_DIR$/application/layouts/scripts/defaultheader.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/layouts/scripts/expensesheader.phtml" afterPath="$PROJECT_DIR$/application/layouts/scripts/expensesheader.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/layouts/scripts/hrmsheader.phtml" afterPath="$PROJECT_DIR$/application/layouts/scripts/hrmsheader.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/layouts/scripts/timemanagementheader.phtml" afterPath="$PROJECT_DIR$/application/layouts/scripts/timemanagementheader.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/layouts/scripts/wizardheader.phtml" afterPath="$PROJECT_DIR$/application/layouts/scripts/wizardheader.phtml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/application_constants.php" afterPath="$PROJECT_DIR$/public/application_constants.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/media/css/loginstyle.css" afterPath="$PROJECT_DIR$/public/media/css/loginstyle.css" />
     </list>
     <ignored path="SwiftHR.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -269,7 +259,7 @@
       <updated>1479978504086</updated>
       <workItem from="1479978506178" duration="774000" />
       <workItem from="1479996720970" duration="5425000" />
-      <workItem from="1480067231673" duration="6309000" />
+      <workItem from="1480067231673" duration="6570000" />
     </task>
     <task id="LOCAL-00001" summary="Done with installation&#10;This changes the install directory to install_old and makes some other changes">
       <created>1479998900362</created>
@@ -289,10 +279,10 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12508000" />
+    <option name="totallyTimeSpent" value="12769000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="7" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24963397" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
